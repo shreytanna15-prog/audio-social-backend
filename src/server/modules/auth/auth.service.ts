@@ -1,24 +1,24 @@
 import { prisma } from "@/server/config/prisma";
 import { User } from "@/generated/prisma/client";
+import { userService } from "@/server/modules/user/user.service";
+import { LoginSchema, SignupSchema } from "@/server/modules/auth/auth.validator";
 import { env } from "@/server/config/env";
 
 import { comparePassword, generatePasswordHash } from "@/server/lib/passsword";
-import { generateJwtToken } from "@/server/lib/jwt";
-import { LoginSchema, SignupSchema } from "./auth.validator";
+import { generateJwtToken, verifyJwtToken } from "@/server/lib/jwt";
 import { AppError } from "@/server/utils/global-error";
 import { AUTH_CONFIG } from "@/server/constants/auth.config";
 
-type UserResponse = Omit<User, "password">;
-type Tokens = {accessToken: string, refreshToken: string };
+export type UserResponse = Omit<User, "password">;
+type Tokens = { accessToken: string; refreshToken: string };
 type AuthResponse = {
     user: UserResponse;
     tokens: Tokens;
-}
-
+};
 
 class AuthService {
     public async login(payload: LoginSchema): Promise<AuthResponse> {
-        const user = await this.findUserByEmail(payload.email);
+        const user = await userService.findByEmail(payload.email);
 
         if (!user) {
             throw new AppError("Invalid credentials", 401, "UNAUTHORIZED");
@@ -37,7 +37,7 @@ class AuthService {
     }
 
     public async signup(payload: SignupSchema): Promise<AuthResponse> {
-        const existingUser = await this.findUserByEmail(payload.email);
+        const existingUser = await userService.findByEmail(payload.email);
 
         if (existingUser) {
             throw new AppError("User already exists", 400, "BAD_REQUEST");
@@ -58,15 +58,21 @@ class AuthService {
 
         return { user: userResponse, tokens };
     }
-    
-    public async findUserByEmail(email: string): Promise<User | null> {
-        return await prisma.user.findUnique({
-            where: {
-                email,
-            },
-        });
-    }
 
+    public async refresh(refreshToken: string): Promise<Tokens> {
+        const decoded = verifyJwtToken(refreshToken, env.JWT_REFRESH_SECRET);
+
+        if (!decoded?.sub) {
+            throw new AppError("Invalid or expired token", 401, "UNAUTHORIZED");
+        }
+
+        const user = await userService.findById(decoded.sub);
+
+        const tokens = await this.generateTokens(user.id);
+
+        return { ...tokens };
+    }
+    
     private async generateTokens(userId: string): Promise<Tokens> {
         const accessToken = generateJwtToken({
             sub: userId,

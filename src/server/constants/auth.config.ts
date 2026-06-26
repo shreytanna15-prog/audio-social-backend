@@ -7,4 +7,8 @@ export const AUTH_CONFIG = {
         accessToken: '15m',
         refreshToken: '30d',
     },
+    headers: {
+        accessToken: 'authorization',
+        refreshToken: 'x-refresh-token',
+    },
 } as const;
