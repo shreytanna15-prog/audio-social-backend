@@ -1,1 +1,1 @@
-add vercel token to test
+testing manual script method

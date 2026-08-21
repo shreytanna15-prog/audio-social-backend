@@ -1,0 +1,215 @@
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { config as loadEnv } from "dotenv";
+
+const ROOT = process.cwd();
+const ENV_FILE = path.join(ROOT, ".env.deploy");
+const COMMIT_LOG = path.join(ROOT, "commit.txt");
+
+function log(step, message) {
+  console.log(`[deploy:trigger] ${step} — ${message}`);
+}
+
+function fail(step, message) {
+  console.error(`[deploy:trigger] FAIL @ ${step} — ${message}`);
+  process.exit(1);
+}
+
+function runGit(args, options = {}) {
+  const result = spawnSync("git", args, {
+    cwd: ROOT,
+    encoding: "utf8",
+    shell: false,
+    ...options,
+    env: {
+      ...process.env,
+      ...(options.env ?? {}),
+    },
+  });
+
+  if (result.error) {
+    return { ok: false, stdout: "", stderr: result.error.message, status: 1 };
+  }
+
+  return {
+    ok: result.status === 0,
+    stdout: (result.stdout ?? "").trim(),
+    stderr: (result.stderr ?? "").trim(),
+    status: result.status ?? 1,
+  };
+}
+
+function requireEnv(name) {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    fail("env", `Missing ${name}. Copy .env.deploy.example to .env.deploy and fill it in.`);
+  }
+  return value;
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function formatStamp(date = new Date()) {
+  const dd = pad2(date.getDate());
+  const mm = pad2(date.getMonth() + 1);
+  const yyyy = date.getFullYear();
+  const hh = pad2(date.getHours());
+  const min = pad2(date.getMinutes());
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
+
+function nextLogIndex(contents) {
+  const matches = [...contents.matchAll(/^\s*(\d+)\./gm)];
+  if (matches.length === 0) return 1;
+  return Math.max(...matches.map((m) => Number(m[1]))) + 1;
+}
+
+function parseHttpsRemote(remoteUrl) {
+  // https://github.com/owner/repo.git
+  // https://github.com/owner/repo
+  const match = remoteUrl.match(
+    /^https:\/\/(?:[^@]+@)?github\.com\/([^/]+)\/([^/.]+)(?:\.git)?\/?$/i,
+  );
+  if (!match) return null;
+  return { owner: match[1], repo: match[2] };
+}
+
+function main() {
+  log("start", "Manual Vercel trigger commit (Person X identity)");
+
+  if (!existsSync(ENV_FILE)) {
+    fail("env", `.env.deploy not found. Copy .env.deploy.example → .env.deploy`);
+  }
+
+  loadEnv({ path: ENV_FILE, override: true, quiet: true });
+
+  const token = requireEnv("DEPLOY_GH_TOKEN");
+  const deployName = requireEnv("DEPLOY_GIT_NAME");
+  const deployEmail = requireEnv("DEPLOY_GIT_EMAIL");
+  const branch = (process.env.DEPLOY_BRANCH ?? "main").trim();
+  const remote = (process.env.DEPLOY_REMOTE ?? "origin").trim();
+
+  log("env", `Loaded .env.deploy (branch=${branch}, remote=${remote})`);
+
+  const branchResult = runGit(["branch", "--show-current"]);
+  if (!branchResult.ok) {
+    fail("branch", branchResult.stderr || "Could not read current branch");
+  }
+  if (branchResult.stdout !== branch) {
+    fail(
+      "branch",
+      `Must be on '${branch}' (currently '${branchResult.stdout}'). Merge/push your work first, then run this.`,
+    );
+  }
+  log("branch", `On ${branch}`);
+
+  const statusResult = runGit(["status", "--porcelain"]);
+  if (!statusResult.ok) {
+    fail("clean", statusResult.stderr || "git status failed");
+  }
+
+  const dirtyLines = statusResult.stdout
+    ? statusResult.stdout.split("\n").filter(Boolean)
+    : [];
+  const blocking = dirtyLines.filter((line) => {
+    const file = line.slice(3).trim().replace(/\\/g, "/");
+    // Allow commit.txt itself to be modified/untracked; block everything else.
+    return file !== "commit.txt" && !file.endsWith("/commit.txt");
+  });
+
+  if (blocking.length > 0) {
+    fail(
+      "clean",
+      `Working tree has unrelated changes:\n${blocking.join("\n")}\nCommit/stash them first.`,
+    );
+  }
+  log("clean", "Working tree OK (only commit.txt may change)");
+
+  log("pull", `Fetching/updating ${remote}/${branch} (ff-only)`);
+  const pullResult = runGit(["pull", "--ff-only", remote, branch]);
+  if (!pullResult.ok) {
+    fail("pull", pullResult.stderr || pullResult.stdout || "git pull --ff-only failed");
+  }
+  log("pull", "Up to date");
+
+  const msgResult = runGit(["log", "-1", "--pretty=%s"]);
+  if (!msgResult.ok || !msgResult.stdout) {
+    fail("message", msgResult.stderr || "Could not read last commit message");
+  }
+  const lastMessage = msgResult.stdout;
+  log("message", `Last commit: "${lastMessage}"`);
+
+  const existing = existsSync(COMMIT_LOG) ? readFileSync(COMMIT_LOG, "utf8") : "";
+  const index = nextLogIndex(existing);
+  const line = `${index}. ${formatStamp()} : "${lastMessage}"`;
+  const nextContents = existing
+    ? `${existing.replace(/\s*$/, "")}\n${line}\n`
+    : `${line}\n`;
+
+  writeFileSync(COMMIT_LOG, nextContents, "utf8");
+  log("log", `Appended to commit.txt → ${line}`);
+
+  const addResult = runGit(["add", "--", "commit.txt"]);
+  if (!addResult.ok) {
+    fail("add", addResult.stderr || "git add commit.txt failed");
+  }
+  log("add", "Staged commit.txt");
+
+  const commitEnv = {
+    GIT_AUTHOR_NAME: deployName,
+    GIT_AUTHOR_EMAIL: deployEmail,
+    GIT_COMMITTER_NAME: deployName,
+    GIT_COMMITTER_EMAIL: deployEmail,
+  };
+
+  const commitMessage = `chore: deploy trigger log #${index}`;
+  const commitResult = runGit(["commit", "-m", commitMessage], { env: commitEnv });
+  if (!commitResult.ok) {
+    fail("commit", commitResult.stderr || commitResult.stdout || "git commit failed");
+  }
+  log("commit", `Created as ${deployName} <${deployEmail}> — ${commitMessage}`);
+
+  const remoteUrlResult = runGit(["remote", "get-url", remote]);
+  if (!remoteUrlResult.ok) {
+    fail("remote", remoteUrlResult.stderr || `Could not read ${remote} URL`);
+  }
+
+  const parsed = parseHttpsRemote(remoteUrlResult.stdout);
+  if (!parsed) {
+    fail(
+      "remote",
+      `Expected https://github.com/owner/repo remote, got: ${remoteUrlResult.stdout}`,
+    );
+  }
+
+  const pushUrl = `https://x-access-token:${token}@github.com/${parsed.owner}/${parsed.repo}.git`;
+  log("push", `Pushing ${branch} as deploy account (token auth, one-shot)`);
+
+  const pushResult = runGit(["push", pushUrl, `HEAD:${branch}`], {
+    env: {
+      // Avoid interactive credential helpers interfering with the token URL.
+      GIT_TERMINAL_PROMPT: "0",
+    },
+  });
+
+  if (!pushResult.ok) {
+    fail(
+      "push",
+      pushResult.stderr || pushResult.stdout || "git push failed — check DEPLOY_GH_TOKEN scopes (repo)",
+    );
+  }
+
+  log("push", `Pushed to ${remote}/${branch}`);
+  log(
+    "done",
+    "Trigger commit is on remote. Check Vercel Deployments for Ready (not Blocked).",
+  );
+  console.log(
+    `[deploy:trigger] Your normal git credentials were not changed. Continue working as yourself.`,
+  );
+}
+
+main();
