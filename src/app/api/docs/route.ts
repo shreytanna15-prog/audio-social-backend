@@ -1,4 +1,10 @@
-export const GET = async () => {
+import { NextResponse } from "next/server";
+import { route } from "@/server/utils/route";
+import { assertApiDocsEnabled } from "@/server/openapi/assert-docs-enabled";
+
+export const GET = route().handle(async () => {
+    assertApiDocsEnabled();
+
     const html = `<!doctype html>
 <html lang="en">
   <head>
@@ -19,10 +25,10 @@ export const GET = async () => {
   </body>
 </html>`;
 
-    return new Response(html, {
+    return new NextResponse(html, {
         headers: {
             "Content-Type": "text/html; charset=utf-8",
             "Cache-Control": "no-store",
         },
     });
-};
+});
