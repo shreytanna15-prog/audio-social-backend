@@ -77,6 +77,17 @@ function parseHttpsRemote(remoteUrl) {
   return { owner: match[1], repo: match[2] };
 }
 
+function rejectCachedDeployToken() {
+  // Best-effort: drop any GCM entry created from x-access-token URL pushes.
+  const input = "protocol=https\nhost=github.com\nusername=x-access-token\n\n";
+  spawnSync("git", ["credential", "reject"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    shell: false,
+    input,
+  });
+}
+
 function main() {
   log("start", "Manual Vercel trigger commit (Person X identity)");
 
@@ -190,14 +201,21 @@ function main() {
   }
 
   const pushUrl = `https://x-access-token:${token}@github.com/${parsed.owner}/${parsed.repo}.git`;
-  log("push", `Pushing ${branch} as deploy account (token auth, one-shot)`);
+  log("push", `Pushing ${branch} as deploy account (token auth, one-shot, no credential store)`);
 
-  const pushResult = runGit(["push", pushUrl, `HEAD:${branch}`], {
-    env: {
-      // Avoid interactive credential helpers interfering with the token URL.
-      GIT_TERMINAL_PROMPT: "0",
+  // Disable credential.helper so Git Credential Manager does not save x-access-token.
+  const pushResult = runGit(
+    ["-c", "credential.helper=", "push", pushUrl, `HEAD:${branch}`],
+    {
+      env: {
+        GIT_TERMINAL_PROMPT: "0",
+        GCM_INTERACTIVE: "never",
+      },
     },
-  });
+  );
+
+  // Always try to scrub a cached deploy token, even if push failed mid-way.
+  rejectCachedDeployToken();
 
   if (!pushResult.ok) {
     fail(
@@ -207,6 +225,7 @@ function main() {
   }
 
   log("push", `Pushed to ${remote}/${branch}`);
+  log("creds", "Cleared any cached x-access-token GitHub credential (best-effort)");
 
   // Keep work branch in sync with the trigger commit (your credentials, not Person X).
   log("sync", `Checking out ${syncBranch} to merge ${branch}`);
