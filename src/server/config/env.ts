@@ -1,13 +1,13 @@
 import "server-only";
-import z from 'zod';
+import z from "zod";
 import "dotenv/config";
 
 const envSchema = z.object({
-    NODE_ENV: z.enum(['development', 'production']),
+    NODE_ENV: z.enum(["development", "production"]),
 
     DATABASE_URL: z.url("Invalid DATABASE_URL"),
     DIRECT_URL: z.url("Invalid DIRECT_URL"),
-    
+
     JWT_ACCESS_SECRET: z.string("Invalid JWT_ACCESS_SECRET"),
     JWT_REFRESH_SECRET: z.string("Invalid JWT_REFRESH_SECRET"),
 
