@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/server/lib/zod";
 
 const EFFECT_IDS = ["denoise", "enhance", "reverb", "echo", "modulate"] as const;
 
@@ -10,23 +10,27 @@ const appliedEffectSchema = z.object({
     ),
 });
 
-export const createAudioSchema = z.object({
-    id: z.uuid("Invalid audio ID"),
-    title: z
-        .string()
-        .trim()
-        .min(1, "Title is required")
-        .max(100, "Title must be less than 100 characters"),
-    duration: z
-        .number()
-        .int("Duration must be a whole number of seconds")
-        .min(0, "Duration must be 0 or greater"),
-    appliedEffects: z.array(appliedEffectSchema).default([]),
-});
+export const createAudioSchema = z
+    .object({
+        id: z.uuid("Invalid audio ID"),
+        title: z
+            .string()
+            .trim()
+            .min(1, "Title is required")
+            .max(100, "Title must be less than 100 characters"),
+        duration: z
+            .number()
+            .int("Duration must be a whole number of seconds")
+            .min(0, "Duration must be 0 or greater"),
+        appliedEffects: z.array(appliedEffectSchema).default([]),
+    })
+    .openapi("CreateAudioBody");
 
-export const listAudiosQuerySchema = z.object({
-    status: z.enum(["DRAFT", "PUBLISHED"]).optional(),
-});
+export const listAudiosQuerySchema = z
+    .object({
+        status: z.enum(["DRAFT", "PUBLISHED"]).optional(),
+    })
+    .openapi("ListAudiosQuery");
 
 export const updateAudioSchema = z
     .object({
@@ -49,7 +53,8 @@ export const updateAudioSchema = z
             data.duration !== undefined ||
             data.appliedEffects !== undefined,
         { message: "At least one field is required" }
-    );
+    )
+    .openapi("UpdateAudioBody");
 
 export type CreateAudioSchema = z.infer<typeof createAudioSchema>;
 export type ListAudiosQuerySchema = z.infer<typeof listAudiosQuerySchema>;
