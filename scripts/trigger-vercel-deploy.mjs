@@ -90,9 +90,13 @@ function main() {
   const deployName = requireEnv("DEPLOY_GIT_NAME");
   const deployEmail = requireEnv("DEPLOY_GIT_EMAIL");
   const branch = (process.env.DEPLOY_BRANCH ?? "main").trim();
+  const syncBranch = (process.env.DEPLOY_SYNC_BRANCH ?? "dev").trim();
   const remote = (process.env.DEPLOY_REMOTE ?? "origin").trim();
 
-  log("env", `Loaded .env.deploy (branch=${branch}, remote=${remote})`);
+  log(
+    "env",
+    `Loaded .env.deploy (branch=${branch}, sync=${syncBranch}, remote=${remote})`,
+  );
 
   const branchResult = runGit(["branch", "--show-current"]);
   if (!branchResult.ok) {
@@ -203,12 +207,64 @@ function main() {
   }
 
   log("push", `Pushed to ${remote}/${branch}`);
+
+  // Keep work branch in sync with the trigger commit (your credentials, not Person X).
+  log("sync", `Checking out ${syncBranch} to merge ${branch}`);
+  const checkoutSync = runGit(["checkout", syncBranch]);
+  if (!checkoutSync.ok) {
+    fail(
+      "sync-checkout",
+      checkoutSync.stderr || checkoutSync.stdout || `Could not checkout ${syncBranch}`,
+    );
+  }
+  log("sync-checkout", `On ${syncBranch}`);
+
+  log("sync-pull", `Updating ${remote}/${syncBranch} (ff-only)`);
+  const pullSync = runGit(["pull", "--ff-only", remote, syncBranch]);
+  if (!pullSync.ok) {
+    fail(
+      "sync-pull",
+      pullSync.stderr || pullSync.stdout || `git pull --ff-only ${remote} ${syncBranch} failed`,
+    );
+  }
+  log("sync-pull", `${syncBranch} up to date`);
+
+  log("sync-merge", `Merging ${branch} into ${syncBranch}`);
+  const mergeResult = runGit([
+    "merge",
+    branch,
+    "--no-edit",
+    "-m",
+    `chore: sync ${branch} into ${syncBranch} after deploy trigger`,
+  ]);
+  if (!mergeResult.ok) {
+    fail(
+      "sync-merge",
+      mergeResult.stderr ||
+        mergeResult.stdout ||
+        `Merge conflict merging ${branch} into ${syncBranch}. Resolve manually, then push.`,
+    );
+  }
+  log("sync-merge", mergeResult.stdout || `Merged ${branch} → ${syncBranch}`);
+
+  log("sync-push", `Pushing ${syncBranch} with your normal git credentials`);
+  const pushSync = runGit(["push", remote, syncBranch]);
+  if (!pushSync.ok) {
+    fail(
+      "sync-push",
+      pushSync.stderr ||
+        pushSync.stdout ||
+        `git push ${remote} ${syncBranch} failed — pick your own GitHub account if prompted (not x-access-token)`,
+    );
+  }
+  log("sync-push", `Pushed ${remote}/${syncBranch}`);
+
   log(
     "done",
-    "Trigger commit is on remote. Check Vercel Deployments for Ready (not Blocked).",
+    `Trigger on ${branch} + ${syncBranch} synced. Check Vercel for Ready (not Blocked).`,
   );
   console.log(
-    `[deploy:trigger] Your normal git credentials were not changed. Continue working as yourself.`,
+    `[deploy:trigger] Left on '${syncBranch}'. Your git user config was not changed.`,
   );
 }
 
