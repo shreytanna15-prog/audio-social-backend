@@ -73,6 +73,9 @@
             "type": "string",
             "format": "email"
           },
+          "username": {
+            "type": "string"
+          },
           "name": {
             "type": [
               "string",
@@ -91,6 +94,7 @@
         "required": [
           "id",
           "email",
+          "username",
           "name",
           "createdAt",
           "updatedAt"
@@ -524,17 +528,22 @@
           "password": {
             "type": "string",
             "minLength": 8,
-            "pattern": "[a-z]"
+            "pattern": "[A-Za-z]"
           },
           "name": {
             "type": "string",
-            "minLength": 2,
-            "maxLength": 50
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "username": {
+            "type": "string"
           }
         },
         "required": [
           "email",
-          "password"
+          "password",
+          "name",
+          "username"
         ]
       },
       "LoginBody": {
@@ -547,7 +556,7 @@
           "password": {
             "type": "string",
             "minLength": 8,
-            "pattern": "[a-z]"
+            "pattern": "[A-Za-z]"
           }
         },
         "required": [

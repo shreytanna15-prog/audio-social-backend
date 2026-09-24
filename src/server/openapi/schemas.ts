@@ -18,6 +18,7 @@ export const userSchema = registry.register(
     z.object({
         id: z.uuid(),
         email: z.email(),
+        username: z.string(),
         name: z.string().nullable(),
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),

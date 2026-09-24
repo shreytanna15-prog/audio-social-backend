@@ -8,7 +8,13 @@ class UserService {
             where: { email },
         });
     }
-    
+
+    public async findByUsername(username: string): Promise<User | null> {
+        return await prisma.user.findUnique({
+            where: { username },
+        });
+    }
+
     public async findById(id: string): Promise<User> {
         const user = await prisma.user.findUnique({
             where: { id },

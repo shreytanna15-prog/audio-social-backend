@@ -1,5 +1,5 @@
 import { z } from "@/server/lib/zod";
-import { passwordSchema } from "@/server/utils/common.validator";
+import { passwordSchema, usernameSchema } from "@/server/utils/common.validator";
 
 export const loginSchema = z
     .object({
@@ -14,10 +14,10 @@ export const signupSchema = z
         password: passwordSchema,
         name: z
             .string()
-            .min(2, "Name must be at least 2 characters long")
-            .max(50, "Name must be less than 50 characters long")
             .trim()
-            .optional(),
+            .min(1, "Name is required")
+            .max(40, "Name must be less than 40 characters"),
+        username: usernameSchema,
     })
     .openapi("SignupBody");
 

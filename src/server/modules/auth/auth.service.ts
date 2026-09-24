@@ -37,10 +37,16 @@ class AuthService {
     }
 
     public async signup(payload: SignupSchema): Promise<AuthResponse> {
-        const existingUser = await userService.findByEmail(payload.email);
+        const existingByEmail = await userService.findByEmail(payload.email);
 
-        if (existingUser) {
-            throw new AppError("User already exists", 400, "BAD_REQUEST");
+        if (existingByEmail) {
+            throw new AppError("Email is already registered", 400, "BAD_REQUEST");
+        }
+
+        const existingByUsername = await userService.findByUsername(payload.username);
+
+        if (existingByUsername) {
+            throw new AppError("Username is already taken", 400, "BAD_REQUEST");
         }
 
         const passwordHash = await generatePasswordHash(payload.password);
@@ -48,6 +54,7 @@ class AuthService {
         const user = await prisma.user.create({
             data: {
                 email: payload.email,
+                username: payload.username,
                 password: passwordHash,
                 name: payload.name,
             },
@@ -72,15 +79,23 @@ class AuthService {
 
         return { ...tokens };
     }
-    
-    private async generateTokens(userId: string): Promise<Tokens> {
-        const accessToken = generateJwtToken({
-            sub: userId,
-        }, env.JWT_ACCESS_SECRET, AUTH_CONFIG.jwtExpiry.accessToken);
 
-        const refreshToken = generateJwtToken({
-            sub: userId,
-        }, env.JWT_REFRESH_SECRET, AUTH_CONFIG.jwtExpiry.refreshToken);
+    private async generateTokens(userId: string): Promise<Tokens> {
+        const accessToken = generateJwtToken(
+            {
+                sub: userId,
+            },
+            env.JWT_ACCESS_SECRET,
+            AUTH_CONFIG.jwtExpiry.accessToken
+        );
+
+        const refreshToken = generateJwtToken(
+            {
+                sub: userId,
+            },
+            env.JWT_REFRESH_SECRET,
+            AUTH_CONFIG.jwtExpiry.refreshToken
+        );
 
         return { accessToken, refreshToken };
     }
