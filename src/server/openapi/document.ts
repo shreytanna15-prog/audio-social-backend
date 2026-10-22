@@ -9,10 +9,10 @@ export function buildOpenApiDocument() {
     return generator.generateDocument({
         openapi: "3.1.0",
         info: {
-            title: "Audio Social Media API",
+            title: "Singer Social Media API",
             version: "0.1.0",
             description:
-                "Backend API for the singer social media React Native app.",
+                "Backend API for the singer social media React Native app (auth).",
         },
         servers: [
             {

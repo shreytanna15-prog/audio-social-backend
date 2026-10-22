@@ -10,7 +10,7 @@ export const GET = route().handle(async () => {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Audio Social Media API Docs</title>
+    <title>Singer Social Media API Docs</title>
     <style>
       html, body { margin: 0; height: 100%; }
     </style>

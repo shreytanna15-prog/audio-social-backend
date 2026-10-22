@@ -15,28 +15,4 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  audios    Audio[]
-}
-
-enum AudioStatus {
-  DRAFT
-  PUBLISHED
-}
-
-model Audio {
-  id             String      @id @default(uuid(7)) @db.Uuid
-  userId         String      @db.Uuid
-  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status         AudioStatus @default(DRAFT)
-  title          String
-  duration       Int
-  playbackPath   String
-  sourcePath     String
-  appliedEffects Json        @default("[]")
-  publishedAt    DateTime?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-
-  @@index([userId, createdAt(sort: Desc)])
-  @@index([userId, status])
 }
