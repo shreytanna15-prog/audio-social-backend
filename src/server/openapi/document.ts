@@ -12,7 +12,7 @@ export function buildOpenApiDocument() {
             title: "Singer Social Media API",
             version: "0.1.0",
             description:
-                "Backend API for the singer social media React Native app (auth).",
+                "Backend API for the singer social media React Native app (auth + tracks).",
         },
         servers: [
             {

@@ -15,4 +15,53 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  tracks    Track[]
+}
+
+enum TrackKind {
+  SINGLE
+  MULTI
+}
+
+enum TrackStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Track {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  userId      String      @db.Uuid
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        TrackKind
+  status      TrackStatus @default(DRAFT)
+  title       String
+  durationMs  Int
+  mixPath     String
+  publishedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  layers      TrackLayer[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, status])
+}
+
+model TrackLayer {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  trackId        String   @db.Uuid
+  track          Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  sortIndex      Int
+  kind           String
+  name           String
+  stemPath       String
+  sourcePath     String?
+  offsetMs       Int      @default(0)
+  durationMs     Int
+  muted          Boolean  @default(false)
+  appliedEffects Json     @default("[]")
+  peaks          Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([trackId, sortIndex])
 }

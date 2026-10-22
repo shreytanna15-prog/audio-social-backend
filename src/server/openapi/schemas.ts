@@ -32,6 +32,107 @@ export const authDataSchema = registry.register(
     })
 );
 
+export const trackIdParamSchema = registry.registerParameter(
+    "TrackId",
+    z.uuid("Invalid track ID").openapi({
+        param: { name: "id", in: "path" },
+        example: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
+        description: "Track UUID",
+    })
+);
+
+export const trackKindSchema = z.enum(["SINGLE", "MULTI"]).openapi("TrackKind");
+
+export const trackStatusSchema = z
+    .enum(["DRAFT", "PUBLISHED"])
+    .openapi("TrackStatus");
+
+export const appliedEffectSchema = registry.register(
+    "AppliedEffect",
+    z.object({
+        id: z.enum(["denoise", "enhance", "reverb", "echo", "modulate"]),
+        params: z.record(
+            z.string(),
+            z.union([z.string(), z.number(), z.boolean()])
+        ),
+    })
+);
+
+export const signedUploadSchema = registry.register(
+    "SignedUpload",
+    z.object({
+        path: z.string(),
+        signedUrl: z.url(),
+        token: z.string(),
+    })
+);
+
+export const createTrackUploadUrlsDataSchema = registry.register(
+    "CreateTrackUploadUrlsData",
+    z.object({
+        trackId: z.uuid(),
+        layerId: z.uuid(),
+        uploads: z.object({
+            mix: signedUploadSchema,
+        }),
+    })
+);
+
+export const trackIdDataSchema = registry.register(
+    "TrackIdData",
+    z.object({
+        id: z.uuid(),
+    })
+);
+
+export const trackListItemSchema = registry.register(
+    "TrackListItem",
+    z.object({
+        id: z.uuid(),
+        kind: trackKindSchema,
+        status: trackStatusSchema,
+        title: z.string(),
+        durationMs: z.number().int(),
+        mixUrl: z.url(),
+        createdAt: z.iso.datetime(),
+    })
+);
+
+export const trackLayerDetailSchema = registry.register(
+    "TrackLayerDetail",
+    z.object({
+        id: z.uuid(),
+        sortIndex: z.number().int(),
+        kind: z.enum(["vocal", "beat", "import"]),
+        name: z.string(),
+        stemUrl: z.url(),
+        sourceUrl: z.url().nullable(),
+        offsetMs: z.number().int(),
+        durationMs: z.number().int(),
+        muted: z.boolean(),
+        appliedEffects: z.array(appliedEffectSchema),
+        peaks: z.array(z.number()).nullable(),
+        createdAt: z.iso.datetime(),
+        updatedAt: z.iso.datetime(),
+    })
+);
+
+export const trackDetailSchema = registry.register(
+    "TrackDetail",
+    z.object({
+        id: z.uuid(),
+        kind: trackKindSchema,
+        status: trackStatusSchema,
+        title: z.string(),
+        durationMs: z.number().int(),
+        mixUrl: z.url(),
+        publishedAt: z.iso.datetime().nullable(),
+        createdAt: z.iso.datetime(),
+        updatedAt: z.iso.datetime(),
+        layers: z.array(trackLayerDetailSchema),
+    })
+);
+
 export const authSuccessResponseSchema = successResponseSchema(
     authDataSchema,
     "AuthSuccessResponse"
@@ -45,4 +146,24 @@ export const tokensSuccessResponseSchema = successResponseSchema(
 export const userSuccessResponseSchema = successResponseSchema(
     userSchema,
     "UserSuccessResponse"
+);
+
+export const createTrackUploadUrlsSuccessResponseSchema = successResponseSchema(
+    createTrackUploadUrlsDataSchema,
+    "CreateTrackUploadUrlsSuccessResponse"
+);
+
+export const trackIdSuccessResponseSchema = successResponseSchema(
+    trackIdDataSchema,
+    "TrackIdSuccessResponse"
+);
+
+export const trackListSuccessResponseSchema = successResponseSchema(
+    z.array(trackListItemSchema),
+    "TrackListSuccessResponse"
+);
+
+export const trackDetailSuccessResponseSchema = successResponseSchema(
+    trackDetailSchema,
+    "TrackDetailSuccessResponse"
 );

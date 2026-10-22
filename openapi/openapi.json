@@ -3,7 +3,7 @@
   "info": {
     "title": "Singer Social Media API",
     "version": "0.1.0",
-    "description": "Backend API for the singer social media React Native app (auth)."
+    "description": "Backend API for the singer social media React Native app (auth + tracks)."
   },
   "servers": [
     {
@@ -130,6 +130,301 @@
           "tokens"
         ]
       },
+      "AppliedEffect": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "denoise",
+              "enhance",
+              "reverb",
+              "echo",
+              "modulate"
+            ]
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "params"
+        ]
+      },
+      "SignedUpload": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "signedUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "signedUrl",
+          "token"
+        ]
+      },
+      "CreateTrackUploadUrlsData": {
+        "type": "object",
+        "properties": {
+          "trackId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "layerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "uploads": {
+            "type": "object",
+            "properties": {
+              "mix": {
+                "$ref": "#/components/schemas/SignedUpload"
+              },
+              "stem": {
+                "$ref": "#/components/schemas/SignedUpload"
+              },
+              "source": {
+                "$ref": "#/components/schemas/SignedUpload"
+              }
+            },
+            "required": [
+              "mix",
+              "stem",
+              "source"
+            ]
+          }
+        },
+        "required": [
+          "trackId",
+          "layerId",
+          "uploads"
+        ]
+      },
+      "TrackIdData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "TrackListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TrackKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrackStatus"
+          },
+          "title": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "mixUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "title",
+          "durationMs",
+          "mixUrl",
+          "createdAt"
+        ]
+      },
+      "TrackKind": {
+        "type": "string",
+        "enum": [
+          "SINGLE",
+          "MULTI"
+        ]
+      },
+      "TrackStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "PUBLISHED"
+        ]
+      },
+      "TrackLayerDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sortIndex": {
+            "type": "integer"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "vocal",
+              "beat",
+              "import"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "stemUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "sourceUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "offsetMs": {
+            "type": "integer"
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "muted": {
+            "type": "boolean"
+          },
+          "appliedEffects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AppliedEffect"
+            }
+          },
+          "peaks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "number"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sortIndex",
+          "kind",
+          "name",
+          "stemUrl",
+          "sourceUrl",
+          "offsetMs",
+          "durationMs",
+          "muted",
+          "appliedEffects",
+          "peaks",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TrackDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TrackKind"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrackStatus"
+          },
+          "title": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "mixUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackLayerDetail"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "title",
+          "durationMs",
+          "mixUrl",
+          "publishedAt",
+          "createdAt",
+          "updatedAt",
+          "layers"
+        ]
+      },
       "AuthSuccessResponse": {
         "type": "object",
         "properties": {
@@ -193,6 +488,99 @@
           "message"
         ]
       },
+      "CreateTrackUploadUrlsSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateTrackUploadUrlsData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "TrackIdSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TrackIdData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "TrackListSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackListItem"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "TrackDetailSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TrackDetail"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "TrackId": {
+        "type": "string",
+        "format": "uuid",
+        "example": "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
+        "description": "Track UUID"
+      },
       "SignupBody": {
         "type": "object",
         "properties": {
@@ -238,9 +626,150 @@
           "email",
           "password"
         ]
+      },
+      "CreateTrackUploadUrlsBody": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "SINGLE"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "CreateTrackBody": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "SINGLE"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "layer": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "vocal",
+                  "beat",
+                  "import"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "durationMs": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "offsetMs": {
+                "type": "integer",
+                "minimum": 0,
+                "default": 0
+              },
+              "muted": {
+                "type": "boolean",
+                "default": false
+              },
+              "appliedEffects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "denoise",
+                        "enhance",
+                        "reverb",
+                        "echo",
+                        "modulate"
+                      ]
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "boolean"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "params"
+                  ]
+                },
+                "default": []
+              },
+              "peaks": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "name",
+              "durationMs"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "durationMs",
+          "layer"
+        ]
       }
     },
-    "parameters": {}
+    "parameters": {
+      "TrackId": {
+        "schema": {
+          "$ref": "#/components/schemas/TrackId"
+        },
+        "required": true,
+        "description": "Track UUID",
+        "name": "id",
+        "in": "path"
+      }
+    }
   },
   "paths": {
     "/api/auth/signup": {
@@ -500,6 +1029,426 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tracks/upload-urls": {
+      "post": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "Create track upload URLs",
+        "description": "Create signed upload URLs for a new SINGLE track (mix, stem, and optional source).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrackUploadUrlsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload URLs created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTrackUploadUrlsSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tracks": {
+      "get": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "List tracks",
+        "description": "List the authenticated user's tracks, optionally filtered by status.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "PUBLISHED"
+              ]
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracks fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackListSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "Create track",
+        "description": "Create a DRAFT SINGLE track after mix and stem files have been uploaded.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrackBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Track created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackIdSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tracks/{id}": {
+      "get": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "Get track",
+        "description": "Fetch a single track by id (owner only).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrackId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Track fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackDetailSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "Delete track",
+        "description": "Delete a track and its storage files (owner only).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrackId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Track deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackIdSuccessResponse"
                 }
               }
             }
