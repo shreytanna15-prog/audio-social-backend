@@ -12,7 +12,7 @@ const appliedEffectSchema = z.object({
     ),
 });
 
-const createTrackLayerSchema = z.object({
+export const trackLayerBodySchema = z.object({
     id: z.uuid("Invalid layer ID"),
     kind: z.enum(LAYER_KINDS, { message: "Invalid layer kind" }),
     name: z
@@ -31,23 +31,30 @@ const createTrackLayerSchema = z.object({
         .optional()
         .default(0),
     muted: z.boolean().optional().default(false),
+    sortIndex: z
+        .number()
+        .int("Sort index must be a whole number")
+        .min(0, "Sort index must be 0 or greater")
+        .optional(),
     appliedEffects: z.array(appliedEffectSchema).optional().default([]),
     peaks: z.array(z.number()).optional(),
 });
 
 export const createUploadUrlsSchema = z
     .object({
-        kind: z.literal("SINGLE", {
-            message: "Only SINGLE tracks are supported for upload-urls right now",
+        kind: z.enum(["SINGLE", "MULTI"], {
+            message: "kind must be SINGLE or MULTI",
         }),
+        trackId: z.uuid("Invalid track ID").optional(),
+        layerIds: z.array(z.uuid("Invalid layer ID")).optional(),
     })
     .openapi("CreateTrackUploadUrlsBody");
 
 export const createTrackSchema = z
     .object({
         id: z.uuid("Invalid track ID"),
-        kind: z.literal("SINGLE", {
-            message: "Only SINGLE tracks can be created right now",
+        kind: z.enum(["SINGLE", "MULTI"], {
+            message: "kind must be SINGLE or MULTI",
         }),
         title: z
             .string()
@@ -58,9 +65,49 @@ export const createTrackSchema = z
             .number()
             .int("Duration must be a whole number of milliseconds")
             .min(0, "Duration must be 0 or greater"),
-        layer: createTrackLayerSchema,
+        layers: z
+            .array(trackLayerBodySchema)
+            .min(1, "At least one layer is required")
+            .max(16, "Too many layers"),
+    })
+    .superRefine((value, ctx) => {
+        if (value.kind === "SINGLE" && value.layers.length !== 1) {
+            ctx.addIssue({
+                code: "custom",
+                message: "SINGLE tracks must have exactly one layer",
+                path: ["layers"],
+            });
+        }
     })
     .openapi("CreateTrackBody");
+
+export const updateTrackSchema = z
+    .object({
+        title: z
+            .string()
+            .trim()
+            .min(1, "Title is required")
+            .max(100, "Title must be less than 100 characters")
+            .optional(),
+        durationMs: z
+            .number()
+            .int("Duration must be a whole number of milliseconds")
+            .min(0, "Duration must be 0 or greater")
+            .optional(),
+        layers: z
+            .array(trackLayerBodySchema)
+            .min(1, "At least one layer is required")
+            .max(16, "Too many layers")
+            .optional(),
+    })
+    .refine(
+        (value) =>
+            value.title !== undefined ||
+            value.durationMs !== undefined ||
+            value.layers !== undefined,
+        { message: "At least one field is required" }
+    )
+    .openapi("UpdateTrackBody");
 
 export const listTracksQuerySchema = z
     .object({
@@ -70,4 +117,6 @@ export const listTracksQuerySchema = z
 
 export type CreateUploadUrlsSchema = z.infer<typeof createUploadUrlsSchema>;
 export type CreateTrackSchema = z.infer<typeof createTrackSchema>;
+export type UpdateTrackSchema = z.infer<typeof updateTrackSchema>;
 export type ListTracksQuerySchema = z.infer<typeof listTracksQuerySchema>;
+export type TrackLayerBodySchema = z.infer<typeof trackLayerBodySchema>;

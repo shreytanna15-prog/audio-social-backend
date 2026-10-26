@@ -6,6 +6,7 @@ import {
 } from "@/server/openapi/registry";
 import {
     createTrackUploadUrlsSuccessResponseSchema,
+    trackBackupCompleteSuccessResponseSchema,
     trackDetailSuccessResponseSchema,
     trackIdParamSchema,
     trackIdSuccessResponseSchema,
@@ -15,6 +16,7 @@ import {
     createTrackSchema,
     createUploadUrlsSchema,
     listTracksQuerySchema,
+    updateTrackSchema,
 } from "@/server/modules/track/track.validator";
 
 const trackIdParamsSchema = z.object({
@@ -27,7 +29,7 @@ registry.registerPath({
     tags: ["Tracks"],
     summary: "Create track upload URLs",
     description:
-        "Create a signed upload URL for a new SINGLE track mix (stem/source optional later).",
+        "Create signed upload URLs for mix and stems (used by backup/sync).",
     security: [...bearerSecurity],
     request: {
         body: {
@@ -80,9 +82,9 @@ registry.registerPath({
     method: "post",
     path: "/api/tracks",
     tags: ["Tracks"],
-    summary: "Create track",
+    summary: "Create track draft",
     description:
-        "Create a DRAFT SINGLE track after the mix file has been uploaded (stem defaults to mix).",
+        "Create a DRAFT track metadata row (LOCAL_ONLY). Audio stays on device until backup.",
     security: [...bearerSecurity],
     request: {
         body: {
@@ -131,6 +133,37 @@ registry.registerPath({
 });
 
 registry.registerPath({
+    method: "patch",
+    path: "/api/tracks/{id}",
+    tags: ["Tracks"],
+    summary: "Update track draft",
+    description: "Update DRAFT track metadata and layers (owner only).",
+    security: [...bearerSecurity],
+    request: {
+        params: trackIdParamsSchema,
+        body: {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: updateTrackSchema,
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Track updated successfully",
+            content: {
+                "application/json": {
+                    schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
     method: "delete",
     path: "/api/tracks/{id}",
     tags: ["Tracks"],
@@ -146,6 +179,53 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/backup/upload-urls",
+    tags: ["Tracks"],
+    summary: "Create backup upload URLs",
+    description: "Signed URLs to upload local mix and stems to Supabase.",
+    security: [...bearerSecurity],
+    request: {
+        params: trackIdParamsSchema,
+    },
+    responses: {
+        200: {
+            description: "Backup upload URLs created successfully",
+            content: {
+                "application/json": {
+                    schema: createTrackUploadUrlsSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/backup/complete",
+    tags: ["Tracks"],
+    summary: "Complete track backup",
+    description:
+        "Verify uploaded objects and mark track storageState as SYNCED.",
+    security: [...bearerSecurity],
+    request: {
+        params: trackIdParamsSchema,
+    },
+    responses: {
+        200: {
+            description: "Track backup completed successfully",
+            content: {
+                "application/json": {
+                    schema: trackBackupCompleteSuccessResponseSchema,
                 },
             },
         },

@@ -47,6 +47,10 @@ export const trackStatusSchema = z
     .enum(["DRAFT", "PUBLISHED"])
     .openapi("TrackStatus");
 
+export const trackStorageStateSchema = z
+    .enum(["LOCAL_ONLY", "SYNCED", "CLOUD_ONLY"])
+    .openapi("TrackStorageState");
+
 export const appliedEffectSchema = registry.register(
     "AppliedEffect",
     z.object({
@@ -71,9 +75,14 @@ export const createTrackUploadUrlsDataSchema = registry.register(
     "CreateTrackUploadUrlsData",
     z.object({
         trackId: z.uuid(),
-        layerId: z.uuid(),
         uploads: z.object({
             mix: signedUploadSchema,
+            stems: z.array(
+                z.object({
+                    layerId: z.uuid(),
+                    upload: signedUploadSchema,
+                })
+            ),
         }),
     })
 );
@@ -91,9 +100,10 @@ export const trackListItemSchema = registry.register(
         id: z.uuid(),
         kind: trackKindSchema,
         status: trackStatusSchema,
+        storageState: trackStorageStateSchema,
         title: z.string(),
         durationMs: z.number().int(),
-        mixUrl: z.url(),
+        mixUrl: z.url().nullable(),
         createdAt: z.iso.datetime(),
     })
 );
@@ -105,7 +115,7 @@ export const trackLayerDetailSchema = registry.register(
         sortIndex: z.number().int(),
         kind: z.enum(["vocal", "beat", "import"]),
         name: z.string(),
-        stemUrl: z.url(),
+        stemUrl: z.url().nullable(),
         sourceUrl: z.url().nullable(),
         offsetMs: z.number().int(),
         durationMs: z.number().int(),
@@ -123,13 +133,22 @@ export const trackDetailSchema = registry.register(
         id: z.uuid(),
         kind: trackKindSchema,
         status: trackStatusSchema,
+        storageState: trackStorageStateSchema,
         title: z.string(),
         durationMs: z.number().int(),
-        mixUrl: z.url(),
+        mixUrl: z.url().nullable(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),
         layers: z.array(trackLayerDetailSchema),
+    })
+);
+
+export const trackBackupCompleteDataSchema = registry.register(
+    "TrackBackupCompleteData",
+    z.object({
+        id: z.uuid(),
+        storageState: trackStorageStateSchema,
     })
 );
 
@@ -166,4 +185,9 @@ export const trackListSuccessResponseSchema = successResponseSchema(
 export const trackDetailSuccessResponseSchema = successResponseSchema(
     trackDetailSchema,
     "TrackDetailSuccessResponse"
+);
+
+export const trackBackupCompleteSuccessResponseSchema = successResponseSchema(
+    trackBackupCompleteDataSchema,
+    "TrackBackupCompleteSuccessResponse"
 );

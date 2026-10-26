@@ -28,22 +28,30 @@ enum TrackStatus {
   PUBLISHED
 }
 
+enum TrackStorageState {
+  LOCAL_ONLY
+  SYNCED
+  CLOUD_ONLY
+}
+
 model Track {
-  id          String      @id @default(uuid(7)) @db.Uuid
-  userId      String      @db.Uuid
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  kind        TrackKind
-  status      TrackStatus @default(DRAFT)
-  title       String
-  durationMs  Int
-  mixPath     String
-  publishedAt DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  layers      TrackLayer[]
+  id           String            @id @default(uuid(7)) @db.Uuid
+  userId       String            @db.Uuid
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind         TrackKind
+  status       TrackStatus       @default(DRAFT)
+  storageState TrackStorageState @default(LOCAL_ONLY)
+  title        String
+  durationMs   Int
+  mixPath      String?
+  publishedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  layers       TrackLayer[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
+  @@index([userId, storageState])
 }
 
 model TrackLayer {
@@ -53,7 +61,7 @@ model TrackLayer {
   sortIndex      Int
   kind           String
   name           String
-  stemPath       String
+  stemPath       String?
   sourcePath     String?
   offsetMs       Int      @default(0)
   durationMs     Int

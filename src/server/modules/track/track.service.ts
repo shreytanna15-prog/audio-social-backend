@@ -2,8 +2,10 @@ import { v7 as uuidv7 } from "uuid";
 import {
     Prisma,
     Track,
+    TrackKind,
     TrackLayer,
     TrackStatus,
+    TrackStorageState,
 } from "@/generated/prisma/client";
 import { prisma } from "@/server/config/prisma";
 import { supabase } from "@/server/config/supabase";
@@ -18,7 +20,10 @@ import {
 import { AppError } from "@/server/utils/global-error";
 import type {
     CreateTrackSchema,
+    CreateUploadUrlsSchema,
     ListTracksQuerySchema,
+    TrackLayerBodySchema,
+    UpdateTrackSchema,
 } from "./track.validator";
 
 type SignedUpload = {
@@ -29,9 +34,9 @@ type SignedUpload = {
 
 type CreateUploadUrlsResponse = {
     trackId: string;
-    layerId: string;
     uploads: {
         mix: SignedUpload;
+        stems: Array<{ layerId: string; upload: SignedUpload }>;
     };
 };
 
@@ -39,9 +44,10 @@ export type TrackListItem = {
     id: string;
     kind: string;
     status: string;
+    storageState: string;
     title: string;
     durationMs: number;
-    mixUrl: string;
+    mixUrl: string | null;
     createdAt: string;
 };
 
@@ -50,7 +56,7 @@ export type TrackLayerDetail = {
     sortIndex: number;
     kind: string;
     name: string;
-    stemUrl: string;
+    stemUrl: string | null;
     sourceUrl: string | null;
     offsetMs: number;
     durationMs: number;
@@ -65,9 +71,10 @@ export type TrackDetail = {
     id: string;
     kind: string;
     status: string;
+    storageState: string;
     title: string;
     durationMs: number;
-    mixUrl: string;
+    mixUrl: string | null;
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
@@ -77,62 +84,57 @@ export type TrackDetail = {
 type TrackWithLayers = Track & { layers: TrackLayer[] };
 
 class TrackService {
-    public async createUploadUrls(userId: string): Promise<CreateUploadUrlsResponse> {
-        const trackId = uuidv7();
-        const layerId = uuidv7();
+    public async createUploadUrls(
+        userId: string,
+        payload: CreateUploadUrlsSchema
+    ): Promise<CreateUploadUrlsResponse> {
+        const trackId = payload.trackId ?? uuidv7();
+        const mix = await this.createSignedUploadUrl(
+            buildMixPath(userId, trackId)
+        );
 
-        // SINGLE v1: one mix upload only (stem/source can share mix path on create).
-        const mix = await this.createSignedUploadUrl(buildMixPath(userId, trackId));
+        const layerIds =
+            payload.layerIds && payload.layerIds.length > 0
+                ? payload.layerIds
+                : [uuidv7()];
+
+        const stems = await Promise.all(
+            layerIds.map(async (layerId) => ({
+                layerId,
+                upload: await this.createSignedUploadUrl(
+                    buildStemPath(userId, trackId, layerId)
+                ),
+            }))
+        );
 
         return {
             trackId,
-            layerId,
-            uploads: { mix },
+            uploads: { mix, stems },
         };
     }
 
+    /**
+     * Create DRAFT metadata only (LOCAL_ONLY). No Supabase file required.
+     */
     public async createTrack(
         userId: string,
         payload: CreateTrackSchema
     ): Promise<{ id: string }> {
-        const mixPath = buildMixPath(userId, payload.id);
-        const stemPath = buildStemPath(userId, payload.id, payload.layer.id);
-        const sourcePath = buildSourcePath(userId, payload.id, payload.layer.id);
-
-        const files = await this.assertRequiredFilesExist(
-            userId,
-            payload.id,
-            payload.layer.id
-        );
-
-        // SINGLE v1: stem/source may reuse mix when not uploaded separately.
-        const resolvedStemPath = files.hasStem ? stemPath : mixPath;
-        const resolvedSourcePath = files.hasSource ? sourcePath : null;
-
         try {
             await prisma.track.create({
                 data: {
                     id: payload.id,
                     userId,
-                    kind: payload.kind,
+                    kind: payload.kind as TrackKind,
                     status: TrackStatus.DRAFT,
+                    storageState: TrackStorageState.LOCAL_ONLY,
                     title: payload.title,
                     durationMs: payload.durationMs,
-                    mixPath,
+                    mixPath: null,
                     layers: {
-                        create: {
-                            id: payload.layer.id,
-                            sortIndex: 0,
-                            kind: payload.layer.kind,
-                            name: payload.layer.name,
-                            stemPath: resolvedStemPath,
-                            sourcePath: resolvedSourcePath,
-                            offsetMs: payload.layer.offsetMs,
-                            durationMs: payload.layer.durationMs,
-                            muted: payload.layer.muted,
-                            appliedEffects: payload.layer.appliedEffects,
-                            peaks: payload.layer.peaks ?? undefined,
-                        },
+                        create: payload.layers.map((layer, index) =>
+                            this.toLayerCreateData(layer, index)
+                        ),
                     },
                 },
             });
@@ -147,6 +149,69 @@ class TrackService {
             }
             throw error;
         }
+    }
+
+    public async updateTrack(
+        userId: string,
+        trackId: string,
+        payload: UpdateTrackSchema
+    ): Promise<{ id: string }> {
+        const track = await prisma.track.findFirst({
+            where: { id: trackId, userId },
+            include: { layers: true },
+        });
+
+        if (!track) {
+            throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
+        }
+
+        if (track.status !== TrackStatus.DRAFT) {
+            throw new AppError(
+                "Only DRAFT tracks can be updated",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        if (payload.layers) {
+            if (track.kind === TrackKind.SINGLE && payload.layers.length !== 1) {
+                throw new AppError(
+                    "SINGLE tracks must have exactly one layer",
+                    400,
+                    "BAD_REQUEST"
+                );
+            }
+
+            await prisma.$transaction(async (tx) => {
+                await tx.trackLayer.deleteMany({ where: { trackId } });
+                await tx.track.update({
+                    where: { id: trackId },
+                    data: {
+                        title: payload.title ?? track.title,
+                        durationMs: payload.durationMs ?? track.durationMs,
+                        layers: {
+                            create: payload.layers!.map((layer, index) =>
+                                this.toLayerCreateData(layer, index)
+                            ),
+                        },
+                    },
+                });
+            });
+        } else {
+            await prisma.track.update({
+                where: { id: trackId },
+                data: {
+                    ...(payload.title !== undefined
+                        ? { title: payload.title }
+                        : {}),
+                    ...(payload.durationMs !== undefined
+                        ? { durationMs: payload.durationMs }
+                        : {}),
+                },
+            });
+        }
+
+        return { id: trackId };
     }
 
     public async listTracks(
@@ -204,6 +269,130 @@ class TrackService {
         return { id: trackId };
     }
 
+    public async createBackupUploadUrls(
+        userId: string,
+        trackId: string
+    ): Promise<CreateUploadUrlsResponse> {
+        const track = await prisma.track.findFirst({
+            where: { id: trackId, userId },
+            include: { layers: { orderBy: { sortIndex: "asc" } } },
+        });
+
+        if (!track) {
+            throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
+        }
+
+        const mix = await this.createSignedUploadUrl(
+            buildMixPath(userId, trackId)
+        );
+
+        const stems = await Promise.all(
+            track.layers.map(async (layer) => ({
+                layerId: layer.id,
+                upload: await this.createSignedUploadUrl(
+                    buildStemPath(userId, trackId, layer.id)
+                ),
+            }))
+        );
+
+        return {
+            trackId,
+            uploads: { mix, stems },
+        };
+    }
+
+    public async completeBackup(
+        userId: string,
+        trackId: string
+    ): Promise<{ id: string; storageState: string }> {
+        const track = await prisma.track.findFirst({
+            where: { id: trackId, userId },
+            include: { layers: { orderBy: { sortIndex: "asc" } } },
+        });
+
+        if (!track) {
+            throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
+        }
+
+        const mixPath = buildMixPath(userId, trackId);
+        const hasMix = await this.objectExists(
+            buildTrackPrefix(userId, trackId),
+            STORAGE_CONFIG.files.mix
+        );
+
+        if (!hasMix) {
+            throw new AppError(
+                "Mix file not found in storage. Upload mix before completing backup.",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        const layerUpdates = await Promise.all(
+            track.layers.map(async (layer) => {
+                const stemPath = buildStemPath(userId, trackId, layer.id);
+                const sourcePath = buildSourcePath(userId, trackId, layer.id);
+                const layerPrefix = buildLayerPrefix(
+                    userId,
+                    trackId,
+                    layer.id
+                );
+                const hasStem = await this.objectExists(
+                    layerPrefix,
+                    STORAGE_CONFIG.files.stem
+                );
+                const hasSource = await this.objectExists(
+                    layerPrefix,
+                    STORAGE_CONFIG.files.source
+                );
+
+                return {
+                    id: layer.id,
+                    stemPath: hasStem ? stemPath : mixPath,
+                    sourcePath: hasSource ? sourcePath : null,
+                };
+            })
+        );
+
+        await prisma.$transaction(async (tx) => {
+            await tx.track.update({
+                where: { id: trackId },
+                data: {
+                    mixPath,
+                    storageState: TrackStorageState.SYNCED,
+                },
+            });
+
+            for (const layer of layerUpdates) {
+                await tx.trackLayer.update({
+                    where: { id: layer.id },
+                    data: {
+                        stemPath: layer.stemPath,
+                        sourcePath: layer.sourcePath,
+                    },
+                });
+            }
+        });
+
+        return { id: trackId, storageState: TrackStorageState.SYNCED };
+    }
+
+    private toLayerCreateData(layer: TrackLayerBodySchema, index: number) {
+        return {
+            id: layer.id,
+            sortIndex: layer.sortIndex ?? index,
+            kind: layer.kind,
+            name: layer.name,
+            stemPath: null as string | null,
+            sourcePath: null as string | null,
+            offsetMs: layer.offsetMs,
+            durationMs: layer.durationMs,
+            muted: layer.muted,
+            appliedEffects: layer.appliedEffects,
+            peaks: layer.peaks ?? undefined,
+        };
+    }
+
     private async createSignedUploadUrl(path: string): Promise<SignedUpload> {
         const { data, error } = await supabase.storage
             .from(STORAGE_CONFIG.bucket)
@@ -224,7 +413,13 @@ class TrackService {
         };
     }
 
-    private async createSignedUrl(storagePath: string): Promise<string> {
+    private async createSignedUrl(
+        storagePath: string | null
+    ): Promise<string | null> {
+        if (!storagePath) {
+            return null;
+        }
+
         const { data, error } = await supabase.storage
             .from(STORAGE_CONFIG.bucket)
             .createSignedUrl(
@@ -243,50 +438,19 @@ class TrackService {
         return data.signedUrl;
     }
 
-    /**
-     * Ensures mix exists. Stem/source are optional (SINGLE v1 uploads mix only).
-     */
-    private async assertRequiredFilesExist(
-        userId: string,
-        trackId: string,
-        layerId: string
-    ): Promise<{ hasStem: boolean; hasSource: boolean }> {
-        const trackPrefix = buildTrackPrefix(userId, trackId);
-        const layerPrefix = buildLayerPrefix(userId, trackId, layerId);
+    private async objectExists(
+        prefix: string,
+        fileName: string
+    ): Promise<boolean> {
+        const { data, error } = await supabase.storage
+            .from(STORAGE_CONFIG.bucket)
+            .list(prefix);
 
-        const [trackList, layerList] = await Promise.all([
-            supabase.storage.from(STORAGE_CONFIG.bucket).list(trackPrefix),
-            supabase.storage.from(STORAGE_CONFIG.bucket).list(layerPrefix),
-        ]);
-
-        if (trackList.error || !trackList.data) {
-            throw new AppError(
-                "Failed to verify mix file in storage",
-                400,
-                "BAD_REQUEST"
-            );
+        if (error || !data) {
+            return false;
         }
 
-        const trackNames = new Set(trackList.data.map((file) => file.name));
-
-        if (!trackNames.has(STORAGE_CONFIG.files.mix)) {
-            throw new AppError(
-                "Mix file not found in storage. Upload mix before creating the track.",
-                400,
-                "BAD_REQUEST"
-            );
-        }
-
-        const layerNames = new Set(
-            !layerList.error && layerList.data
-                ? layerList.data.map((file) => file.name)
-                : []
-        );
-
-        return {
-            hasStem: layerNames.has(STORAGE_CONFIG.files.stem),
-            hasSource: layerNames.has(STORAGE_CONFIG.files.source),
-        };
+        return data.some((file) => file.name === fileName);
     }
 
     private async removeTrackFiles(
@@ -300,9 +464,8 @@ class TrackService {
                     (path): path is string => Boolean(path)
                 )
             ),
-        ];
+        ].filter((path): path is string => Boolean(path));
 
-        // Also try listing layer folders in case of leftover objects.
         const layerFolders = track.layers.map((layer) =>
             buildLayerPrefix(userId, track.id, layer.id)
         );
@@ -343,6 +506,7 @@ class TrackService {
             id: track.id,
             kind: track.kind,
             status: track.status,
+            storageState: track.storageState,
             title: track.title,
             durationMs: track.durationMs,
             mixUrl,
@@ -356,9 +520,7 @@ class TrackService {
         const layers = await Promise.all(
             track.layers.map(async (layer) => {
                 const stemUrl = await this.createSignedUrl(layer.stemPath);
-                const sourceUrl = layer.sourcePath
-                    ? await this.createSignedUrl(layer.sourcePath)
-                    : null;
+                const sourceUrl = await this.createSignedUrl(layer.sourcePath);
 
                 return {
                     id: layer.id,
@@ -382,6 +544,7 @@ class TrackService {
             id: track.id,
             kind: track.kind,
             status: track.status,
+            storageState: track.storageState,
             title: track.title,
             durationMs: track.durationMs,
             mixUrl,
