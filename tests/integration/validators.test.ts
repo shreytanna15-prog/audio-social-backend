@@ -24,13 +24,24 @@ describe("validators + path parsing (integration)", () => {
         ).toThrow();
     });
 
-    it("recordSearchRecentSchema requires ARTIST kind + uuid", () => {
-        const ok = recordSearchRecentSchema.parse({
+    it("recordSearchRecentSchema accepts ARTIST and media kinds", () => {
+        const artist = recordSearchRecentSchema.parse({
             kind: "ARTIST",
             targetUserId: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
             query: " aura ",
         });
-        expect(ok.query).toBe("aura");
+        expect(artist.query).toBe("aura");
+
+        const song = recordSearchRecentSchema.parse({
+            kind: "SONG",
+            targetId: "track_123",
+            title: "Midnight Groove",
+            subtitle: "Mira Shah",
+        });
+        expect(song.kind).toBe("SONG");
+        if (song.kind === "SONG") {
+            expect(song.title).toBe("Midnight Groove");
+        }
 
         expect(() =>
             recordSearchRecentSchema.parse({

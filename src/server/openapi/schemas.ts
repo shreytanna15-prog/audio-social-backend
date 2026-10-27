@@ -250,9 +250,13 @@ export const searchRecentItemSchema = registry.register(
     "SearchRecentItem",
     z.object({
         id: z.uuid(),
-        kind: z.literal("ARTIST"),
+        kind: z.enum(["ARTIST", "SONG", "ALBUM", "PLAYLIST"]),
+        targetKey: z.string(),
         query: z.string().nullable(),
-        targetUser: userSearchResultSchema,
+        title: z.string().nullable(),
+        subtitle: z.string().nullable(),
+        coverUrl: z.string().nullable(),
+        targetUser: userSearchResultSchema.nullable(),
         updatedAt: z.iso.datetime(),
     })
 );
