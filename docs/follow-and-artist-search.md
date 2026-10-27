@@ -448,27 +448,27 @@ Use existing `apiRequest` from `@/core/api` like tracks.
 
 ### Backend
 
-- [ ] Add `Follow`, `SearchRecent`, `SearchRecentKind` + User relations to Prisma  
-- [ ] Migrate + `prisma generate`  
-- [ ] Follow service: follow, unfollow, counts, relationship helpers  
-- [ ] `GET /api/users/search`  
-- [ ] `GET /api/users/:id` public profile  
-- [ ] `POST` + `DELETE /api/users/:id/follow`  
-- [ ] `GET /api/users/:id/relationship`  
-- [ ] Search recent GET / POST / DELETE  
-- [ ] OpenAPI paths + schemas  
-- [ ] Manual API smoke test with auth token  
+- [x] Add `Follow`, `SearchRecent`, `SearchRecentKind` + User relations to Prisma  
+- [x] Migrate + `prisma generate` *(migration committed; run `migrate deploy` with local `.env`)*  
+- [x] Follow service: follow, unfollow, counts, relationship helpers  
+- [x] `GET /api/users/search`  
+- [x] `GET /api/users/:id` public profile  
+- [x] `POST` + `DELETE /api/users/:id/follow`  
+- [x] `GET /api/users/:id/relationship`  
+- [x] Search recent GET / POST / DELETE  
+- [x] OpenAPI paths + schemas  
+- [ ] Manual API smoke test with auth token *(needs `.env` + running server; automated in `tests/e2e`)*  
 
 ### Mobile app
 
-- [ ] `features/users` (or `social`) types + `apiRequest` service  
-- [ ] React Query hooks listed above  
-- [ ] Add Explore search route + Search screen UI (tabs, recent, results)  
-- [ ] Wire Explore search bar → push search route  
-- [ ] Replace `usePublicProfile` fixtures with API  
-- [ ] Wire Follow button + live counts; hide follow when `isSelf`  
-- [ ] Debounce, empty/loading/error polish  
-- [ ] Manual device test checklist below  
+- [x] `features/users` (or `social`) types + `apiRequest` service  
+- [x] React Query hooks listed above  
+- [x] Add Explore search route + Search screen UI (tabs, recent, results)  
+- [x] Wire Explore search bar → push search route  
+- [x] Replace `usePublicProfile` fixtures with API  
+- [x] Wire Follow button + live counts; hide follow when `isSelf`  
+- [x] Debounce, empty/loading/error polish  
+- [ ] Manual device test checklist below *(Maestro flow: `e2e/maestro/search-follow.yaml`)*  
 
 ---
 

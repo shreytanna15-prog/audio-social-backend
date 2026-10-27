@@ -191,3 +191,105 @@ export const trackBackupCompleteSuccessResponseSchema = successResponseSchema(
     trackBackupCompleteDataSchema,
     "TrackBackupCompleteSuccessResponse"
 );
+
+export const userIdParamSchema = registry.registerParameter(
+    "UserId",
+    z.uuid("Invalid user ID").openapi({
+        param: { name: "id", in: "path" },
+        example: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
+        description: "User UUID",
+    })
+);
+
+export const userSearchResultSchema = registry.register(
+    "UserSearchResult",
+    z.object({
+        id: z.uuid(),
+        username: z.string(),
+        name: z.string().nullable(),
+    })
+);
+
+export const publicUserProfileSchema = registry.register(
+    "PublicUserProfile",
+    z.object({
+        id: z.uuid(),
+        username: z.string(),
+        name: z.string().nullable(),
+        followerCount: z.number().int(),
+        followingCount: z.number().int(),
+        isFollowing: z.boolean(),
+        isFollowedBy: z.boolean(),
+        isMutual: z.boolean(),
+        isSelf: z.boolean(),
+    })
+);
+
+export const followActionDataSchema = registry.register(
+    "FollowActionData",
+    z.object({
+        id: z.uuid(),
+        followerCount: z.number().int(),
+        followingCount: z.number().int(),
+        isFollowing: z.boolean(),
+        isFollowedBy: z.boolean(),
+        isMutual: z.boolean(),
+    })
+);
+
+export const relationshipDataSchema = registry.register(
+    "RelationshipData",
+    z.object({
+        isFollowing: z.boolean(),
+        isFollowedBy: z.boolean(),
+        isMutual: z.boolean(),
+    })
+);
+
+export const searchRecentItemSchema = registry.register(
+    "SearchRecentItem",
+    z.object({
+        id: z.uuid(),
+        kind: z.literal("ARTIST"),
+        query: z.string().nullable(),
+        targetUser: userSearchResultSchema,
+        updatedAt: z.iso.datetime(),
+    })
+);
+
+export const clearSearchRecentDataSchema = registry.register(
+    "ClearSearchRecentData",
+    z.object({
+        ok: z.literal(true),
+    })
+);
+
+export const userSearchSuccessResponseSchema = successResponseSchema(
+    z.array(userSearchResultSchema),
+    "UserSearchSuccessResponse"
+);
+
+export const publicUserProfileSuccessResponseSchema = successResponseSchema(
+    publicUserProfileSchema,
+    "PublicUserProfileSuccessResponse"
+);
+
+export const followActionSuccessResponseSchema = successResponseSchema(
+    followActionDataSchema,
+    "FollowActionSuccessResponse"
+);
+
+export const relationshipSuccessResponseSchema = successResponseSchema(
+    relationshipDataSchema,
+    "RelationshipSuccessResponse"
+);
+
+export const searchRecentListSuccessResponseSchema = successResponseSchema(
+    z.array(searchRecentItemSchema),
+    "SearchRecentListSuccessResponse"
+);
+
+export const clearSearchRecentSuccessResponseSchema = successResponseSchema(
+    clearSearchRecentDataSchema,
+    "ClearSearchRecentSuccessResponse"
+);

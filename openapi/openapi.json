@@ -192,33 +192,40 @@
             "type": "string",
             "format": "uuid"
           },
-          "layerId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "uploads": {
             "type": "object",
             "properties": {
               "mix": {
                 "$ref": "#/components/schemas/SignedUpload"
               },
-              "stem": {
-                "$ref": "#/components/schemas/SignedUpload"
-              },
-              "source": {
-                "$ref": "#/components/schemas/SignedUpload"
+              "stems": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "layerId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "upload": {
+                      "$ref": "#/components/schemas/SignedUpload"
+                    }
+                  },
+                  "required": [
+                    "layerId",
+                    "upload"
+                  ]
+                }
               }
             },
             "required": [
               "mix",
-              "stem",
-              "source"
+              "stems"
             ]
           }
         },
         "required": [
           "trackId",
-          "layerId",
           "uploads"
         ]
       },
@@ -247,6 +254,9 @@
           "status": {
             "$ref": "#/components/schemas/TrackStatus"
           },
+          "storageState": {
+            "$ref": "#/components/schemas/TrackStorageState"
+          },
           "title": {
             "type": "string"
           },
@@ -254,7 +264,10 @@
             "type": "integer"
           },
           "mixUrl": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri"
           },
           "createdAt": {
@@ -266,6 +279,7 @@
           "id",
           "kind",
           "status",
+          "storageState",
           "title",
           "durationMs",
           "mixUrl",
@@ -284,6 +298,14 @@
         "enum": [
           "DRAFT",
           "PUBLISHED"
+        ]
+      },
+      "TrackStorageState": {
+        "type": "string",
+        "enum": [
+          "LOCAL_ONLY",
+          "SYNCED",
+          "CLOUD_ONLY"
         ]
       },
       "TrackLayerDetail": {
@@ -308,7 +330,10 @@
             "type": "string"
           },
           "stemUrl": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri"
           },
           "sourceUrl": {
@@ -380,6 +405,9 @@
           "status": {
             "$ref": "#/components/schemas/TrackStatus"
           },
+          "storageState": {
+            "$ref": "#/components/schemas/TrackStorageState"
+          },
           "title": {
             "type": "string"
           },
@@ -387,7 +415,10 @@
             "type": "integer"
           },
           "mixUrl": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uri"
           },
           "publishedAt": {
@@ -416,6 +447,7 @@
           "id",
           "kind",
           "status",
+          "storageState",
           "title",
           "durationMs",
           "mixUrl",
@@ -423,6 +455,22 @@
           "createdAt",
           "updatedAt",
           "layers"
+        ]
+      },
+      "TrackBackupCompleteData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "storageState": {
+            "$ref": "#/components/schemas/TrackStorageState"
+          }
+        },
+        "required": [
+          "id",
+          "storageState"
         ]
       },
       "AuthSuccessResponse": {
@@ -575,11 +623,340 @@
           "message"
         ]
       },
+      "TrackBackupCompleteSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TrackBackupCompleteData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "UserSearchResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "name"
+        ]
+      },
+      "PublicUserProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "followerCount": {
+            "type": "integer"
+          },
+          "followingCount": {
+            "type": "integer"
+          },
+          "isFollowing": {
+            "type": "boolean"
+          },
+          "isFollowedBy": {
+            "type": "boolean"
+          },
+          "isMutual": {
+            "type": "boolean"
+          },
+          "isSelf": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "name",
+          "followerCount",
+          "followingCount",
+          "isFollowing",
+          "isFollowedBy",
+          "isMutual",
+          "isSelf"
+        ]
+      },
+      "FollowActionData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "followerCount": {
+            "type": "integer"
+          },
+          "followingCount": {
+            "type": "integer"
+          },
+          "isFollowing": {
+            "type": "boolean"
+          },
+          "isFollowedBy": {
+            "type": "boolean"
+          },
+          "isMutual": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "followerCount",
+          "followingCount",
+          "isFollowing",
+          "isFollowedBy",
+          "isMutual"
+        ]
+      },
+      "RelationshipData": {
+        "type": "object",
+        "properties": {
+          "isFollowing": {
+            "type": "boolean"
+          },
+          "isFollowedBy": {
+            "type": "boolean"
+          },
+          "isMutual": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isFollowing",
+          "isFollowedBy",
+          "isMutual"
+        ]
+      },
+      "SearchRecentItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ARTIST"
+            ]
+          },
+          "query": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "targetUser": {
+            "$ref": "#/components/schemas/UserSearchResult"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "query",
+          "targetUser",
+          "updatedAt"
+        ]
+      },
+      "ClearSearchRecentData": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "UserSearchSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSearchResult"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "PublicUserProfileSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PublicUserProfile"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "FollowActionSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/FollowActionData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "RelationshipSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RelationshipData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "SearchRecentListSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchRecentItem"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "ClearSearchRecentSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ClearSearchRecentData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
       "TrackId": {
         "type": "string",
         "format": "uuid",
         "example": "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
         "description": "Track UUID"
+      },
+      "UserId": {
+        "type": "string",
+        "format": "uuid",
+        "example": "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
+        "description": "User UUID"
       },
       "SignupBody": {
         "type": "object",
@@ -633,8 +1010,20 @@
           "kind": {
             "type": "string",
             "enum": [
-              "SINGLE"
+              "SINGLE",
+              "MULTI"
             ]
+          },
+          "trackId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "layerIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         },
         "required": [
@@ -651,7 +1040,8 @@
           "kind": {
             "type": "string",
             "enum": [
-              "SINGLE"
+              "SINGLE",
+              "MULTI"
             ]
           },
           "title": {
@@ -663,91 +1053,100 @@
             "type": "integer",
             "minimum": 0
           },
-          "layer": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "format": "uuid"
-              },
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "vocal",
-                  "beat",
-                  "import"
-                ]
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 100
-              },
-              "durationMs": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "offsetMs": {
-                "type": "integer",
-                "minimum": 0,
-                "default": 0
-              },
-              "muted": {
-                "type": "boolean",
-                "default": false
-              },
-              "appliedEffects": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "enum": [
-                        "denoise",
-                        "enhance",
-                        "reverb",
-                        "echo",
-                        "modulate"
-                      ]
-                    },
-                    "params": {
-                      "type": "object",
-                      "additionalProperties": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "boolean"
-                          }
-                        ]
-                      }
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "params"
+          "layers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "vocal",
+                    "beat",
+                    "import"
                   ]
                 },
-                "default": []
-              },
-              "peaks": {
-                "type": "array",
-                "items": {
-                  "type": "number"
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "durationMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "offsetMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "muted": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "sortIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "appliedEffects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "denoise",
+                          "enhance",
+                          "reverb",
+                          "echo",
+                          "modulate"
+                        ]
+                      },
+                      "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "boolean"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "params"
+                    ]
+                  },
+                  "default": []
+                },
+                "peaks": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
                 }
-              }
+              },
+              "required": [
+                "id",
+                "kind",
+                "name",
+                "durationMs"
+              ]
             },
-            "required": [
-              "id",
-              "kind",
-              "name",
-              "durationMs"
-            ]
+            "minItems": 1,
+            "maxItems": 16
           }
         },
         "required": [
@@ -755,7 +1154,140 @@
           "kind",
           "title",
           "durationMs",
-          "layer"
+          "layers"
+        ]
+      },
+      "UpdateTrackBody": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "vocal",
+                    "beat",
+                    "import"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "durationMs": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "offsetMs": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "default": 0
+                },
+                "muted": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "sortIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "appliedEffects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "denoise",
+                          "enhance",
+                          "reverb",
+                          "echo",
+                          "modulate"
+                        ]
+                      },
+                      "params": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "boolean"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "params"
+                    ]
+                  },
+                  "default": []
+                },
+                "peaks": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "name",
+                "durationMs"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 16
+          }
+        }
+      },
+      "RecordSearchRecent": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ARTIST"
+            ]
+          },
+          "targetUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "kind",
+          "targetUserId"
         ]
       }
     },
@@ -766,6 +1298,15 @@
         },
         "required": true,
         "description": "Track UUID",
+        "name": "id",
+        "in": "path"
+      },
+      "UserId": {
+        "schema": {
+          "$ref": "#/components/schemas/UserId"
+        },
+        "required": true,
+        "description": "User UUID",
         "name": "id",
         "in": "path"
       }
@@ -1092,7 +1633,7 @@
           "Tracks"
         ],
         "summary": "Create track upload URLs",
-        "description": "Create signed upload URLs for a new SINGLE track (mix, stem, and optional source).",
+        "description": "Create signed upload URLs for mix and stems (used by backup/sync).",
         "security": [
           {
             "bearerAuth": []
@@ -1265,8 +1806,8 @@
         "tags": [
           "Tracks"
         ],
-        "summary": "Create track",
-        "description": "Create a DRAFT SINGLE track after mix and stem files have been uploaded.",
+        "summary": "Create track draft",
+        "description": "Create a DRAFT track metadata row (LOCAL_ONLY). Audio stays on device until backup.",
         "security": [
           {
             "bearerAuth": []
@@ -1426,6 +1967,95 @@
           }
         }
       },
+      "patch": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "Update track draft",
+        "description": "Update DRAFT track metadata and layers (owner only).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrackId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrackBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Track updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackIdSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Tracks"
@@ -1449,6 +2079,822 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TrackIdSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tracks/{id}/backup/upload-urls": {
+      "post": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "Create backup upload URLs",
+        "description": "Signed URLs to upload local mix and stems to Supabase.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrackId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Backup upload URLs created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTrackUploadUrlsSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tracks/{id}/backup/complete": {
+      "post": {
+        "tags": [
+          "Tracks"
+        ],
+        "summary": "Complete track backup",
+        "description": "Verify uploaded objects and mark track storageState as SYNCED.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TrackId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Track backup completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackBackupCompleteSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/search": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Search artists",
+        "description": "Search users by username or display name. Excludes the authenticated viewer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSearchSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get public profile",
+        "description": "Public profile with follower/following counts and relationship flags for the viewer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicUserProfileSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}/follow": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Follow user",
+        "description": "Follow a user. Idempotent if already following.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Followed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowActionSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Unfollow user",
+        "description": "Unfollow a user. Idempotent if not following.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unfollowed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowActionSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}/relationship": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get relationship",
+        "description": "Return isFollowing / isFollowedBy / isMutual for the viewer vs target user.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relationship fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelationshipSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/recent": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "List recent searches",
+        "description": "List the viewer's recent artist searches (max 20).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent searches fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchRecentListSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Record recent search",
+        "description": "Upsert a recent artist search and trim to the last 20 entries.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordSearchRecent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recent search recorded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchRecentListSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Clear recent searches",
+        "description": "Delete all recent searches for the authenticated user.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent searches cleared successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearSearchRecentSuccessResponse"
                 }
               }
             }
