@@ -457,7 +457,7 @@ Use existing `apiRequest` from `@/core/api` like tracks.
 - [x] `GET /api/users/:id/relationship`  
 - [x] Search recent GET / POST / DELETE  
 - [x] OpenAPI paths + schemas  
-- [ ] Manual API smoke test with auth token *(needs `.env` + running server; automated in `tests/e2e`)*  
+- [x] Manual API smoke test with auth token *(docs checklist + vitest e2e — local pass 2026-10-27; production 12/12 pass 2026-10-27)*  
 
 ### Mobile app
 
@@ -468,7 +468,7 @@ Use existing `apiRequest` from `@/core/api` like tracks.
 - [x] Replace `usePublicProfile` fixtures with API  
 - [x] Wire Follow button + live counts; hide follow when `isSelf`  
 - [x] Debounce, empty/loading/error polish  
-- [ ] Manual device test checklist below *(Maestro flow: `e2e/maestro/search-follow.yaml`)*  
+- [x] Manual device test checklist below *(emulator + API checklist — local pass 2026-10-27; production Maestro + API pass 2026-10-27)*  
 
 ---
 
