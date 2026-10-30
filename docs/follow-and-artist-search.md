@@ -217,6 +217,8 @@ Errors: existing `AppError` codes (`BAD_REQUEST`, `RESOURCE_NOT_FOUND`, `UNAUTHO
 
 `404` if user not found.
 
+> **Later expansion:** `bio`, `avatarUrl`, and `coverUrl` are specified in [`docs/edit-profile.md`](./edit-profile.md) §7 — implement those when Edit Profile lands; keep relationship/count fields as above.
+
 ### 5.3 Follow / unfollow
 
 `POST /api/users/:id/follow`  
