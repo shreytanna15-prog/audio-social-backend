@@ -12,12 +12,17 @@ describe("searchRecentService (unit)", () => {
             {
                 id: "r1",
                 kind: "ARTIST",
+                targetKey: TARGET,
                 query: "alice",
+                title: null,
+                subtitle: null,
+                coverUrl: null,
                 updatedAt,
                 targetUser: {
                     id: TARGET,
                     username: "alice",
                     name: "Alice",
+                    avatarPath: "avatars/u/a.jpg",
                 },
             },
         ] as never);
@@ -26,11 +31,16 @@ describe("searchRecentService (unit)", () => {
             {
                 id: "r1",
                 kind: "ARTIST",
+                targetKey: TARGET,
                 query: "alice",
+                title: "Alice",
+                subtitle: "@alice",
+                coverUrl: "https://cdn.example.com/avatars/u/a.jpg",
                 targetUser: {
                     id: TARGET,
                     username: "alice",
                     name: "Alice",
+                    avatarUrl: "https://cdn.example.com/avatars/u/a.jpg",
                 },
                 updatedAt: updatedAt.toISOString(),
             },

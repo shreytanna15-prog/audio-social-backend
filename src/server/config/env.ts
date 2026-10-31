@@ -48,6 +48,13 @@ const envSchema = z.object({
     REALTIME_NOTIFY_SECRET: optionalSecret,
     /** Defaults to JWT_ACCESS_SECRET when unset. */
     REALTIME_TOKEN_SECRET: optionalSecret,
+
+    /** Cloudflare R2 for profile avatar/cover (optional until Edit Profile media is used). */
+    R2_ACCOUNT_ID: optionalSecret,
+    R2_ACCESS_KEY_ID: optionalSecret,
+    R2_SECRET_ACCESS_KEY: optionalSecret,
+    R2_BUCKET: optionalSecret,
+    R2_PUBLIC_BASE_URL: optionalUrl,
 });
 
 export const env = envSchema.parse({
@@ -61,4 +68,9 @@ export const env = envSchema.parse({
     REALTIME_WORKER_URL: process.env.REALTIME_WORKER_URL,
     REALTIME_NOTIFY_SECRET: process.env.REALTIME_NOTIFY_SECRET,
     REALTIME_TOKEN_SECRET: process.env.REALTIME_TOKEN_SECRET,
+    R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
+    R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+    R2_BUCKET: process.env.R2_BUCKET,
+    R2_PUBLIC_BASE_URL: process.env.R2_PUBLIC_BASE_URL,
 });

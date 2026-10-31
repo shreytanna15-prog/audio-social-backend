@@ -8,6 +8,7 @@ import {
 } from "@/generated/prisma/client";
 import { env } from "@/server/config/env";
 import { prisma } from "@/server/config/prisma";
+import { publicUrl } from "@/server/config/r2";
 import { supabase } from "@/server/config/supabase";
 import { STORAGE_CONFIG } from "@/server/constants/storage.config";
 import { generateJwtToken } from "@/server/lib/jwt";
@@ -28,6 +29,7 @@ type ParticipantDto = {
     id: string;
     username: string;
     name: string | null;
+    avatarUrl: string | null;
 };
 
 type ConversationSummaryDto = {
@@ -66,14 +68,15 @@ type SignedUpload = {
 };
 
 type ConversationWithUsers = Conversation & {
-    userLow: Pick<User, "id" | "username" | "name">;
-    userHigh: Pick<User, "id" | "username" | "name">;
+    userLow: Pick<User, "id" | "username" | "name" | "avatarPath">;
+    userHigh: Pick<User, "id" | "username" | "name" | "avatarPath">;
 };
 
 const userSelect = {
     id: true,
     username: true,
     name: true,
+    avatarPath: true,
 } as const;
 
 function pairIds(a: string, b: string): { userLowId: string; userHighId: string } {
@@ -94,6 +97,7 @@ function otherParticipant(
         id: other.id,
         username: other.username,
         name: other.name,
+        avatarUrl: publicUrl(other.avatarPath),
     };
 }
 

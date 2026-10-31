@@ -1,5 +1,6 @@
 import { SearchRecentKind } from "@/generated/prisma/client";
 import { prisma } from "@/server/config/prisma";
+import { publicUrl } from "@/server/config/r2";
 import { AppError } from "@/server/utils/global-error";
 import { userService } from "@/server/modules/user/user.service";
 import type { RecordSearchRecentSchema } from "./search-recent.validator";
@@ -20,6 +21,7 @@ export type SearchRecentItem = {
         id: string;
         username: string;
         name: string | null;
+        avatarUrl: string | null;
     } | null;
     updatedAt: string;
 };
@@ -40,6 +42,7 @@ class SearchRecentService {
                         id: true,
                         username: true,
                         name: true,
+                        avatarPath: true,
                     },
                 },
             },
@@ -163,10 +166,18 @@ class SearchRecentService {
             id: string;
             username: string;
             name: string | null;
+            avatarPath: string | null;
         } | null;
     }): SearchRecentItem {
         const kind = mapKind(row.kind);
-        const targetUser = row.targetUser;
+        const targetUser = row.targetUser
+            ? {
+                  id: row.targetUser.id,
+                  username: row.targetUser.username,
+                  name: row.targetUser.name,
+                  avatarUrl: publicUrl(row.targetUser.avatarPath),
+              }
+            : null;
 
         if (kind === "ARTIST" && targetUser) {
             return {
@@ -176,7 +187,7 @@ class SearchRecentService {
                 query: row.query,
                 title: targetUser.name,
                 subtitle: `@${targetUser.username}`,
-                coverUrl: null,
+                coverUrl: targetUser.avatarUrl,
                 targetUser,
                 updatedAt: row.updatedAt.toISOString(),
             };

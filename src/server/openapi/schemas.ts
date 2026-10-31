@@ -16,6 +16,23 @@ export const userSchema = registry.register(
     })
 );
 
+export const meSchema = registry.register(
+    "Me",
+    z.object({
+        id: z.uuid(),
+        email: z.email(),
+        username: z.string(),
+        name: z.string().nullable(),
+        bio: z.string().nullable(),
+        avatarUrl: z.url().nullable(),
+        coverUrl: z.url().nullable(),
+        canChangeUsername: z.boolean(),
+        usernameChangeAvailableAt: z.iso.datetime().nullable(),
+        createdAt: z.iso.datetime(),
+        updatedAt: z.iso.datetime(),
+    })
+);
+
 export const tokensSchema = registry.register(
     "Tokens",
     z.object({
@@ -167,6 +184,37 @@ export const userSuccessResponseSchema = successResponseSchema(
     "UserSuccessResponse"
 );
 
+export const meSuccessResponseSchema = successResponseSchema(
+    meSchema,
+    "MeSuccessResponse"
+);
+
+export const usernameAvailabilityDataSchema = registry.register(
+    "UsernameAvailability",
+    z.object({
+        username: z.string(),
+        available: z.boolean(),
+    })
+);
+
+export const usernameAvailabilitySuccessResponseSchema = successResponseSchema(
+    usernameAvailabilityDataSchema,
+    "UsernameAvailabilitySuccessResponse"
+);
+
+export const profileMediaUploadDataSchema = registry.register(
+    "ProfileMediaUpload",
+    z.object({
+        path: z.string(),
+        signedUrl: z.url(),
+    })
+);
+
+export const profileMediaUploadSuccessResponseSchema = successResponseSchema(
+    profileMediaUploadDataSchema,
+    "ProfileMediaUploadSuccessResponse"
+);
+
 export const createTrackUploadUrlsSuccessResponseSchema = successResponseSchema(
     createTrackUploadUrlsDataSchema,
     "CreateTrackUploadUrlsSuccessResponse"
@@ -207,6 +255,7 @@ export const userSearchResultSchema = registry.register(
         id: z.uuid(),
         username: z.string(),
         name: z.string().nullable(),
+        avatarUrl: z.url().nullable(),
     })
 );
 
@@ -216,6 +265,9 @@ export const publicUserProfileSchema = registry.register(
         id: z.uuid(),
         username: z.string(),
         name: z.string().nullable(),
+        bio: z.string().nullable(),
+        avatarUrl: z.url().nullable(),
+        coverUrl: z.url().nullable(),
         followerCount: z.number().int(),
         followingCount: z.number().int(),
         isFollowing: z.boolean(),
@@ -313,6 +365,7 @@ export const chatParticipantSchema = registry.register(
         id: z.uuid(),
         username: z.string(),
         name: z.string().nullable(),
+        avatarUrl: z.url().nullable(),
     })
 );
 
