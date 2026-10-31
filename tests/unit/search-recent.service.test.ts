@@ -12,7 +12,11 @@ describe("searchRecentService (unit)", () => {
             {
                 id: "r1",
                 kind: "ARTIST",
+                targetKey: TARGET,
                 query: "alice",
+                title: null,
+                subtitle: null,
+                coverUrl: null,
                 updatedAt,
                 targetUser: {
                     id: TARGET,
@@ -26,7 +30,11 @@ describe("searchRecentService (unit)", () => {
             {
                 id: "r1",
                 kind: "ARTIST",
+                targetKey: TARGET,
                 query: "alice",
+                title: "Alice",
+                subtitle: "@alice",
+                coverUrl: null,
                 targetUser: {
                     id: TARGET,
                     username: "alice",

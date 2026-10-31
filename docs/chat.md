@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`) + Cloudflare Worker (realtime only).  
-**Status:** planning doc — implement in the order in [Task list](#11-task-list-implement-in-this-order).
+**Status:** implemented in code — run migrate, set env, deploy Worker (see task list).
 
 **Schema:** Prisma models live in `prisma/schema.prisma` (`Conversation`, `Message`, enums). Do **not** paste or duplicate the full schema here — read the file. Run migrate + generate after schema is committed.
 
@@ -357,14 +357,14 @@ Remove fixture seed data and mock store mutations once API paths are stable.
 
 ## 11. Task list (implement in this order)
 
-1. Commit Prisma schema + `prisma migrate` / `generate` (no schema paste in this doc)
-2. Backend REST: request, accept, decline, inbox, requests, text messages, history
-3. Mobile: wire request + inbox + text thread (drop fixtures for those paths)
-4. Voice note upload + AUDIO messages (API + app)
-5. Realtime token endpoint + Cloudflare Worker/DO + notify after write
-6. App: subscribe on conversation screen
-7. OpenAPI + smoke tests
-8. Trim unused fixture/shared-recording paths; empty/error states
+1. [x] Commit Prisma schema + `prisma migrate` / `generate` (no schema paste in this doc) — *migration committed; run `migrate deploy` with local `.env`*
+2. [x] Backend REST: request, accept, decline, inbox, requests, text messages, history
+3. [x] Mobile: wire request + inbox + text thread (drop fixtures for those paths)
+4. [x] Voice note upload + AUDIO messages (API + app)
+5. [x] Realtime token endpoint + Cloudflare Worker/DO + notify after write — *Worker scaffold in `workers/chat-realtime`; needs deploy + env*
+6. [x] App: subscribe on conversation screen
+7. [x] OpenAPI paths + unit tests (`tests/unit/conversation.service.test.ts`)
+8. [x] Trim unused fixture paths; empty/error states
 
 ---
 

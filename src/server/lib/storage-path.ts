@@ -31,3 +31,15 @@ export function buildSourcePath(
 ): string {
     return `${buildLayerPrefix(userId, trackId, layerId)}/${STORAGE_CONFIG.files.source}`;
 }
+
+export function buildChatPrefix(userId: string, conversationId: string): string {
+    return `chat/${userId}/${conversationId}`;
+}
+
+export function buildChatVoiceNotePath(
+    userId: string,
+    conversationId: string,
+    messageId: string
+): string {
+    return `${buildChatPrefix(userId, conversationId)}/${messageId}.${STORAGE_CONFIG.chat.extension}`;
+}

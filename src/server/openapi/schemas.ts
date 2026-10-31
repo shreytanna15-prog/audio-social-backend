@@ -297,3 +297,133 @@ export const clearSearchRecentSuccessResponseSchema = successResponseSchema(
     clearSearchRecentDataSchema,
     "ClearSearchRecentSuccessResponse"
 );
+
+export const conversationIdParamSchema = registry.registerParameter(
+    "ConversationId",
+    z.uuid("Invalid conversation ID").openapi({
+        param: { name: "id", in: "path" },
+        example: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
+        description: "Conversation UUID",
+    })
+);
+
+export const chatParticipantSchema = registry.register(
+    "ChatParticipant",
+    z.object({
+        id: z.uuid(),
+        username: z.string(),
+        name: z.string().nullable(),
+    })
+);
+
+export const conversationSummarySchema = registry.register(
+    "ConversationSummary",
+    z.object({
+        id: z.uuid(),
+        status: z.enum(["PENDING", "ACCEPTED", "DECLINED"]),
+        participant: chatParticipantSchema,
+        previewKind: z.enum(["text", "voice-note"]),
+        previewText: z.string(),
+        lastMessageAt: z.iso.datetime().nullable(),
+        unread: z.boolean(),
+    })
+);
+
+export const messageRequestItemSchema = registry.register(
+    "MessageRequestItem",
+    z.object({
+        id: z.uuid(),
+        participant: chatParticipantSchema,
+        message: z.string(),
+        requestedAt: z.iso.datetime(),
+    })
+);
+
+export const chatMessageSchema = registry.register(
+    "ChatMessage",
+    z.object({
+        id: z.uuid(),
+        conversationId: z.uuid(),
+        senderId: z.uuid(),
+        type: z.enum(["TEXT", "AUDIO"]),
+        body: z.string().nullable(),
+        audioUrl: z.url().nullable(),
+        audioPath: z.string().nullable(),
+        durationMs: z.number().int().nullable(),
+        createdAt: z.iso.datetime(),
+    })
+);
+
+export const createConversationRequestDataSchema = registry.register(
+    "CreateConversationRequestData",
+    z.object({
+        conversation: conversationSummarySchema,
+        message: chatMessageSchema,
+    })
+);
+
+export const listMessagesDataSchema = registry.register(
+    "ListMessagesData",
+    z.object({
+        messages: z.array(chatMessageSchema),
+        nextCursor: z.uuid().nullable(),
+    })
+);
+
+export const audioUploadUrlDataSchema = registry.register(
+    "ChatAudioUploadUrlData",
+    z.object({
+        messageId: z.uuid(),
+        upload: signedUploadSchema,
+    })
+);
+
+export const realtimeTokenDataSchema = registry.register(
+    "RealtimeTokenData",
+    z.object({
+        token: z.string(),
+        expiresIn: z.number().int(),
+        wsUrl: z.string().nullable(),
+    })
+);
+
+export const createConversationRequestSuccessResponseSchema =
+    successResponseSchema(
+        createConversationRequestDataSchema,
+        "CreateConversationRequestSuccessResponse"
+    );
+
+export const conversationListSuccessResponseSchema = successResponseSchema(
+    z.array(conversationSummarySchema),
+    "ConversationListSuccessResponse"
+);
+
+export const messageRequestListSuccessResponseSchema = successResponseSchema(
+    z.array(messageRequestItemSchema),
+    "MessageRequestListSuccessResponse"
+);
+
+export const conversationSummarySuccessResponseSchema = successResponseSchema(
+    conversationSummarySchema,
+    "ConversationSummarySuccessResponse"
+);
+
+export const listMessagesSuccessResponseSchema = successResponseSchema(
+    listMessagesDataSchema,
+    "ListMessagesSuccessResponse"
+);
+
+export const chatMessageSuccessResponseSchema = successResponseSchema(
+    chatMessageSchema,
+    "ChatMessageSuccessResponse"
+);
+
+export const audioUploadUrlSuccessResponseSchema = successResponseSchema(
+    audioUploadUrlDataSchema,
+    "ChatAudioUploadUrlSuccessResponse"
+);
+
+export const realtimeTokenSuccessResponseSchema = successResponseSchema(
+    realtimeTokenDataSchema,
+    "RealtimeTokenSuccessResponse"
+);

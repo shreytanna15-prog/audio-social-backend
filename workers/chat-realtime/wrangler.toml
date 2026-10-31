@@ -1,0 +1,16 @@
+name = "chat-realtime"
+main = "src/index.ts"
+compatibility_date = "2025-10-01"
+
+[[durable_objects.bindings]]
+name = "CONVERSATION_ROOM"
+class_name = "ConversationRoom"
+
+[[migrations]]
+tag = "v1"
+# Free plan requires SQLite-backed Durable Objects
+new_sqlite_classes = ["ConversationRoom"]
+
+# Set via `wrangler secret put`:
+# - NOTIFY_SECRET (must match backend REALTIME_NOTIFY_SECRET)
+# - REALTIME_TOKEN_SECRET (must match backend REALTIME_TOKEN_SECRET / JWT_ACCESS_SECRET)

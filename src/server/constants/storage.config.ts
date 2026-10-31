@@ -7,4 +7,8 @@ export const STORAGE_CONFIG = {
         stem: "stem.wav",
         source: "source.wav",
     },
+    chat: {
+        contentType: "audio/mp4",
+        extension: "m4a",
+    },
 } as const;

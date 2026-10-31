@@ -775,8 +775,14 @@
           "kind": {
             "type": "string",
             "enum": [
-              "ARTIST"
+              "ARTIST",
+              "SONG",
+              "ALBUM",
+              "PLAYLIST"
             ]
+          },
+          "targetKey": {
+            "type": "string"
           },
           "query": {
             "type": [
@@ -784,8 +790,36 @@
               "null"
             ]
           },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "subtitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "coverUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "targetUser": {
-            "$ref": "#/components/schemas/UserSearchResult"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserSearchResult"
+              },
+              {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            ]
           },
           "updatedAt": {
             "type": "string",
@@ -795,7 +829,11 @@
         "required": [
           "id",
           "kind",
+          "targetKey",
           "query",
+          "title",
+          "subtitle",
+          "coverUrl",
           "targetUser",
           "updatedAt"
         ]
@@ -946,6 +984,416 @@
           "message"
         ]
       },
+      "ChatParticipant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "name"
+        ]
+      },
+      "ConversationSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "DECLINED"
+            ]
+          },
+          "participant": {
+            "$ref": "#/components/schemas/ChatParticipant"
+          },
+          "previewKind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "voice-note"
+            ]
+          },
+          "previewText": {
+            "type": "string"
+          },
+          "lastMessageAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "unread": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "participant",
+          "previewKind",
+          "previewText",
+          "lastMessageAt",
+          "unread"
+        ]
+      },
+      "MessageRequestItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "participant": {
+            "$ref": "#/components/schemas/ChatParticipant"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "participant",
+          "message",
+          "requestedAt"
+        ]
+      },
+      "ChatMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "TEXT",
+              "AUDIO"
+            ]
+          },
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "audioUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "audioPath": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "durationMs": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "conversationId",
+          "senderId",
+          "type",
+          "body",
+          "audioUrl",
+          "audioPath",
+          "durationMs",
+          "createdAt"
+        ]
+      },
+      "CreateConversationRequestData": {
+        "type": "object",
+        "properties": {
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationSummary"
+          },
+          "message": {
+            "$ref": "#/components/schemas/ChatMessage"
+          }
+        },
+        "required": [
+          "conversation",
+          "message"
+        ]
+      },
+      "ListMessagesData": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "messages",
+          "nextCursor"
+        ]
+      },
+      "ChatAudioUploadUrlData": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "upload": {
+            "$ref": "#/components/schemas/SignedUpload"
+          }
+        },
+        "required": [
+          "messageId",
+          "upload"
+        ]
+      },
+      "RealtimeTokenData": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer"
+          },
+          "wsUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "expiresIn",
+          "wsUrl"
+        ]
+      },
+      "CreateConversationRequestSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CreateConversationRequestData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "ConversationListSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversationSummary"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "MessageRequestListSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageRequestItem"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "ConversationSummarySuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ConversationSummary"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "ListMessagesSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ListMessagesData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "ChatMessageSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ChatMessage"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "ChatAudioUploadUrlSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ChatAudioUploadUrlData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "RealtimeTokenSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/RealtimeTokenData"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
       "TrackId": {
         "type": "string",
         "format": "uuid",
@@ -957,6 +1405,12 @@
         "format": "uuid",
         "example": "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
         "description": "User UUID"
+      },
+      "ConversationId": {
+        "type": "string",
+        "format": "uuid",
+        "example": "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
+        "description": "Conversation UUID"
       },
       "SignupBody": {
         "type": "object",
@@ -1267,27 +1721,131 @@
         }
       },
       "RecordSearchRecent": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "type": "string",
-            "enum": [
-              "ARTIST"
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "ARTIST"
+                ]
+              },
+              "targetUserId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "kind",
+              "targetUserId"
             ]
           },
-          "targetUserId": {
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "SONG",
+                  "ALBUM",
+                  "PLAYLIST"
+                ]
+              },
+              "targetId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "subtitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "coverUrl": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "kind",
+              "targetId",
+              "title"
+            ]
+          }
+        ]
+      },
+      "CreateConversationRequestBody": {
+        "type": "object",
+        "properties": {
+          "userId": {
             "type": "string",
             "format": "uuid"
           },
-          "query": {
+          "body": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 100
+            "maxLength": 4000
           }
         },
         "required": [
-          "kind",
-          "targetUserId"
+          "userId",
+          "body"
+        ]
+      },
+      "SendTextMessageBody": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "TEXT"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "type",
+          "body"
+        ]
+      },
+      "SendAudioMessageBody": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600000
+          }
+        },
+        "required": [
+          "path",
+          "durationMs"
         ]
       }
     },
@@ -1307,6 +1865,15 @@
         },
         "required": true,
         "description": "User UUID",
+        "name": "id",
+        "in": "path"
+      },
+      "ConversationId": {
+        "schema": {
+          "$ref": "#/components/schemas/ConversationId"
+        },
+        "required": true,
+        "description": "Conversation UUID",
         "name": "id",
         "in": "path"
       }
@@ -2724,7 +3291,7 @@
           "Search"
         ],
         "summary": "List recent searches",
-        "description": "List the viewer's recent artist searches (max 20).",
+        "description": "List the viewer's recent searches (artists, songs, albums, playlists; max 20).",
         "security": [
           {
             "bearerAuth": []
@@ -2798,7 +3365,7 @@
           "Search"
         ],
         "summary": "Record recent search",
-        "description": "Upsert a recent artist search and trim to the last 20 entries.",
+        "description": "Upsert a recent search (artist or media) and trim to the last 20 entries.",
         "security": [
           {
             "bearerAuth": []
@@ -2895,6 +3462,923 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ClearSearchRecentSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/recent/{id}": {
+      "delete": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Remove one recent search",
+        "description": "Delete a single recent search entry owned by the viewer.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent search removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchRecentListSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/request": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Create or renew a message request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message request created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateConversationRequestSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations": {
+      "get": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "List accepted conversations (inbox)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inbox fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationListSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/requests": {
+      "get": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "List incoming message requests",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requests fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageRequestListSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/{id}/accept": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Accept a message request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSummarySuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/{id}/decline": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Decline a message request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Declined",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSummarySuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/{id}/messages": {
+      "get": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "List messages in a conversation",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListMessagesSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Send a text message",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendTextMessageBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/{id}/audio-upload-url": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Create signed upload URL for a voice note",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload URL created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatAudioUploadUrlSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/{id}/messages/audio": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Complete voice-note message after upload",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendAudioMessageBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Voice note sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/conversations/{id}/realtime-token": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Mint a short-lived realtime join token",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ConversationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RealtimeTokenSuccessResponse"
                 }
               }
             }
