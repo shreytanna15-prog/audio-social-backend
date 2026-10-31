@@ -9,21 +9,6 @@ vi.mock("@/server/config/env", () => ({
         JWT_REFRESH_SECRET: "test-refresh-secret",
         SUPABASE_URL: "https://example.supabase.co",
         SUPABASE_SERVICE_ROLE_KEY: "test-service-role",
-        REALTIME_WORKER_URL: undefined,
-        REALTIME_NOTIFY_SECRET: undefined,
-        REALTIME_TOKEN_SECRET: undefined,
-    },
-}));
-
-vi.mock("@/server/config/supabase", () => ({
-    supabase: {
-        storage: {
-            from: () => ({
-                createSignedUploadUrl: vi.fn(),
-                createSignedUrl: vi.fn(),
-                list: vi.fn(),
-            }),
-        },
     },
 }));
 
@@ -43,31 +28,12 @@ vi.mock("@/server/config/prisma", () => {
         upsert: vi.fn(),
         deleteMany: vi.fn(),
     };
-    const conversation = {
-        findUnique: vi.fn(),
-        findMany: vi.fn(),
-        create: vi.fn(),
-        update: vi.fn(),
-    };
-    const message = {
-        findMany: vi.fn(),
-        findFirst: vi.fn(),
-        create: vi.fn(),
-    };
 
     return {
         prisma: {
             follow,
             user,
             searchRecent,
-            conversation,
-            message,
-            $transaction: vi.fn(async (fn: (tx: unknown) => unknown) =>
-                fn({
-                    conversation,
-                    message,
-                })
-            ),
         },
     };
 });

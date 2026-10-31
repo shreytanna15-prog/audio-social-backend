@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { searchUsersQuerySchema } from "@/server/modules/user/user.validator";
 import { recordSearchRecentSchema } from "@/server/modules/search/search-recent.validator";
-import {
-    createConversationRequestSchema,
-    listMessagesQuerySchema,
-    sendAudioMessageSchema,
-    sendTextMessageSchema,
-} from "@/server/modules/conversation/conversation.validator";
 import { parsePathUuid } from "@/server/lib/parse-path-uuid";
 
 describe("validators + path parsing (integration)", () => {
@@ -70,62 +64,5 @@ describe("validators + path parsing (integration)", () => {
         expect(() =>
             parsePathUuid("/api/users/not-a-uuid", "user ID")
         ).toThrowError(/Invalid user ID/);
-    });
-
-    it("conversation validators accept valid payloads and reject empty bodies", () => {
-        expect(
-            createConversationRequestSchema.parse({
-                userId: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
-                body: "  hey  ",
-            })
-        ).toEqual({
-            userId: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
-            body: "hey",
-        });
-
-        expect(sendTextMessageSchema.parse({ type: "TEXT", body: "hi" })).toEqual({
-            type: "TEXT",
-            body: "hi",
-        });
-
-        expect(
-            sendAudioMessageSchema.parse({
-                path: "chat/u/c/m.m4a",
-                durationMs: 1200,
-            })
-        ).toMatchObject({ durationMs: 1200 });
-
-        expect(listMessagesQuerySchema.parse({})).toEqual({ limit: 50 });
-        expect(listMessagesQuerySchema.parse({ limit: "10" })).toEqual({
-            limit: 10,
-        });
-
-        expect(() =>
-            createConversationRequestSchema.parse({
-                userId: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
-                body: "   ",
-            })
-        ).toThrow();
-        expect(() =>
-            sendTextMessageSchema.parse({ type: "TEXT", body: "" })
-        ).toThrow();
-    });
-
-    it("parsePathUuid reads nested conversation message routes", () => {
-        const conversationId = "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f";
-        expect(
-            parsePathUuid(
-                `/api/conversations/${conversationId}/messages`,
-                "conversation ID",
-                1
-            )
-        ).toBe(conversationId);
-        expect(
-            parsePathUuid(
-                `/api/conversations/${conversationId}/messages/audio`,
-                "conversation ID",
-                2
-            )
-        ).toBe(conversationId);
     });
 });
