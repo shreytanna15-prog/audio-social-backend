@@ -16,7 +16,7 @@ export const signupSchema = z
             .string()
             .trim()
             .min(1, "Name is required")
-            .max(40, "Name must be less than 40 characters"),
+            .max(30, "Name must be at most 30 characters"),
         username: usernameSchema,
     })
     .openapi("SignupBody");
