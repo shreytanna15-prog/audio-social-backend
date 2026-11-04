@@ -337,8 +337,8 @@ Remove fixture catalog once wired; drop status UI.
 
 ## 11. Task list (implement in this order)
 
-1. [x] Prisma models `Project` + `ProjectTrack` in `schema.prisma` *(this PR / commit)*
-2. [ ] `prisma migrate` + `generate` (local / CI with `.env`)
+1. [x] Prisma models `Project` + `ProjectTrack` in `schema.prisma`
+2. [x] `prisma migrate` `20261104180000_add_project_models` + generate
 3. [ ] Backend: project CRUD + list/detail
 4. [ ] Backend: attach / unlink + delete (`deleteTracks`)
 5. [ ] Backend: optional `projectId` on track create (transactional attach)

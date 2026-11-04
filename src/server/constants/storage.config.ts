@@ -6,6 +6,7 @@ export const STORAGE_CONFIG = {
         mix: "mix.wav",
         stem: "stem.wav",
         source: "source.wav",
+        cover: "cover",
     },
     chat: {
         contentType: "audio/mp4",

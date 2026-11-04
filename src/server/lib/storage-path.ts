@@ -32,6 +32,16 @@ export function buildSourcePath(
     return `${buildLayerPrefix(userId, trackId, layerId)}/${STORAGE_CONFIG.files.source}`;
 }
 
+/** Extension supplied by client (jpg/png/webp). */
+export function buildCoverPath(
+    userId: string,
+    trackId: string,
+    extension: string
+): string {
+    const ext = extension.replace(/^\./, "").toLowerCase();
+    return `${buildTrackPrefix(userId, trackId)}/${STORAGE_CONFIG.files.cover}.${ext}`;
+}
+
 export function buildChatPrefix(userId: string, conversationId: string): string {
     return `chat/${userId}/${conversationId}`;
 }
