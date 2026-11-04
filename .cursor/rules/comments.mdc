@@ -1,0 +1,12 @@
+---
+description: Keep code comments rare and only for non-obvious logic
+alwaysApply: true
+---
+
+# Comments
+
+- Comment only to explain **non-obvious / complex logic** (why, not what).
+- Never comment types, props, exports, or restatements of the next line.
+- Prefer **1–2 lines**. Use at most **3–4 lines** when the invariant truly needs it.
+- Do not paste design-discussion or plan prose into the codebase.
+- If the code is clear with a good name, add **no** comment.

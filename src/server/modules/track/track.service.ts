@@ -32,11 +32,14 @@ type SignedUpload = {
     token: string;
 };
 
+type LayerSignedUpload = { layerId: string; upload: SignedUpload };
+
 type CreateUploadUrlsResponse = {
     trackId: string;
     uploads: {
         mix: SignedUpload;
-        stems: Array<{ layerId: string; upload: SignedUpload }>;
+        stems: LayerSignedUpload[];
+        sources: LayerSignedUpload[];
     };
 };
 
@@ -107,15 +110,21 @@ class TrackService {
             }))
         );
 
+        const sources = await Promise.all(
+            layerIds.map(async (layerId) => ({
+                layerId,
+                upload: await this.createSignedUploadUrl(
+                    buildSourcePath(userId, trackId, layerId)
+                ),
+            }))
+        );
+
         return {
             trackId,
-            uploads: { mix, stems },
+            uploads: { mix, stems, sources },
         };
     }
 
-    /**
-     * Create DRAFT metadata only (LOCAL_ONLY). No Supabase file required.
-     */
     public async createTrack(
         userId: string,
         payload: CreateTrackSchema
@@ -173,6 +182,12 @@ class TrackService {
             );
         }
 
+        // Keep paths so abortIncompleteBackup cannot wipe the last good cloud objects.
+        const markDirty =
+            track.storageState === TrackStorageState.SYNCED
+                ? { storageState: TrackStorageState.LOCAL_ONLY }
+                : {};
+
         if (payload.layers) {
             if (track.kind === TrackKind.SINGLE && payload.layers.length !== 1) {
                 throw new AppError(
@@ -189,6 +204,7 @@ class TrackService {
                     data: {
                         title: payload.title ?? track.title,
                         durationMs: payload.durationMs ?? track.durationMs,
+                        ...markDirty,
                         layers: {
                             create: payload.layers!.map((layer, index) =>
                                 this.toLayerCreateData(layer, index)
@@ -207,6 +223,7 @@ class TrackService {
                     ...(payload.durationMs !== undefined
                         ? { durationMs: payload.durationMs }
                         : {}),
+                    ...markDirty,
                 },
             });
         }
@@ -260,11 +277,39 @@ class TrackService {
             throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
         }
 
-        await this.removeTrackFiles(userId, track);
+        await this.removeTrackPrefix(userId, trackId);
 
         await prisma.track.delete({
             where: { id: trackId },
         });
+
+        return { id: trackId };
+    }
+
+    public async abortIncompleteBackup(
+        userId: string,
+        trackId: string
+    ): Promise<{ id: string }> {
+        const track = await prisma.track.findFirst({
+            where: { id: trackId, userId },
+        });
+
+        if (!track) {
+            throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
+        }
+
+        if (
+            track.storageState !== TrackStorageState.LOCAL_ONLY ||
+            track.mixPath !== null
+        ) {
+            throw new AppError(
+                "Only incomplete LOCAL_ONLY backups can be aborted",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        await this.removeTrackPrefix(userId, trackId);
 
         return { id: trackId };
     }
@@ -295,9 +340,18 @@ class TrackService {
             }))
         );
 
+        const sources = await Promise.all(
+            track.layers.map(async (layer) => ({
+                layerId: layer.id,
+                upload: await this.createSignedUploadUrl(
+                    buildSourcePath(userId, trackId, layer.id)
+                ),
+            }))
+        );
+
         return {
             trackId,
-            uploads: { mix, stems },
+            uploads: { mix, stems, sources },
         };
     }
 
@@ -453,30 +507,43 @@ class TrackService {
         return data.some((file) => file.name === fileName);
     }
 
-    private async removeTrackFiles(
+    private async removeTrackPrefix(
         userId: string,
-        track: TrackWithLayers
+        trackId: string
     ): Promise<void> {
-        const paths = [
-            track.mixPath,
-            ...track.layers.flatMap((layer) =>
-                [layer.stemPath, layer.sourcePath].filter(
-                    (path): path is string => Boolean(path)
-                )
-            ),
-        ].filter((path): path is string => Boolean(path));
+        const trackPrefix = buildTrackPrefix(userId, trackId);
+        const paths: string[] = [];
 
-        const layerFolders = track.layers.map((layer) =>
-            buildLayerPrefix(userId, track.id, layer.id)
-        );
+        const { data: rootEntries } = await supabase.storage
+            .from(STORAGE_CONFIG.bucket)
+            .list(trackPrefix);
 
-        for (const folder of layerFolders) {
-            const { data } = await supabase.storage
-                .from(STORAGE_CONFIG.bucket)
-                .list(folder);
-            if (data) {
-                for (const file of data) {
-                    paths.push(`${folder}/${file.name}`);
+        if (rootEntries) {
+            for (const entry of rootEntries) {
+                // metadata set => file; unset => folder placeholder
+                if (entry.metadata != null) {
+                    paths.push(`${trackPrefix}/${entry.name}`);
+                }
+            }
+        }
+
+        const layersPrefix = `${trackPrefix}/layers`;
+        const { data: layerDirs } = await supabase.storage
+            .from(STORAGE_CONFIG.bucket)
+            .list(layersPrefix);
+
+        if (layerDirs) {
+            for (const layerDir of layerDirs) {
+                const layerPrefix = `${layersPrefix}/${layerDir.name}`;
+                const { data: layerFiles } = await supabase.storage
+                    .from(STORAGE_CONFIG.bucket)
+                    .list(layerPrefix);
+                if (layerFiles) {
+                    for (const file of layerFiles) {
+                        if (file.metadata != null) {
+                            paths.push(`${layerPrefix}/${file.name}`);
+                        }
+                    }
                 }
             }
         }

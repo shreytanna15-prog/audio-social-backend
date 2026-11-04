@@ -88,18 +88,19 @@ export const signedUploadSchema = registry.register(
     })
 );
 
+const layerSignedUploadSchema = z.object({
+    layerId: z.uuid(),
+    upload: signedUploadSchema,
+});
+
 export const createTrackUploadUrlsDataSchema = registry.register(
     "CreateTrackUploadUrlsData",
     z.object({
         trackId: z.uuid(),
         uploads: z.object({
             mix: signedUploadSchema,
-            stems: z.array(
-                z.object({
-                    layerId: z.uuid(),
-                    upload: signedUploadSchema,
-                })
-            ),
+            stems: z.array(layerSignedUploadSchema),
+            sources: z.array(layerSignedUploadSchema),
         }),
     })
 );

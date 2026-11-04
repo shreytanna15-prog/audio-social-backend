@@ -29,7 +29,7 @@ registry.registerPath({
     tags: ["Tracks"],
     summary: "Create track upload URLs",
     description:
-        "Create signed upload URLs for mix and stems (used by backup/sync).",
+        "Create signed upload URLs for mix, stems, and sources (used by backup/sync).",
     security: [...bearerSecurity],
     request: {
         body: {
@@ -191,7 +191,8 @@ registry.registerPath({
     path: "/api/tracks/{id}/backup/upload-urls",
     tags: ["Tracks"],
     summary: "Create backup upload URLs",
-    description: "Signed URLs to upload local mix and stems to Supabase.",
+    description:
+        "Signed URLs to upload local mix, stems, and sources to Supabase.",
     security: [...bearerSecurity],
     request: {
         params: trackIdParamsSchema,
@@ -226,6 +227,30 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: trackBackupCompleteSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/backup/abort",
+    tags: ["Tracks"],
+    summary: "Abort incomplete track backup",
+    description:
+        "Delete orphaned storage objects from a failed backup while the track remains LOCAL_ONLY with mixPath null. Does not delete the track row.",
+    security: [...bearerSecurity],
+    request: {
+        params: trackIdParamsSchema,
+    },
+    responses: {
+        200: {
+            description: "Incomplete backup aborted successfully",
+            content: {
+                "application/json": {
+                    schema: trackIdSuccessResponseSchema,
                 },
             },
         },
