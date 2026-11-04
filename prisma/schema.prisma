@@ -20,6 +20,7 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   tracks             Track[]
+  projects           Project[]
 
   followers            Follow[]       @relation("UserFollowers")
   following            Follow[]       @relation("UserFollowing")
@@ -103,10 +104,37 @@ model Track {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   layers       TrackLayer[]
+  projectLinks ProjectTrack[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
   @@index([userId, storageState])
+}
+
+model Project {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  userId      String         @db.Uuid
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  tracks      ProjectTrack[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+}
+
+model ProjectTrack {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  projectId String   @db.Uuid
+  trackId   String   @db.Uuid
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  track     Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  addedAt   DateTime @default(now())
+
+  @@unique([projectId, trackId])
+  @@index([projectId, addedAt(sort: Desc)])
+  @@index([trackId])
 }
 
 model TrackLayer {
@@ -179,7 +207,6 @@ model Message {
   @@index([senderId, createdAt(sort: Desc)])
 }
 
-/// Email OTP challenge for forgot-password (one active row per email).
 model PasswordResetChallenge {
   id         String   @id @default(uuid(7)) @db.Uuid
   email      String   @unique
