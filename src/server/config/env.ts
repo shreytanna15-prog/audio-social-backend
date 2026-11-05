@@ -55,6 +55,10 @@ const envSchema = z.object({
     R2_SECRET_ACCESS_KEY: optionalSecret,
     R2_BUCKET: optionalSecret,
     R2_PUBLIC_BASE_URL: optionalUrl,
+
+    /** Resend — password-reset OTP email (optional until forgot-password is used). */
+    RESEND_API_KEY: optionalSecret,
+    EMAIL_FROM: optionalSecret,
 });
 
 export const env = envSchema.parse({
@@ -73,4 +77,6 @@ export const env = envSchema.parse({
     R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
     R2_BUCKET: process.env.R2_BUCKET,
     R2_PUBLIC_BASE_URL: process.env.R2_PUBLIC_BASE_URL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
 });

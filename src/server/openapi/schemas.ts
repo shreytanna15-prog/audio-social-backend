@@ -179,6 +179,43 @@ export const tokensSuccessResponseSchema = successResponseSchema(
     "TokensSuccessResponse"
 );
 
+export const passwordResetRequestDataSchema = registry.register(
+    "PasswordResetRequestData",
+    z.object({
+        ok: z.literal(true),
+        resendAvailableAt: z.iso.datetime().nullable(),
+    })
+);
+
+export const passwordResetVerifyDataSchema = registry.register(
+    "PasswordResetVerifyData",
+    z.object({
+        resetToken: z.string(),
+    })
+);
+
+export const passwordResetConfirmDataSchema = registry.register(
+    "PasswordResetConfirmData",
+    z.object({
+        ok: z.literal(true),
+    })
+);
+
+export const passwordResetRequestSuccessResponseSchema = successResponseSchema(
+    passwordResetRequestDataSchema,
+    "PasswordResetRequestSuccessResponse"
+);
+
+export const passwordResetVerifySuccessResponseSchema = successResponseSchema(
+    passwordResetVerifyDataSchema,
+    "PasswordResetVerifySuccessResponse"
+);
+
+export const passwordResetConfirmSuccessResponseSchema = successResponseSchema(
+    passwordResetConfirmDataSchema,
+    "PasswordResetConfirmSuccessResponse"
+);
+
 export const userSuccessResponseSchema = successResponseSchema(
     userSchema,
     "UserSuccessResponse"

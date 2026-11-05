@@ -178,3 +178,17 @@ model Message {
   @@index([conversationId, createdAt(sort: Desc)])
   @@index([senderId, createdAt(sort: Desc)])
 }
+
+/// Email OTP challenge for forgot-password (one active row per email).
+model PasswordResetChallenge {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  email      String   @unique
+  codeHash   String
+  attempts   Int      @default(0)
+  expiresAt  DateTime
+  lastSentAt DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([expiresAt])
+}
