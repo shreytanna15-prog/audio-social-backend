@@ -57,7 +57,7 @@ flowchart LR
 - Editing published tracks in place (must unpublish first)
 - Likes / comments / shares
 - Feed ranking algorithm (only need “list published” primitives)
-- Playlist / album modules (document Unavailable contract only)
+- Playlist / album modules (see `docs/playlists-and-albums.md`; Unavailable contract only here)
 - Switching cover storage to R2 (adapter ready; creds later)
 - Anonymous plays
 

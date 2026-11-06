@@ -22,6 +22,8 @@ model User {
   tracks             Track[]
   projects           Project[]
   trackPlays         TrackPlay[]
+  playlists          Playlist[]
+  albums             Album[]
 
   followers            Follow[]       @relation("UserFollowers")
   following            Follow[]       @relation("UserFollowing")
@@ -114,9 +116,11 @@ model Track {
   playCount    Int               @default(0)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
-  layers       TrackLayer[]
-  projectLinks ProjectTrack[]
-  plays        TrackPlay[]
+  layers         TrackLayer[]
+  projectLinks   ProjectTrack[]
+  plays          TrackPlay[]
+  playlistLinks  PlaylistTrack[]
+  albumLink      AlbumTrack?
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
@@ -161,6 +165,80 @@ model ProjectTrack {
   @@unique([projectId, trackId])
   @@index([projectId, addedAt(sort: Desc)])
   @@index([trackId])
+}
+
+enum PlaylistVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+/// Listener-curated collection of any PUBLISHED tracks (Spotify-style).
+model Playlist {
+  id          String             @id @default(uuid(7)) @db.Uuid
+  userId      String             @db.Uuid
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  coverPath   String?
+  visibility  PlaylistVisibility @default(PRIVATE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  tracks      PlaylistTrack[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@index([visibility, updatedAt(sort: Desc)])
+}
+
+model PlaylistTrack {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  playlistId String   @db.Uuid
+  trackId    String   @db.Uuid
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  position   Int
+  addedAt    DateTime @default(now())
+
+  @@unique([playlistId, trackId])
+  @@index([playlistId, position])
+  @@index([trackId])
+}
+
+enum AlbumStatus {
+  DRAFT
+  RELEASED
+}
+
+/// Artist release grouping of own PUBLISHED tracks. One track → at most one album.
+model Album {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  userId      String      @db.Uuid
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  coverPath   String?
+  status      AlbumStatus @default(DRAFT)
+  releasedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  tracks      AlbumTrack[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@index([userId, status, updatedAt(sort: Desc)])
+  @@index([status, releasedAt(sort: Desc)])
+}
+
+model AlbumTrack {
+  id      String @id @default(uuid(7)) @db.Uuid
+  albumId String @db.Uuid
+  trackId String @db.Uuid
+  album   Album  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  position Int
+  addedAt  DateTime @default(now())
+
+  @@unique([trackId])
+  @@unique([albumId, trackId])
+  @@index([albumId, position])
 }
 
 model TrackLayer {

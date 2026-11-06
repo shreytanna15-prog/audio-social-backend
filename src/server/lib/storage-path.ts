@@ -32,14 +32,33 @@ export function buildSourcePath(
     return `${buildLayerPrefix(userId, trackId, layerId)}/${STORAGE_CONFIG.files.source}`;
 }
 
-/** Extension supplied by client (jpg/png/webp). */
+function normalizeExtension(extension: string): string {
+    return extension.replace(/^\./, "").toLowerCase();
+}
+
+/** Track publish cover. Extension supplied by client (jpg/png/webp). */
 export function buildCoverPath(
     userId: string,
     trackId: string,
     extension: string
 ): string {
-    const ext = extension.replace(/^\./, "").toLowerCase();
-    return `${buildTrackPrefix(userId, trackId)}/${STORAGE_CONFIG.files.cover}.${ext}`;
+    return `${buildTrackPrefix(userId, trackId)}/${STORAGE_CONFIG.files.cover}.${normalizeExtension(extension)}`;
+}
+
+export function buildPlaylistCoverPath(
+    userId: string,
+    playlistId: string,
+    extension: string
+): string {
+    return `${userId}/playlists/${playlistId}/${STORAGE_CONFIG.files.cover}.${normalizeExtension(extension)}`;
+}
+
+export function buildAlbumCoverPath(
+    userId: string,
+    albumId: string,
+    extension: string
+): string {
+    return `${userId}/albums/${albumId}/${STORAGE_CONFIG.files.cover}.${normalizeExtension(extension)}`;
 }
 
 export function buildChatPrefix(userId: string, conversationId: string): string {
