@@ -1,36 +1,33 @@
-# Library Saves — Implementation Guide
+# Library Saves & Liked Songs — Implementation Guide
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** planning doc — Prisma models + migration `20261106140000_library_saves` are in repo (applied). Do **not** invent alternate models.
+**Status:** planning doc — Prisma models + migrations `20261106140000_library_saves` and `20261106150000_liked_track_rename` are in repo. Do **not** invent alternate models.
 
 **Related docs:** `docs/publish.md` (PUBLISHED gate), `docs/playlists-and-albums.md` (PUBLIC / RELEASED + Unavailable), `docs/follow-and-artist-search.md` (Follow is **artists only** — not this module).
 
 **Naming:**
 
-
-| Term                         | Meaning                                                                                     |
-| ---------------------------- | ------------------------------------------------------------------------------------------- |
-| **Save**                     | Bookmark a published song, public playlist, or released album into the viewer’s Library     |
-| **Liked Songs**              | The viewer’s saved tracks list (`SavedTrack`) — Spotify-style favorites, not a Playlist row |
-| **Follow**                   | Artist relationship only — separate module                                                  |
-| **Own playlist / own album** | Never appear as “saved”; hide Save control                                                  |
-
+| Term | Meaning |
+|------|---------|
+| **Like** (songs) | Heart on a published track → `LikedTrack` row + **Liked Songs** library list. Same as Spotify Liked Songs. **Not** a separate social “like” system. |
+| **Save** (playlists / albums) | Bookmark someone else’s public playlist or released album |
+| **Liked Songs** | Viewer’s liked tracks (`LikedTrack`) — not a `Playlist` row |
+| **Follow** | Artist relationship only — separate module |
+| **Own playlist / own album** | Never saved; hide Save control |
 
 Mobile Library fixtures are **UI reference only**. API + Prisma are SSOT.
 
 ---
 
-
-
 ## 1. Goal
 
-1. Let a user **save / unsave** published tracks → personal **Liked Songs**
+1. Let a user **like / unlike** published tracks → personal **Liked Songs** (heart = library favorite)
 2. Let a user **save / unsave** another user’s **PUBLIC** playlist
 3. Let a user **save / unsave** another user’s **RELEASED** album
-4. Surface all three under Library → **Saved** tab (songs / playlists / albums segments)
-5. Expose `saveCount` on playlists only (social proof); no counts on tracks or albums in v1
-6. If a target later becomes unpublished / private / unreleased: **keep** the save row and show **Unavailable**
+4. Surface all three under Library → **Saved** tab (Liked Songs / playlists / albums)
+5. Expose **`Track.likeCount`** and **`Playlist.saveCount`** (no count on albums)
+6. If a target later becomes unpublished / private / unreleased: **keep** the row and show **Unavailable**
 
 ```mermaid
 flowchart TB
@@ -39,175 +36,158 @@ flowchart TB
     spl[Saved playlists]
     sal[Saved albums]
   end
-  track[PUBLISHED Track] --> liked
-  pl[PUBLIC Playlist not own] --> spl
-  al[RELEASED Album not own] --> sal
+  track[PUBLISHED Track] -->|heart Like| liked
+  pl[PUBLIC Playlist not own] -->|Save| spl
+  al[RELEASED Album not own] -->|Save| sal
 ```
 
-
+**Product rule:** On songs, the Now Playing / mini-player **heart is Like → Liked Songs**. There is no second “save song” action.
 
 ---
 
-
-
 ## 2. Scope
-
-
 
 ### In scope
 
-
-| #   | Item                                                                                           |
-| --- | ---------------------------------------------------------------------------------------------- |
-| 1   | Prisma: `SavedTrack`, `SavedPlaylist`, `SavedAlbum` + `Playlist.saveCount`                     |
-| 2   | Save / unsave APIs (idempotent) with eligibility rules                                         |
-| 3   | List APIs for Liked Songs, saved playlists, saved albums                                       |
-| 4   | `isSaved` on relevant detail DTOs (track / playlist / album for viewer)                        |
-| 5   | Playlist `saveCount` bump on save/unsave; expose on playlist list/detail                       |
-| 6   | Unavailable mapping when target no longer eligible to open/play                                |
-| 7   | Mobile: Library **Saved** tab + heart/save controls on song / public playlist / released album |
-
-
-
+| # | Item |
+|---|------|
+| 1 | Prisma: `LikedTrack`, `SavedPlaylist`, `SavedAlbum` + `Track.likeCount` + `Playlist.saveCount` |
+| 2 | Like / unlike track APIs (idempotent) + eligibility |
+| 3 | Save / unsave playlist & album APIs (idempotent) + eligibility |
+| 4 | List APIs: Liked Songs, saved playlists, saved albums |
+| 5 | `isLiked` on track DTOs; `isSaved` on playlist / album DTOs |
+| 6 | Bump `likeCount` / `saveCount` only on real insert/delete |
+| 7 | Unavailable mapping when target no longer eligible |
+| 8 | Mobile: Library **Saved** tab + heart on songs + Save on public playlist / released album |
 
 ### Out of scope
 
-- Creating a real `Playlist` row named “Liked Songs” (Liked Songs is **only** `SavedTrack`)
+- Creating a real `Playlist` row named “Liked Songs”
+- A separate TrackLike / social-like table (Like **is** `LikedTrack`)
 - Saving own playlists or own albums
-- `saveCount` on tracks or albums
-- Public “who saved this” lists
-- Collaborative likes / activity feed
+- `saveCount` / like counts on albums
+- Public “who liked / saved this” lists
+- Comments on tracks — see `docs/track-comments.md` (comment likes ≠ song likes)
+- Feed / notifications
 - Changing Publish, Playlist, Album, or Follow product rules
 
 ---
 
-
-
 ## 3. Locked product decisions
 
-1. **Three tables** — `SavedTrack`, `SavedPlaylist`, `SavedAlbum` (not one polymorphic table). Real FKs + cascades; different eligibility rules per type.
-2. **Liked Songs** — `SavedTrack` ordered by `savedAt` desc. Acts like Spotify Liked Songs. Users **may** save their **own** published tracks.
-3. **Own playlists** — never saved. Hide Save on owner UI; API rejects if `playlist.userId === viewerId` (`400` or `409`).
-4. **Own albums** — never saved. Same as playlists.
-5. **Eligibility at save time**
-  - Track: `status === PUBLISHED`
-  - Playlist: `visibility === PUBLIC` and not owner
-  - Album: `status === RELEASED` and not owner
-6. **After eligibility lost** (unpublish / make private / unrelease): **keep** save row; list/detail shows **Unavailable** (same contract as playlist/album members). Do **not** auto-delete saves. Do **not** decrement `saveCount` when a playlist goes private (count stays; optional later cleanup job out of scope).
-7. **Library UI** — new **Saved** tab alongside Audio / Playlists / Albums / Projects. Inside Saved: segments or sections for Songs (Liked Songs), Playlists, Albums.
-8. **Counts** — `Playlist.saveCount` only. No `saveCount` on Track or Album in v1.
-9. **Idempotent** save and unsave (already saved / not saved → success, no error).
-10. **Delete target** (track / playlist / album deleted) → cascade deletes save rows. For playlist, implementers should adjust `saveCount` only via save/unsave paths; hard-delete of playlist removes rows so count is irrelevant.
-11. Save is **viewer-private** — other users do not see your Liked Songs or saved lists (unless a future sharing feature).
+1. **Three tables** — `LikedTrack`, `SavedPlaylist`, `SavedAlbum` (not one polymorphic table).
+2. **Song heart = Like = Liked Songs** — one action, one row type, one count (`Track.likeCount`).
+3. **Liked Songs** — `LikedTrack` ordered by `likedAt` desc. Users **may** like their **own** published tracks.
+4. **Own playlists / own albums** — never saved. Hide Save; API rejects if owner (`400`).
+5. **Eligibility at mutate time**
+   - Track like: `status === PUBLISHED`
+   - Playlist save: `visibility === PUBLIC` and not owner
+   - Album save: `status === RELEASED` and not owner
+6. **After eligibility lost** — **keep** join row; lists show **Unavailable**. Do **not** auto-delete. Do **not** decrement counts when a playlist goes private / track unpublishes (count stays until unlike/unsave or target hard-delete).
+7. **Library UI** — **Saved** tab with segments: Songs (Liked Songs), Playlists, Albums.
+8. **Counts** — `Track.likeCount` + `Playlist.saveCount`. No count on Album.
+9. **Idempotent** like/unlike and save/unsave.
+10. **Delete target** → cascade deletes join rows.
+11. Lists are **viewer-private** (others don’t see your Liked Songs / saves).
 
 ---
-
-
 
 ## 4. Data model (reference only)
 
 Source of truth: `prisma/schema.prisma`.
 
+| Model / field | Role |
+|---------------|------|
+| `LikedTrack` | `(userId, trackId)` unique; `likedAt` |
+| `Track.likeCount` | Denormalized count of `LikedTrack` for that track |
+| `SavedPlaylist` | `(userId, playlistId)` unique; `savedAt` |
+| `Playlist.saveCount` | Denormalized count of `SavedPlaylist` |
+| `SavedAlbum` | `(userId, albumId)` unique; `savedAt` |
 
-| Model / field        | Role                                                         |
-| -------------------- | ------------------------------------------------------------ |
-| `SavedTrack`         | `(userId, trackId)` unique; `savedAt`                        |
-| `SavedPlaylist`      | `(userId, playlistId)` unique; `savedAt`                     |
-| `SavedAlbum`         | `(userId, albumId)` unique; `savedAt`                        |
-| `Playlist.saveCount` | Denormalized count of `SavedPlaylist` rows for that playlist |
-
-
-**Cascades:** delete User → their saves; delete Track/Playlist/Album → saves pointing at them.
+**Cascades:** delete User → their likes/saves; delete Track/Playlist/Album → joins pointing at them.
 
 ---
 
-
-
 ## 5. Backend APIs
 
-Auth + envelope same as tracks. All save routes require the authenticated viewer.
+Auth + envelope same as tracks.
 
 ### 5.1 Tracks (Liked Songs)
 
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/api/tracks/:id/like` | Require PUBLISHED; idempotent create `LikedTrack`; `likeCount += 1` if newly created |
+| `DELETE` | `/api/tracks/:id/like` | Idempotent; `likeCount -= 1` if a row was deleted (floor at 0) |
+| `GET` | `/api/likes/tracks` | Viewer’s Liked Songs; `likedAt` desc |
 
-| Method   | Path                   | Notes                                             |
-| -------- | ---------------------- | ------------------------------------------------- |
-| `POST`   | `/api/tracks/:id/save` | Require PUBLISHED; idempotent create `SavedTrack` |
-| `DELETE` | `/api/tracks/:id/save` | Idempotent delete                                 |
-| `GET`    | `/api/saves/tracks`    | Viewer’s Liked Songs; `savedAt` desc              |
-
+Bump `likeCount` **only** when the join row is actually inserted/deleted.
 
 List item:
 
 ```ts
 {
-  savedAt: string;
+  likedAt: string;
   available: boolean; // false if track not PUBLISHED (or missing)
   track: {
     id: string;
     title: string;
-    // when available: durationMs, coverUrl, mixUrl, artist { id, username, name, avatarUrl }, ...
+    // when available: durationMs, coverUrl, mixUrl, likeCount, artist { ... }, ...
   } | null;
 }
 ```
 
+Track detail / player payloads should include:
 
+```ts
+{
+  likeCount: number;
+  isLiked: boolean; // viewer
+}
+```
 
 ### 5.2 Playlists
 
-
-| Method   | Path                      | Notes                                                                         |
-| -------- | ------------------------- | ----------------------------------------------------------------------------- |
-| `POST`   | `/api/playlists/:id/save` | PUBLIC + not owner; create `SavedPlaylist`; `saveCount += 1` if newly created |
-| `DELETE` | `/api/playlists/:id/save` | Idempotent; `saveCount -= 1` if a row was deleted (floor at 0)                |
-| `GET`    | `/api/saves/playlists`    | Viewer’s saved playlists; `savedAt` desc                                      |
-
-
-Bump `saveCount` **only** when the join row is actually inserted/deleted (idempotent no-ops do not change count). Prefer a transaction: insert + increment, or delete + decrement.
-
-List / detail playlist payloads (from playlist module) should include:
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/api/playlists/:id/save` | PUBLIC + not owner; create `SavedPlaylist`; `saveCount += 1` if new |
+| `DELETE` | `/api/playlists/:id/save` | Idempotent; `saveCount -= 1` if deleted (floor at 0) |
+| `GET` | `/api/saves/playlists` | Viewer’s saved playlists; `savedAt` desc |
 
 ```ts
 {
   saveCount: number;
-  isSaved: boolean; // viewer; false for owner / unauthenticated edges
+  isSaved: boolean; // viewer; false for owner
 }
 ```
 
-
-
 ### 5.3 Albums
 
+| Method | Path | Notes |
+|--------|------|-------|
+| `POST` | `/api/albums/:id/save` | RELEASED + not owner; idempotent |
+| `DELETE` | `/api/albums/:id/save` | Idempotent |
+| `GET` | `/api/saves/albums` | Viewer’s saved albums; `savedAt` desc |
 
-| Method   | Path                   | Notes                                 |
-| -------- | ---------------------- | ------------------------------------- |
-| `POST`   | `/api/albums/:id/save` | RELEASED + not owner; idempotent      |
-| `DELETE` | `/api/albums/:id/save` | Idempotent                            |
-| `GET`    | `/api/saves/albums`    | Viewer’s saved albums; `savedAt` desc |
-
-
-No `saveCount` on album DTO.
-
-### 5.4 `isSaved` on detail
-
-When returning track / playlist / album detail to an authenticated viewer, include `isSaved: boolean` (false for ineligible own playlist/album even if somehow a row existed — should not exist).
+No `saveCount` on album DTO; include `isSaved: boolean` for viewer.
 
 ---
 
-
-
 ## 6. Business rules (service)
 
-**Save track**
+**Like track**
 
-- Track exists and `PUBLISHED` → upsert/create `SavedTrack`
+- Track exists and `PUBLISHED` → create `LikedTrack` + increment `likeCount` if new
 - Else `404` or `400` (prefer 404 if hidden draft of another user; 400 if own draft)
+
+**Unlike track**
+
+- Delete join if present; decrement `likeCount` only if a row was deleted
 
 **Save playlist**
 
 - Exists, `PUBLIC`, `userId !== viewerId` → create + increment `saveCount` if new
 - Own → `400 BAD_REQUEST`
-- Private (non-owner) → `404` (do not leak existence) or `403` — prefer **404** for private of others
+- Private (non-owner) → prefer **404**
 
 **Save album**
 
@@ -218,162 +198,127 @@ When returning track / playlist / album detail to an authenticated viewer, inclu
 **Unavailable in lists**
 
 - Track: not `PUBLISHED`
-- Playlist: not `PUBLIC` (or deleted → row gone)
+- Playlist: not `PUBLIC`
 - Album: not `RELEASED`
 
-Still return the save row with `available: false` and minimal metadata when possible.
+Still return the join row with `available: false` and minimal metadata when possible.
 
 ---
-
-
 
 ## 7. Architecture notes
 
 ```text
 Library → Saved tab
-  Songs     → GET /api/saves/tracks
+  Songs     → GET /api/likes/tracks     (LikedTrack)
   Playlists → GET /api/saves/playlists
   Albums    → GET /api/saves/albums
 
-Heart / Save on detail → POST|DELETE .../save
-Playlist saveCount ← only SavedPlaylist mutations
+Player / lists heart → POST|DELETE /api/tracks/:id/like  → likeCount
+Playlist Save        → POST|DELETE /api/playlists/:id/save → saveCount
+Album Save           → POST|DELETE /api/albums/:id/save
 ```
 
 - Liked Songs is **not** a `Playlist` — do not create a system playlist row.
-- Owner Library → Playlists / Albums tabs still show **created** items; Saved tab shows **bookmarked** others’ (plus Liked Songs including own tracks if saved).
+- Owner Library → Playlists / Albums tabs show **created** items; Saved tab shows **Liked Songs** + bookmarked others’ playlists/albums.
 
 ---
-
-
 
 ## 8. Backend code map
 
-
-| Area          | Path                                                                                                                         |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Prisma        | `schema.prisma` + migration                                                                                                  |
-| Service       | `src/server/modules/save/` (or `library-save/`)                                                                              |
-| Validators    | Zod for empty body / ids from params                                                                                         |
-| Routes        | `src/app/api/tracks/[id]/save`, `playlists/[id]/save`, `albums/[id]/save`, `saves/tracks`, `saves/playlists`, `saves/albums` |
-| OpenAPI       | `saves.paths.ts`                                                                                                             |
-| Playlist DTOs | Add `saveCount` + `isSaved` when implementing playlist module                                                                |
-
-
-
+| Area | Path |
+|------|------|
+| Prisma | `schema.prisma` + migrations |
+| Service | `src/server/modules/save/` (or split `like/` + `save/`) |
+| Routes | `tracks/[id]/like`, `likes/tracks`, `playlists/[id]/save`, `albums/[id]/save`, `saves/playlists`, `saves/albums` |
+| OpenAPI | `likes.paths.ts` / `saves.paths.ts` |
+| DTOs | Track: `likeCount` + `isLiked`; Playlist: `saveCount` + `isSaved`; Album: `isSaved` |
 
 ### Backend implement order
 
-1. Migrate + generate
-2. SavedTrack save/unsave + list
-3. SavedPlaylist + `saveCount` transaction
-4. SavedAlbum save/unsave + list
-5. Wire `isSaved` / `saveCount` into playlist (and track/album detail) serializers
-6. OpenAPI + unit tests (idempotent, ownership rejects, eligibility, count bump)
+1. Migrate + generate  
+2. LikedTrack like/unlike + list + `likeCount`  
+3. SavedPlaylist + `saveCount`  
+4. SavedAlbum + list  
+5. Wire `isLiked` / `isSaved` / counts into serializers  
+6. OpenAPI + unit tests  
 
 ---
-
-
 
 ## 9. Mobile app
 
-
-
 ### 9.1 Library
 
-Add **Saved** to library segment tabs (same chrome as existing panels).
+Add **Saved** to library segment tabs.
 
-**Saved → Songs (Liked Songs)**  
-
-- List from `GET /api/saves/tracks`  
-- Tap available → player; unavailable → Unavailable state  
-- Unsave from row or detail
-
-**Saved → Playlists / Albums**  
-
-- Lists from respective save endpoints  
-- Open detail when available; Unavailable when not
-
-
+**Saved → Songs (Liked Songs)** — `GET /api/likes/tracks`; unlike from row/detail.  
+**Saved → Playlists / Albums** — respective save list endpoints.
 
 ### 9.2 Controls
 
+| Surface | Control |
+|---------|---------|
+| Published track (player, mini player, lists) | **Heart** Like / Unlike — includes own published tracks |
+| Public playlist detail (not owner) | Save / Saved |
+| Own playlist | **No** Save |
+| Released album detail (not owner) | Save / Saved |
+| Own album | **No** Save |
 
-| Surface                            | Control                                              |
-| ---------------------------------- | ---------------------------------------------------- |
-| Published track detail / player    | Save / Saved (heart) — includes own published tracks |
-| Public playlist detail (not owner) | Save / Saved                                         |
-| Own playlist                       | **No** Save control                                  |
-| Released album detail (not owner)  | Save / Saved                                         |
-| Own album                          | **No** Save control                                  |
+Optimistic toggle; invalidate `['likes', ...]`, `['saves', ...]`, and detail queries.
 
+### 9.3 Counts in UI
 
-Optimistic toggle + invalidate `['saves', ...]` and detail queries.
-
-### 9.3 Playlist UI
-
-Show `saveCount` on public playlist detail (and list rows if space). Do not show save counts on songs/albums.
+- Show **`likeCount`** on track / Now Playing where the heart is.  
+- Show **`saveCount`** on public playlist detail (and list rows if space).  
+- Do not show save/like counts on albums.
 
 ---
-
-
 
 ## 10. Defaults
 
-
-| Topic                     | v1 default                          |
-| ------------------------- | ----------------------------------- |
-| Schema                    | Three join tables                   |
-| Liked Songs               | `SavedTrack` only (no Playlist row) |
-| Own track save            | Allowed if PUBLISHED                |
-| Own playlist / album save | Forbidden                           |
-| Lost eligibility          | Keep row → Unavailable              |
-| Counts                    | `Playlist.saveCount` only           |
-| List order                | `savedAt` desc                      |
-| Save/unsave               | Idempotent                          |
-
+| Topic | v1 default |
+|-------|------------|
+| Song action | Like → `LikedTrack` |
+| Playlist / album action | Save |
+| Own track like | Allowed if PUBLISHED |
+| Own playlist / album save | Forbidden |
+| Lost eligibility | Keep row → Unavailable |
+| Counts | `Track.likeCount` + `Playlist.saveCount` |
+| List order | `likedAt` / `savedAt` desc |
+| Mutations | Idempotent |
 
 ---
-
-
 
 ## 11. Relationship to other modules
 
-
-| Module    | Interaction                                                            |
-| --------- | ---------------------------------------------------------------------- |
-| Publish   | Only PUBLISHED tracks saveable; unpublish → Unavailable in Liked Songs |
-| Playlists | PUBLIC + not owner; `saveCount` on Playlist                            |
-| Albums    | RELEASED + not owner                                                   |
-| Follow    | Unrelated — artists only                                               |
-| Projects  | Unrelated                                                              |
-
-
-Update `docs/playlists-and-albums.md` follow-up section to point here when this doc ships.
+| Module | Interaction |
+|--------|-------------|
+| Publish | Only PUBLISHED tracks likeable; unpublish → Unavailable in Liked Songs |
+| Playlists | PUBLIC + not owner; `saveCount` |
+| Albums | RELEASED + not owner |
+| Follow | Unrelated |
+| Comments | `docs/track-comments.md` — comment like ≠ song like |
+| Player audio engine | Client concern; uses `isLiked` / `likeCount` from track DTO |
 
 ---
-
-
 
 ## 12. Task list
 
-1. [x] Prisma models + `Playlist.saveCount` in repo
-2. [x] Migration applied + `prisma generate`
-3. [ ] Save/unsave + list for tracks
-4. [ ] Save/unsave + list for playlists + `saveCount`
-5. [ ] Save/unsave + list for albums
-6. [ ] `isSaved` / `saveCount` on detail DTOs
-7. [ ] OpenAPI + tests
-8. [ ] Mobile Library Saved tab + save controls
+1. [x] Prisma: `LikedTrack` + `Track.likeCount` + `SavedPlaylist` / `SavedAlbum` + `Playlist.saveCount`  
+2. [x] Migrations applied + `prisma generate`  
+3. [ ] Like/unlike + list for tracks + `likeCount`  
+4. [ ] Save/unsave + list for playlists + `saveCount`  
+5. [ ] Save/unsave + list for albums  
+6. [ ] `isLiked` / `isSaved` / counts on detail DTOs  
+7. [ ] OpenAPI + tests  
+8. [ ] Mobile Library Saved tab + heart / save controls  
 
 ---
-
-
 
 ## 13. Non-goals reminder
 
 - Not a system “Liked Songs” Playlist entity  
-- Not save counts on tracks/albums  
+- Not a second social-like table for songs  
+- Not album save counts  
 - Not saving own playlists/albums  
-- Not Follow  
-- Not public saver lists / social graph of saves
-
+- Not Follow / Feed / Comments  
+- Not public liker/saver lists  

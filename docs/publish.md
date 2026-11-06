@@ -55,7 +55,7 @@ flowchart LR
 ### Out of scope
 
 - Editing published tracks in place (must unpublish first)
-- Likes / comments / shares
+- Track likes → `docs/library-saves.md` (Liked Songs); comments → `docs/track-comments.md`; OS share only for now
 - Feed ranking algorithm (only need “list published” primitives)
 - Playlist / album modules (see `docs/playlists-and-albums.md`; Unavailable contract only here)
 - Switching cover storage to R2 (adapter ready; creds later)

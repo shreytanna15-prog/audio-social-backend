@@ -24,9 +24,11 @@ model User {
   trackPlays         TrackPlay[]
   playlists          Playlist[]
   albums             Album[]
-  savedTracks        SavedTrack[]
+  likedTracks        LikedTrack[]
   savedPlaylists     SavedPlaylist[]
   savedAlbums        SavedAlbum[]
+  trackComments      TrackComment[]
+  trackCommentLikes  TrackCommentLike[]
 
   followers            Follow[]       @relation("UserFollowers")
   following            Follow[]       @relation("UserFollowing")
@@ -117,6 +119,10 @@ model Track {
   publishedAt  DateTime?
   /// Denormalized COUNT(TrackPlay); bumped when a play is recorded
   playCount    Int               @default(0)
+  /// Denormalized COUNT(LikedTrack); bumped on like/unlike
+  likeCount    Int               @default(0)
+  /// Denormalized COUNT(TrackComment) including replies; bumped on create/delete
+  commentCount Int               @default(0)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   layers         TrackLayer[]
@@ -124,12 +130,48 @@ model Track {
   plays          TrackPlay[]
   playlistLinks  PlaylistTrack[]
   albumLink      AlbumTrack?
-  savedBy        SavedTrack[]
+  likedBy        LikedTrack[]
+  comments       TrackComment[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
   @@index([userId, storageState])
   @@index([status, publishedAt(sort: Desc)])
+}
+
+/// Top-level or 1-level reply on a PUBLISHED track. Hard-delete; parent delete cascades replies.
+model TrackComment {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  trackId   String   @db.Uuid
+  userId    String   @db.Uuid
+  parentId  String?  @db.Uuid
+  body      String
+  likeCount Int      @default(0)
+  createdAt DateTime @default(now())
+
+  track    Track              @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   TrackComment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  TrackComment[]     @relation("CommentReplies")
+  likes    TrackCommentLike[]
+
+  @@index([trackId, createdAt(sort: Desc)])
+  @@index([trackId, likeCount(sort: Desc), createdAt(sort: Desc)])
+  @@index([parentId, createdAt(sort: Asc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model TrackCommentLike {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  commentId String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  comment TrackComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
 }
 
 model TrackPlay {
@@ -248,17 +290,17 @@ model AlbumTrack {
   @@index([albumId, position])
 }
 
-/// Viewer Liked Songs entry (Spotify-style). Own tracks allowed.
-model SavedTrack {
+/// Viewer Liked Songs entry (Spotify-style heart). Own published tracks allowed.
+model LikedTrack {
   id      String   @id @default(uuid(7)) @db.Uuid
   userId  String   @db.Uuid
   trackId String   @db.Uuid
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   track   Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
-  savedAt DateTime @default(now())
+  likedAt DateTime @default(now())
 
   @@unique([userId, trackId])
-  @@index([userId, savedAt(sort: Desc)])
+  @@index([userId, likedAt(sort: Desc)])
   @@index([trackId])
 }
 

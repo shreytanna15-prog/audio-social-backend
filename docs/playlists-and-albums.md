@@ -346,7 +346,7 @@ Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (
 
 ## 12. Related plan
 
-**Library saves** — implemented as a separate slice: `docs/library-saves.md` (`SavedTrack` / `SavedPlaylist` / `SavedAlbum`, playlist `saveCount`).
+**Library saves / Liked Songs** — separate slice: `docs/library-saves.md` (`LikedTrack` + `Track.likeCount`; `SavedPlaylist` / `SavedAlbum` + playlist `saveCount`). Song heart = Like → Liked Songs (not a second social-like system).
 
 ---
 
