@@ -122,6 +122,9 @@ export const trackListItemSchema = registry.register(
         title: z.string(),
         durationMs: z.number().int(),
         mixUrl: z.url().nullable(),
+        coverUrl: z.url().nullable(),
+        playCount: z.number().int(),
+        publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
     })
 );
@@ -155,10 +158,75 @@ export const trackDetailSchema = registry.register(
         title: z.string(),
         durationMs: z.number().int(),
         mixUrl: z.url().nullable(),
+        coverUrl: z.url().nullable(),
+        caption: z.string().nullable(),
+        description: z.string().nullable(),
+        genres: z.array(z.string()),
+        keywords: z.array(z.string()),
+        playCount: z.number().int(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),
         layers: z.array(trackLayerDetailSchema),
+    })
+);
+
+export const publishedTrackItemSchema = registry.register(
+    "PublishedTrackItem",
+    z.object({
+        id: z.uuid(),
+        kind: trackKindSchema,
+        title: z.string(),
+        caption: z.string().nullable(),
+        description: z.string().nullable(),
+        genres: z.array(z.string()),
+        keywords: z.array(z.string()),
+        durationMs: z.number().int(),
+        mixUrl: z.url().nullable(),
+        coverUrl: z.url().nullable(),
+        playCount: z.number().int(),
+        publishedAt: z.iso.datetime().nullable(),
+        createdAt: z.iso.datetime(),
+    })
+);
+
+export const projectSummarySchema = registry.register(
+    "ProjectSummary",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        description: z.string().nullable(),
+        trackCount: z.number().int(),
+        updatedAt: z.iso.datetime(),
+        createdAt: z.iso.datetime(),
+    })
+);
+
+export const projectTrackItemSchema = registry.register(
+    "ProjectTrackItem",
+    z.object({
+        id: z.uuid(),
+        kind: trackKindSchema,
+        status: trackStatusSchema,
+        storageState: trackStorageStateSchema,
+        title: z.string(),
+        durationMs: z.number().int(),
+        mixUrl: z.url().nullable(),
+        addedAt: z.iso.datetime(),
+        createdAt: z.iso.datetime(),
+    })
+);
+
+export const projectDetailSchema = registry.register(
+    "ProjectDetail",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        description: z.string().nullable(),
+        trackCount: z.number().int(),
+        updatedAt: z.iso.datetime(),
+        createdAt: z.iso.datetime(),
+        tracks: z.array(projectTrackItemSchema),
     })
 );
 
@@ -276,6 +344,31 @@ export const trackDetailSuccessResponseSchema = successResponseSchema(
 export const trackBackupCompleteSuccessResponseSchema = successResponseSchema(
     trackBackupCompleteDataSchema,
     "TrackBackupCompleteSuccessResponse"
+);
+
+export const publishedTrackListSuccessResponseSchema = successResponseSchema(
+    z.array(publishedTrackItemSchema),
+    "PublishedTrackListSuccessResponse"
+);
+
+export const publishedTrackSuccessResponseSchema = successResponseSchema(
+    publishedTrackItemSchema,
+    "PublishedTrackSuccessResponse"
+);
+
+export const projectSummarySuccessResponseSchema = successResponseSchema(
+    projectSummarySchema,
+    "ProjectSummarySuccessResponse"
+);
+
+export const projectListSuccessResponseSchema = successResponseSchema(
+    z.array(projectSummarySchema),
+    "ProjectListSuccessResponse"
+);
+
+export const projectDetailSuccessResponseSchema = successResponseSchema(
+    projectDetailSchema,
+    "ProjectDetailSuccessResponse"
 );
 
 export const userIdParamSchema = registry.registerParameter(

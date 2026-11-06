@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** planning doc — schema models are already in `prisma/schema.prisma`; implement APIs + app in the order in [Task list](#11-task-list-implement-in-this-order).
+**Status:** implemented — APIs + mobile wiring landed; run migrate/generate if needed after pull.
 
 **Schema:** `Project` + `ProjectTrack` live in `prisma/schema.prisma`. Do **not** invent alternate models or paste a full Prisma dump into PRs — read the file. Run migrate + generate after pulling.
 
@@ -339,11 +339,11 @@ Remove fixture catalog once wired; drop status UI.
 
 1. [x] Prisma models `Project` + `ProjectTrack` in `schema.prisma`
 2. [x] `prisma migrate` `20261104180000_add_project_models` + generate
-3. [ ] Backend: project CRUD + list/detail
-4. [ ] Backend: attach / unlink + delete (`deleteTracks`)
-5. [ ] Backend: optional `projectId` on track create (transactional attach)
-6. [ ] OpenAPI paths + schemas
-7. [ ] Mobile: API client + hooks; replace fixtures on list/detail/create
-8. [ ] Mobile: add existing tracks + unlink + delete dialog
-9. [ ] Mobile: pass `projectId` from project studio entry into save
-10. [ ] Remove status chrome + fixture-only types from app
+3. [x] Backend: project CRUD + list/detail
+4. [x] Backend: attach / unlink + delete (`deleteTracks`)
+5. [x] Backend: optional `projectId` on track create (transactional attach)
+6. [x] OpenAPI paths + schemas
+7. [x] Mobile: API client + hooks; replace fixtures on list/detail/create
+8. [x] Mobile: add existing tracks + unlink + delete dialog
+9. [x] Mobile: pass `projectId` from project studio entry into save
+10. [x] Remove status chrome + fixture-only types from app
