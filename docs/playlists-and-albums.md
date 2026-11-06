@@ -13,7 +13,7 @@
 | **Playlist** | Listener-curated list of **any** PUBLISHED tracks; private or public |
 | **Album** | Artist release grouping of **own** PUBLISHED tracks; DRAFT or RELEASED |
 | **Project** | Private workplace (drafts + published); not this module |
-| **Save / library** | Save songs, playlists, albums — **separate plan** (out of this slice) |
+| **Save / library** | See `docs/library-saves.md` (Liked Songs + saved playlists/albums) |
 
 Mobile Library albums/playlists panels are **UI reference only**. API + Prisma are SSOT.
 
@@ -72,7 +72,7 @@ flowchart TB
 
 ### Out of scope
 
-- **Save / follow** playlist, album, or song (dedicated “Library saves” plan next)
+- **Save / follow** playlist, album, or song (see `docs/library-saves.md`)
 - Collaborative playlist editors
 - Unlisted / friends-only visibility
 - Generating and storing collage images on the server
@@ -99,7 +99,7 @@ flowchart TB
 9. Tracks: many-to-many with **any** user’s published tracks; ordered by `position` (0-based dense list).
 10. Same track may appear in many playlists; not twice in the same playlist (`@@unique([playlistId, trackId])`).
 11. Cover fallback: **client collage** of first 1–4 playable track covers (Spotify-style grids). Do not persist collage.
-12. Owner does not “save” their own playlist (no-op / hide control). Save feature is a later plan for **other users’** public playlists.
+12. Owner does not “save” their own playlist (no-op / hide control). Others save public playlists via `docs/library-saves.md`.
 
 ### Album
 
@@ -108,7 +108,7 @@ flowchart TB
 15. Status: **`DRAFT` | `RELEASED`**. Set `releasedAt` on first transition to RELEASED; keep on unrelease if you add unrelease later (v1: allow DRAFT ← → RELEASED).
 16. Album DRAFT does **not** hide member tracks from public profile as singles.
 17. Cover fallback: **first track by position** cover URL (not collage). Custom cover overrides.
-18. Album save/follow: later (saves plan).
+18. Album save: others only, via `docs/library-saves.md` (own albums never saved).
 
 ### Relationship to singles workflow
 
@@ -338,21 +338,15 @@ Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (
 | New playlist visibility | PRIVATE |
 | New album status | DRAFT |
 | Empty album release | Not allowed |
-| Save playlist/album/song | Later plan |
+| Save playlist/album/song | `docs/library-saves.md` |
 | Position | 0-based, rewritten on mutate |
 | Unpublished member | Unavailable row |
 
 ---
 
-## 12. Follow-up plan (do not implement here)
+## 12. Related plan
 
-**Library saves** — one feature for:
-
-- Save / unsave **published track**  
-- Save / unsave **public playlist** (not own)  
-- Save / unsave **released album**  
-
-Separate doc when ready.
+**Library saves** — implemented as a separate slice: `docs/library-saves.md` (`SavedTrack` / `SavedPlaylist` / `SavedAlbum`, playlist `saveCount`).
 
 ---
 
@@ -373,7 +367,7 @@ Separate doc when ready.
 ## 14. Non-goals reminder
 
 - Not Projects  
-- Not social Save yet  
+- Not Library Saves APIs (see `docs/library-saves.md`)  
 - Not collaborative playlists  
 - Not server-side collage generation  
 - Not forcing album release to republish tracks (tracks stay independently PUBLISHED)  

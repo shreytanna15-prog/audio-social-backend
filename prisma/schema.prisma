@@ -24,6 +24,9 @@ model User {
   trackPlays         TrackPlay[]
   playlists          Playlist[]
   albums             Album[]
+  savedTracks        SavedTrack[]
+  savedPlaylists     SavedPlaylist[]
+  savedAlbums        SavedAlbum[]
 
   followers            Follow[]       @relation("UserFollowers")
   following            Follow[]       @relation("UserFollowing")
@@ -121,6 +124,7 @@ model Track {
   plays          TrackPlay[]
   playlistLinks  PlaylistTrack[]
   albumLink      AlbumTrack?
+  savedBy        SavedTrack[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
@@ -181,9 +185,11 @@ model Playlist {
   description String?
   coverPath   String?
   visibility  PlaylistVisibility @default(PRIVATE)
+  saveCount   Int                @default(0)
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   tracks      PlaylistTrack[]
+  savedBy     SavedPlaylist[]
 
   @@index([userId, updatedAt(sort: Desc)])
   @@index([visibility, updatedAt(sort: Desc)])
@@ -221,6 +227,7 @@ model Album {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   tracks      AlbumTrack[]
+  savedBy     SavedAlbum[]
 
   @@index([userId, updatedAt(sort: Desc)])
   @@index([userId, status, updatedAt(sort: Desc)])
@@ -239,6 +246,48 @@ model AlbumTrack {
   @@unique([trackId])
   @@unique([albumId, trackId])
   @@index([albumId, position])
+}
+
+/// Viewer Liked Songs entry (Spotify-style). Own tracks allowed.
+model SavedTrack {
+  id      String   @id @default(uuid(7)) @db.Uuid
+  userId  String   @db.Uuid
+  trackId String   @db.Uuid
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track   Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  savedAt DateTime @default(now())
+
+  @@unique([userId, trackId])
+  @@index([userId, savedAt(sort: Desc)])
+  @@index([trackId])
+}
+
+/// Save of someone else's PUBLIC playlist. Own playlists never saved.
+model SavedPlaylist {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  userId     String   @db.Uuid
+  playlistId String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  savedAt    DateTime @default(now())
+
+  @@unique([userId, playlistId])
+  @@index([userId, savedAt(sort: Desc)])
+  @@index([playlistId])
+}
+
+/// Save of someone else's RELEASED album. Own albums never saved.
+model SavedAlbum {
+  id      String   @id @default(uuid(7)) @db.Uuid
+  userId  String   @db.Uuid
+  albumId String   @db.Uuid
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  album   Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  savedAt DateTime @default(now())
+
+  @@unique([userId, albumId])
+  @@index([userId, savedAt(sort: Desc)])
+  @@index([albumId])
 }
 
 model TrackLayer {
