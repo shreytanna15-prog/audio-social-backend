@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** planning doc — Prisma models + migration `20261106120000_playlists_and_albums` are in repo (applied). Do **not** invent alternate models.
+**Status:** backend implemented; mobile lists, create, detail/edit/attach/release done — collage, reorder, cover upload still open. Do **not** invent alternate models.
 
 **Related docs:** `docs/publish.md` (published-only tracks, Unavailable), `docs/projects.md` (private studio folders — different feature).
 
@@ -354,13 +354,14 @@ Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (
 
 1. [x] Prisma models + path helpers in repo  
 2. [x] Migration applied + `prisma generate`  
-3. [ ] Playlist module APIs  
-4. [ ] Album module APIs + release  
-5. [ ] Cover upload for both  
-6. [ ] Public-by-user endpoints  
-7. [ ] OpenAPI + tests  
-8. [ ] Mobile list/detail/create/edit; collage fallback  
-9. [ ] Remove album/playlist fixtures from Library tabs  
+3. [x] Playlist module APIs  
+4. [x] Album module APIs + release  
+5. [x] Cover upload for both  
+6. [x] Public-by-user endpoints  
+7. [x] OpenAPI + tests  
+8. [x] Mobile list/detail/create/edit _(Library → `/playlists/[id]` and `/albums/[id]`: owner attach published tracks, unlink, edit title/description (+ playlist visibility), delete, album release/unrelease; non-owner view + Save/Saved; play via player store, Unavailable rows)_  
+8a. [ ] Mobile: client collage cover (uses first `coverFallbackUrls` only), track reorder, custom cover upload  
+9. [x] Remove album/playlist fixtures from Library tabs  
 
 ---
 

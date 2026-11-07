@@ -164,6 +164,7 @@ export const trackDetailSchema = registry.register(
         genres: z.array(z.string()),
         keywords: z.array(z.string()),
         playCount: z.number().int(),
+        commentCount: z.number().int(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),
@@ -185,6 +186,7 @@ export const publishedTrackItemSchema = registry.register(
         mixUrl: z.url().nullable(),
         coverUrl: z.url().nullable(),
         playCount: z.number().int(),
+        commentCount: z.number().int(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
     })
@@ -235,6 +237,65 @@ export const trackBackupCompleteDataSchema = registry.register(
     z.object({
         id: z.uuid(),
         storageState: trackStorageStateSchema,
+    })
+);
+
+export const commentIdParamSchema = registry.registerParameter(
+    "CommentId",
+    z.uuid("Invalid comment ID").openapi({
+        param: { name: "id", in: "path" },
+        example: "0198e2c0-5c8a-7b3e-9f1d-2a4b6c8d0e1f",
+        description: "Track comment UUID",
+    })
+);
+
+export const commentAuthorSchema = registry.register(
+    "CommentAuthor",
+    z.object({
+        id: z.uuid(),
+        username: z.string(),
+        name: z.string().nullable(),
+        avatarUrl: z.string().nullable(),
+    })
+);
+
+const trackCommentBaseShape = {
+    id: z.uuid(),
+    body: z.string(),
+    createdAt: z.iso.datetime(),
+    likeCount: z.number().int(),
+    isLiked: z.boolean(),
+    isOwn: z.boolean(),
+    author: commentAuthorSchema,
+};
+
+export const trackCommentReplySchema = registry.register(
+    "TrackCommentReply",
+    z.object(trackCommentBaseShape)
+);
+
+export const trackCommentSchema = registry.register(
+    "TrackComment",
+    z.object({
+        ...trackCommentBaseShape,
+        replies: z.array(trackCommentReplySchema).optional(),
+    })
+);
+
+export const commentLikeDataSchema = registry.register(
+    "CommentLikeData",
+    z.object({
+        id: z.uuid(),
+        likeCount: z.number().int(),
+        isLiked: z.boolean(),
+    })
+);
+
+export const deleteCommentDataSchema = registry.register(
+    "DeleteCommentData",
+    z.object({
+        id: z.uuid(),
+        commentCount: z.number().int(),
     })
 );
 
@@ -354,6 +415,26 @@ export const publishedTrackListSuccessResponseSchema = successResponseSchema(
 export const publishedTrackSuccessResponseSchema = successResponseSchema(
     publishedTrackItemSchema,
     "PublishedTrackSuccessResponse"
+);
+
+export const trackCommentListSuccessResponseSchema = successResponseSchema(
+    z.array(trackCommentSchema),
+    "TrackCommentListSuccessResponse"
+);
+
+export const trackCommentSuccessResponseSchema = successResponseSchema(
+    trackCommentSchema,
+    "TrackCommentSuccessResponse"
+);
+
+export const deleteCommentSuccessResponseSchema = successResponseSchema(
+    deleteCommentDataSchema,
+    "DeleteCommentSuccessResponse"
+);
+
+export const commentLikeSuccessResponseSchema = successResponseSchema(
+    commentLikeDataSchema,
+    "CommentLikeSuccessResponse"
 );
 
 export const projectSummarySuccessResponseSchema = successResponseSchema(

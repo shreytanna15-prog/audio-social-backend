@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** planning doc — schema fields + `TrackPlay` are in `prisma/schema.prisma`; genres live in `src/server/constants/track-genres.ts`. Run migrate + generate after pulling.
+**Status:** implemented — cover/publish/unpublish/play APIs + mobile publish sheet landed; run migrate/generate if needed after pull. Commit/push when ready.
 
 **Schema:** Do **not** invent alternate models. Read `prisma/schema.prisma` and `track-genres.ts`. Do not paste full Prisma dumps into PRs.
 
@@ -256,12 +256,12 @@ Select **1–3** per publish.
 1. [x] Prisma publish fields + `TrackPlay` in schema
 2. [x] `track-genres.ts` + cover path helpers
 3. [x] Migration `20261104183000_track_publish_fields` applied + `prisma generate`
-4. [ ] Object storage adapter (Supabase) + cover APIs
-5. [ ] Publish / unpublish endpoints
-6. [ ] Play endpoint (`TrackPlay` + `playCount`)
-7. [ ] OpenAPI + tests for guards
-8. [ ] Mobile publish / unpublish UI
-9. [ ] Wire public published lists when building feed/profile
+4. [x] Object storage adapter (Supabase) + cover APIs
+5. [x] Publish / unpublish endpoints
+6. [x] Play endpoint (`TrackPlay` + `playCount`)
+7. [x] OpenAPI + tests for guards
+8. [x] Mobile publish / unpublish UI
+9. [x] Wire public published lists when building feed/profile *(API + profile Songs/featured consume published tracks; play once per session)*
 
 ---
 

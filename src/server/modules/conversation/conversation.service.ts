@@ -235,10 +235,27 @@ class ConversationService {
     }
 
     public async listInbox(viewerId: string): Promise<ConversationSummaryDto[]> {
+        // Accepted threads + outgoing PENDING (so the sender can see waiting requests).
+        // Incoming PENDING stays on GET /conversations/requests only.
         const rows = await prisma.conversation.findMany({
             where: {
-                status: ConversationStatus.ACCEPTED,
-                OR: [{ userLowId: viewerId }, { userHighId: viewerId }],
+                OR: [
+                    {
+                        status: ConversationStatus.ACCEPTED,
+                        OR: [
+                            { userLowId: viewerId },
+                            { userHighId: viewerId },
+                        ],
+                    },
+                    {
+                        status: ConversationStatus.PENDING,
+                        initiatedById: viewerId,
+                        OR: [
+                            { userLowId: viewerId },
+                            { userHighId: viewerId },
+                        ],
+                    },
+                ],
             },
             include: {
                 userLow: { select: userSelect },

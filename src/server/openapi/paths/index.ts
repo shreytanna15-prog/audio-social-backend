@@ -1,7 +1,12 @@
 import "@/server/openapi/paths/auth.paths";
 import "@/server/openapi/paths/user.paths";
 import "@/server/openapi/paths/tracks.paths";
+import "@/server/openapi/paths/likes.paths";
+import "@/server/openapi/paths/saves.paths";
+import "@/server/openapi/paths/comments.paths";
 import "@/server/openapi/paths/projects.paths";
+import "@/server/openapi/paths/playlists.paths";
+import "@/server/openapi/paths/albums.paths";
 import "@/server/openapi/paths/users.paths";
 import "@/server/openapi/paths/search.paths";
 import "@/server/openapi/paths/conversations.paths";

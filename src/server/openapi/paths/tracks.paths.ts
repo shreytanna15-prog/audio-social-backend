@@ -6,16 +6,22 @@ import {
 } from "@/server/openapi/registry";
 import {
     createTrackUploadUrlsSuccessResponseSchema,
+    publishedTrackListSuccessResponseSchema,
+    publishedTrackSuccessResponseSchema,
     trackBackupCompleteSuccessResponseSchema,
     trackDetailSuccessResponseSchema,
     trackIdParamSchema,
     trackIdSuccessResponseSchema,
     trackListSuccessResponseSchema,
+    userIdParamSchema,
 } from "@/server/openapi/schemas";
 import {
     createTrackSchema,
     createUploadUrlsSchema,
     listTracksQuerySchema,
+    publishTrackSchema,
+    trackCoverCompleteSchema,
+    trackCoverUploadUrlSchema,
     updateTrackSchema,
 } from "@/server/modules/track/track.validator";
 
@@ -251,6 +257,172 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/cover/upload-url",
+    tags: ["Tracks"],
+    summary: "Create cover upload URL",
+    security: [...bearerSecurity],
+    request: {
+        params: trackIdParamsSchema,
+        body: {
+            required: true,
+            content: {
+                "application/json": { schema: trackCoverUploadUrlSchema },
+            },
+        },
+    },
+    responses: {
+        201: {
+            description: "Cover upload URL created",
+            content: {
+                "application/json": {
+                    schema: createTrackUploadUrlsSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/cover/complete",
+    tags: ["Tracks"],
+    summary: "Complete cover upload",
+    security: [...bearerSecurity],
+    request: {
+        params: trackIdParamsSchema,
+        body: {
+            required: true,
+            content: {
+                "application/json": { schema: trackCoverCompleteSchema },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Cover uploaded",
+            content: {
+                "application/json": {
+                    schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "delete",
+    path: "/api/tracks/{id}/cover",
+    tags: ["Tracks"],
+    summary: "Delete track cover",
+    security: [...bearerSecurity],
+    request: { params: trackIdParamsSchema },
+    responses: {
+        200: {
+            description: "Cover deleted",
+            content: {
+                "application/json": {
+                    schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/publish",
+    tags: ["Tracks"],
+    summary: "Publish track",
+    security: [...bearerSecurity],
+    request: {
+        params: trackIdParamsSchema,
+        body: {
+            required: true,
+            content: {
+                "application/json": { schema: publishTrackSchema },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Track published",
+            content: {
+                "application/json": {
+                    schema: publishedTrackSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/unpublish",
+    tags: ["Tracks"],
+    summary: "Unpublish track",
+    security: [...bearerSecurity],
+    request: { params: trackIdParamsSchema },
+    responses: {
+        200: {
+            description: "Track unpublished",
+            content: {
+                "application/json": {
+                    schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/api/tracks/{id}/play",
+    tags: ["Tracks"],
+    summary: "Record a play",
+    security: [...bearerSecurity],
+    request: { params: trackIdParamsSchema },
+    responses: {
+        200: {
+            description: "Play recorded",
+            content: {
+                "application/json": {
+                    schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/api/users/{id}/tracks",
+    tags: ["Tracks"],
+    summary: "List published tracks for a user",
+    security: [...bearerSecurity],
+    request: {
+        params: z.object({ id: userIdParamSchema }),
+    },
+    responses: {
+        200: {
+            description: "Published tracks fetched",
+            content: {
+                "application/json": {
+                    schema: publishedTrackListSuccessResponseSchema,
                 },
             },
         },

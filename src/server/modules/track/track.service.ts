@@ -10,7 +10,9 @@ import {
 import { prisma } from "@/server/config/prisma";
 import { supabase } from "@/server/config/supabase";
 import { STORAGE_CONFIG } from "@/server/constants/storage.config";
+import { objectStorage } from "@/server/lib/object-storage";
 import {
+    buildCoverPath,
     buildLayerPrefix,
     buildMixPath,
     buildSourcePath,
@@ -22,9 +24,20 @@ import type {
     CreateTrackSchema,
     CreateUploadUrlsSchema,
     ListTracksQuerySchema,
+    PublishTrackSchema,
+    TrackCoverCompleteSchema,
+    TrackCoverUploadUrlSchema,
     TrackLayerBodySchema,
     UpdateTrackSchema,
 } from "./track.validator";
+
+const COVER_EXT_BY_TYPE: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+};
+
+const PLAY_DEDUP_MS = 5 * 60 * 1000;
 
 type SignedUpload = {
     path: string;
@@ -51,6 +64,26 @@ export type TrackListItem = {
     title: string;
     durationMs: number;
     mixUrl: string | null;
+    coverUrl: string | null;
+    playCount: number;
+    publishedAt: string | null;
+    createdAt: string;
+};
+
+export type PublishedTrackItem = {
+    id: string;
+    kind: string;
+    title: string;
+    caption: string | null;
+    description: string | null;
+    genres: string[];
+    keywords: string[];
+    durationMs: number;
+    mixUrl: string | null;
+    coverUrl: string | null;
+    playCount: number;
+    commentCount: number;
+    publishedAt: string | null;
     createdAt: string;
 };
 
@@ -78,6 +111,13 @@ export type TrackDetail = {
     title: string;
     durationMs: number;
     mixUrl: string | null;
+    coverUrl: string | null;
+    caption: string | null;
+    description: string | null;
+    genres: string[];
+    keywords: string[];
+    playCount: number;
+    commentCount: number;
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
@@ -130,26 +170,65 @@ class TrackService {
         payload: CreateTrackSchema
     ): Promise<{ id: string }> {
         try {
-            await prisma.track.create({
-                data: {
-                    id: payload.id,
-                    userId,
-                    kind: payload.kind as TrackKind,
-                    status: TrackStatus.DRAFT,
-                    storageState: TrackStorageState.LOCAL_ONLY,
-                    title: payload.title,
-                    durationMs: payload.durationMs,
-                    mixPath: null,
-                    layers: {
-                        create: payload.layers.map((layer, index) =>
-                            this.toLayerCreateData(layer, index)
-                        ),
+            await prisma.$transaction(async (tx) => {
+                if (payload.projectId) {
+                    const project = await tx.project.findFirst({
+                        where: { id: payload.projectId, userId },
+                        select: { id: true },
+                    });
+                    if (!project) {
+                        throw new AppError(
+                            "Project not found",
+                            404,
+                            "RESOURCE_NOT_FOUND"
+                        );
+                    }
+                }
+
+                await tx.track.create({
+                    data: {
+                        id: payload.id,
+                        userId,
+                        kind: payload.kind as TrackKind,
+                        status: TrackStatus.DRAFT,
+                        storageState: TrackStorageState.LOCAL_ONLY,
+                        title: payload.title,
+                        durationMs: payload.durationMs,
+                        mixPath: null,
+                        layers: {
+                            create: payload.layers.map((layer, index) =>
+                                this.toLayerCreateData(layer, index)
+                            ),
+                        },
                     },
-                },
+                });
+
+                if (payload.projectId) {
+                    await tx.projectTrack.upsert({
+                        where: {
+                            projectId_trackId: {
+                                projectId: payload.projectId,
+                                trackId: payload.id,
+                            },
+                        },
+                        create: {
+                            projectId: payload.projectId,
+                            trackId: payload.id,
+                        },
+                        update: {},
+                    });
+                    await tx.project.update({
+                        where: { id: payload.projectId },
+                        data: { updatedAt: new Date() },
+                    });
+                }
             });
 
             return { id: payload.id };
         } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
             if (
                 error instanceof Prisma.PrismaClientKnownRequestError &&
                 error.code === "P2002"
@@ -431,6 +510,266 @@ class TrackService {
         return { id: trackId, storageState: TrackStorageState.SYNCED };
     }
 
+    public async createCoverUploadUrl(
+        userId: string,
+        trackId: string,
+        payload: TrackCoverUploadUrlSchema
+    ): Promise<{ path: string; signedUrl: string; token?: string }> {
+        const track = await this.requireOwnedTrack(userId, trackId);
+        this.assertDraftMutable(track);
+
+        const extension = COVER_EXT_BY_TYPE[payload.contentType];
+        if (!extension) {
+            throw new AppError("Unsupported cover type", 400, "BAD_REQUEST");
+        }
+
+        const path = buildCoverPath(userId, trackId, extension);
+        const upload = await objectStorage.createSignedUploadUrl(
+            path,
+            payload.contentType
+        );
+
+        return {
+            path: upload.path,
+            signedUrl: upload.signedUrl,
+            token: upload.token,
+        };
+    }
+
+    public async completeCoverUpload(
+        userId: string,
+        trackId: string,
+        payload: TrackCoverCompleteSchema
+    ): Promise<{ path: string; coverUrl: string | null }> {
+        const track = await this.requireOwnedTrack(userId, trackId);
+        this.assertDraftMutable(track);
+
+        const expectedPrefix = `${buildTrackPrefix(userId, trackId)}/cover.`;
+        if (!payload.path.startsWith(expectedPrefix)) {
+            throw new AppError("Invalid cover path", 400, "BAD_REQUEST");
+        }
+
+        const exists = await objectStorage.objectExistsAtPath(payload.path);
+        if (!exists) {
+            throw new AppError(
+                "Uploaded cover was not found",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        const previous = track.coverPath;
+        await prisma.track.update({
+            where: { id: trackId },
+            data: { coverPath: payload.path },
+        });
+
+        if (previous && previous !== payload.path) {
+            await objectStorage.remove([previous]);
+        }
+
+        const coverUrl =
+            await objectStorage.createSignedDownloadUrl(payload.path);
+
+        return { path: payload.path, coverUrl };
+    }
+
+    public async deleteCover(
+        userId: string,
+        trackId: string
+    ): Promise<{ id: string }> {
+        const track = await this.requireOwnedTrack(userId, trackId);
+        this.assertDraftMutable(track);
+
+        if (!track.coverPath) {
+            return { id: trackId };
+        }
+
+        const previous = track.coverPath;
+        await prisma.track.update({
+            where: { id: trackId },
+            data: { coverPath: null },
+        });
+        await objectStorage.remove([previous]);
+
+        return { id: trackId };
+    }
+
+    public async publishTrack(
+        userId: string,
+        trackId: string,
+        payload: PublishTrackSchema
+    ): Promise<PublishedTrackItem> {
+        const track = await this.requireOwnedTrack(userId, trackId);
+
+        if (track.status !== TrackStatus.DRAFT) {
+            throw new AppError(
+                "Only DRAFT tracks can be published",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        if (
+            track.storageState !== TrackStorageState.SYNCED ||
+            !track.mixPath
+        ) {
+            throw new AppError(
+                "Track must be SYNCED with a mix before publish",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        if (!track.coverPath) {
+            throw new AppError(
+                "Cover image is required before publish",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        const updated = await prisma.track.update({
+            where: { id: trackId },
+            data: {
+                status: TrackStatus.PUBLISHED,
+                caption: payload.caption ?? null,
+                description: payload.description ?? null,
+                genres: payload.genres,
+                keywords: payload.keywords,
+                publishedAt: track.publishedAt ?? new Date(),
+            },
+        });
+
+        return this.toPublishedItem(updated);
+    }
+
+    public async unpublishTrack(
+        userId: string,
+        trackId: string
+    ): Promise<{ id: string; status: string }> {
+        const track = await this.requireOwnedTrack(userId, trackId);
+
+        if (track.status !== TrackStatus.PUBLISHED) {
+            throw new AppError(
+                "Only PUBLISHED tracks can be unpublished",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+
+        await prisma.track.update({
+            where: { id: trackId },
+            data: { status: TrackStatus.DRAFT },
+        });
+
+        return { id: trackId, status: TrackStatus.DRAFT };
+    }
+
+    public async recordPlay(
+        userId: string,
+        trackId: string
+    ): Promise<{ playCount: number; recorded: boolean }> {
+        const track = await prisma.track.findFirst({
+            where: { id: trackId, status: TrackStatus.PUBLISHED },
+        });
+
+        if (!track) {
+            throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
+        }
+
+        const since = new Date(Date.now() - PLAY_DEDUP_MS);
+        const recent = await prisma.trackPlay.findFirst({
+            where: {
+                trackId,
+                userId,
+                createdAt: { gte: since },
+            },
+            select: { id: true },
+        });
+
+        if (recent) {
+            return { playCount: track.playCount, recorded: false };
+        }
+
+        const updated = await prisma.$transaction(async (tx) => {
+            await tx.trackPlay.create({
+                data: { trackId, userId },
+            });
+            return tx.track.update({
+                where: { id: trackId },
+                data: { playCount: { increment: 1 } },
+                select: { playCount: true },
+            });
+        });
+
+        return { playCount: updated.playCount, recorded: true };
+    }
+
+    public async listPublishedByUser(
+        targetUserId: string
+    ): Promise<PublishedTrackItem[]> {
+        const tracks = await prisma.track.findMany({
+            where: {
+                userId: targetUserId,
+                status: TrackStatus.PUBLISHED,
+            },
+            orderBy: { publishedAt: "desc" },
+        });
+
+        return Promise.all(tracks.map((track) => this.toPublishedItem(track)));
+    }
+
+    private async requireOwnedTrack(userId: string, trackId: string) {
+        const track = await prisma.track.findFirst({
+            where: { id: trackId, userId },
+        });
+
+        if (!track) {
+            throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
+        }
+
+        return track;
+    }
+
+    private assertDraftMutable(track: Track) {
+        if (track.status !== TrackStatus.DRAFT) {
+            throw new AppError(
+                "Published tracks are frozen. Unpublish to edit.",
+                400,
+                "BAD_REQUEST"
+            );
+        }
+    }
+
+    private async toPublishedItem(track: Track): Promise<PublishedTrackItem> {
+        const [mixUrl, coverUrl] = await Promise.all([
+            track.mixPath
+                ? objectStorage.createSignedDownloadUrl(track.mixPath)
+                : Promise.resolve(null),
+            track.coverPath
+                ? objectStorage.createSignedDownloadUrl(track.coverPath)
+                : Promise.resolve(null),
+        ]);
+
+        return {
+            id: track.id,
+            kind: track.kind,
+            title: track.title,
+            caption: track.caption,
+            description: track.description,
+            genres: track.genres,
+            keywords: track.keywords,
+            durationMs: track.durationMs,
+            mixUrl,
+            coverUrl,
+            playCount: track.playCount,
+            commentCount: track.commentCount,
+            publishedAt: track.publishedAt?.toISOString() ?? null,
+            createdAt: track.createdAt.toISOString(),
+        };
+    }
+
     private toLayerCreateData(layer: TrackLayerBodySchema, index: number) {
         return {
             id: layer.id,
@@ -567,7 +906,10 @@ class TrackService {
     }
 
     private async toListItem(track: Track): Promise<TrackListItem> {
-        const mixUrl = await this.createSignedUrl(track.mixPath);
+        const [mixUrl, coverUrl] = await Promise.all([
+            this.createSignedUrl(track.mixPath),
+            this.createSignedUrl(track.coverPath),
+        ]);
 
         return {
             id: track.id,
@@ -577,12 +919,18 @@ class TrackService {
             title: track.title,
             durationMs: track.durationMs,
             mixUrl,
+            coverUrl,
+            playCount: track.playCount,
+            publishedAt: track.publishedAt?.toISOString() ?? null,
             createdAt: track.createdAt.toISOString(),
         };
     }
 
     private async toDetail(track: TrackWithLayers): Promise<TrackDetail> {
-        const mixUrl = await this.createSignedUrl(track.mixPath);
+        const [mixUrl, coverUrl] = await Promise.all([
+            this.createSignedUrl(track.mixPath),
+            this.createSignedUrl(track.coverPath),
+        ]);
 
         const layers = await Promise.all(
             track.layers.map(async (layer) => {
@@ -615,6 +963,13 @@ class TrackService {
             title: track.title,
             durationMs: track.durationMs,
             mixUrl,
+            coverUrl,
+            caption: track.caption,
+            description: track.description,
+            genres: track.genres,
+            keywords: track.keywords,
+            playCount: track.playCount,
+            commentCount: track.commentCount,
             publishedAt: track.publishedAt?.toISOString() ?? null,
             createdAt: track.createdAt.toISOString(),
             updatedAt: track.updatedAt.toISOString(),

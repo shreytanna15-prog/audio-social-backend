@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** planning doc — Prisma models + migrations `20261106140000_library_saves` and `20261106150000_liked_track_rename` are in repo. Do **not** invent alternate models.
+**Status:** implemented (APIs + Saved/Liked Songs mobile) — playlist/album detail Save controls done. Do **not** invent alternate models.
 
 **Related docs:** `docs/publish.md` (PUBLISHED gate), `docs/playlists-and-albums.md` (PUBLIC / RELEASED + Unavailable), `docs/follow-and-artist-search.md` (Follow is **artists only** — not this module).
 
@@ -305,12 +305,12 @@ Optimistic toggle; invalidate `['likes', ...]`, `['saves', ...]`, and detail que
 
 1. [x] Prisma: `LikedTrack` + `Track.likeCount` + `SavedPlaylist` / `SavedAlbum` + `Playlist.saveCount`  
 2. [x] Migrations applied + `prisma generate`  
-3. [ ] Like/unlike + list for tracks + `likeCount`  
-4. [ ] Save/unsave + list for playlists + `saveCount`  
-5. [ ] Save/unsave + list for albums  
-6. [ ] `isLiked` / `isSaved` / counts on detail DTOs  
-7. [ ] OpenAPI + tests  
-8. [ ] Mobile Library Saved tab + heart / save controls  
+3. [x] Like/unlike + list for tracks + `likeCount`  
+4. [x] Save/unsave + list for playlists + `saveCount`  
+5. [x] Save/unsave + list for albums  
+6. [x] `isLiked` / `isSaved` / counts on detail DTOs  
+7. [x] OpenAPI + tests _(`likes.paths.ts`, `saves.paths.ts`, `like.service.test.ts`, `save.service.test.ts`)_  
+8. [x] Mobile Library Saved tab + heart / save controls _(Saved tab + Liked Songs + player heart + saved playlists/albums lists + remove-from-saved done; Save/Saved on `/playlists/[id]` and `/albums/[id]` for non-owners via `useSavePlaylist`/`useUnsavePlaylist`/`useSaveAlbum`/`useUnsaveAlbum`; Saved tab rows open the detail screens)_  
 
 ---
 

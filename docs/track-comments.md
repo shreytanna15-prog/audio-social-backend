@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** planning doc — Prisma models + migration `20261106160000_track_comments` are in repo. Do **not** invent alternate models.
+**Status:** implemented — APIs + Now Playing comments wired for API track ids. Do **not** invent alternate models.
 
 **Related docs:** `docs/publish.md` (PUBLISHED gate), `docs/library-saves.md` (song **heart** = Liked Songs / `likeCount` — **not** comment likes).
 
@@ -270,11 +270,11 @@ Song heart on the player stays on **Liked Songs** (`docs/library-saves.md`), not
 
 1. [x] Prisma models + `commentCount` + migration  
 2. [x] `prisma generate` / migrate applied  
-3. [ ] Create + list + reply rules  
-4. [ ] Delete own + count updates  
-5. [ ] Comment like/unlike  
-6. [ ] OpenAPI + tests  
-7. [ ] Mobile Now Playing comments wired  
+3. [x] Create + list + reply rules  
+4. [x] Delete own + count updates  
+5. [x] Comment like/unlike  
+6. [x] OpenAPI + tests  
+7. [x] Mobile Now Playing comments wired _(list / post / reply / like / delete own for API track ids; fixtures remain for non-API tracks)_  
 
 ---
 
