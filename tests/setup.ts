@@ -43,6 +43,7 @@ vi.mock("@/server/config/prisma", () => {
     const user = {
         findUnique: vi.fn(),
         findMany: vi.fn(),
+        create: vi.fn(),
         update: vi.fn(),
     };
     const searchRecent = {
@@ -63,6 +64,54 @@ vi.mock("@/server/config/prisma", () => {
         create: vi.fn(),
         update: vi.fn(),
     };
+    const project = {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+    };
+    const projectTrack = {
+        findMany: vi.fn(),
+        createMany: vi.fn(),
+        deleteMany: vi.fn(),
+        upsert: vi.fn(),
+    };
+    const track = {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        updateMany: vi.fn(),
+        delete: vi.fn(),
+    };
+    const trackPlay = {
+        findFirst: vi.fn(),
+        create: vi.fn(),
+    };
+    const likedTrack = {
+        findMany: vi.fn(),
+        createMany: vi.fn(),
+        deleteMany: vi.fn(),
+    };
+    const trackComment = {
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        count: vi.fn(),
+    };
+    const trackCommentLike = {
+        createMany: vi.fn(),
+        deleteMany: vi.fn(),
+    };
+    const passwordResetChallenge = {
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteMany: vi.fn(),
+    };
 
     return {
         prisma: {
@@ -71,6 +120,28 @@ vi.mock("@/server/config/prisma", () => {
             searchRecent,
             conversation,
             message,
+            project,
+            projectTrack,
+            track,
+            trackPlay,
+            likedTrack,
+            trackComment,
+            trackCommentLike,
+            passwordResetChallenge,
+            $transaction: vi.fn(async (fn: (tx: unknown) => unknown) =>
+                fn({
+                    project,
+                    projectTrack,
+                    track,
+                    trackPlay,
+                    likedTrack,
+                    trackComment,
+                    trackCommentLike,
+                    conversation,
+                    message,
+                    user,
+                })
+            ),
         },
     };
 });
