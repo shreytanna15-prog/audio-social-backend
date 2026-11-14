@@ -1,8 +1,8 @@
 # Follow + Artist Search — Implementation Guide
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
-**Repos:** backend (`Singer-s-social-media-Backend`) + mobile app (`audio-social-media-app`).  
-**Status:** planning doc — implement in the order in [Task list](#9-task-list-implement-in-this-order).
+**Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
+**Status:** `Done` — audited 2026-11-14: follow, relationship, artist search, recent search, and public profile API wiring are shipped. Songs/Playlists/Albums search tabs remain chrome-only by design.
 
 ---
 
@@ -217,7 +217,7 @@ Errors: existing `AppError` codes (`BAD_REQUEST`, `RESOURCE_NOT_FOUND`, `UNAUTHO
 
 `404` if user not found.
 
-> **Later expansion:** `bio`, `avatarUrl`, and `coverUrl` are specified in [`docs/edit-profile.md`](./edit-profile.md) §7 — implement those when Edit Profile lands; keep relationship/count fields as above.
+> **Shipped with edit-profile:** `bio`, `avatarUrl`, and `coverUrl` are on public profile / search DTOs — see [`./edit-profile.md`](./edit-profile.md). Keep relationship/count fields as above.
 
 ### 5.3 Follow / unfollow
 

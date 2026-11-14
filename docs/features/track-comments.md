@@ -2,9 +2,9 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** implemented — APIs + Now Playing comments wired for API track ids. Do **not** invent alternate models.
+**Status:** `Partial` — APIs + Now Playing comments wired for API track ids; **Newest | Top** sort UI still missing (API supports `sort`, app always uses default `newest`). Do **not** invent alternate models.
 
-**Related docs:** `docs/publish.md` (PUBLISHED gate), `docs/library-saves.md` (song **heart** = Liked Songs / `likeCount` — **not** comment likes).
+**Related docs:** `./publish.md` (PUBLISHED gate), `./library-saves.md` (song **heart** = Liked Songs / `likeCount` — **not** comment likes).
 
 **Naming:**
 
@@ -199,7 +199,7 @@ TrackComment (+ likes) → Postgres
 Track.commentCount denormalized
 ```
 
-Song heart on the player stays on **Liked Songs** (`docs/library-saves.md`), not this module.
+Song heart on the player stays on **Liked Songs** (`./library-saves.md`), not this module.
 
 ---
 
@@ -275,6 +275,14 @@ Song heart on the player stays on **Liked Songs** (`docs/library-saves.md`), not
 5. [x] Comment like/unlike  
 6. [x] OpenAPI + tests  
 7. [x] Mobile Now Playing comments wired _(list / post / reply / like / delete own for API track ids; fixtures remain for non-API tracks)_  
+
+### Remaining app work
+
+8. [ ] **Newest | Top sort UI** in `player-comments.tsx` (`LiveComments`):  
+     - Add two chips/tabs: Newest / Top  
+     - Hold sort in local state (`'newest' | 'top'`)  
+     - Call `useTrackComments(trackId, sort)` (hook + `GET .../comments?sort=` already support both)  
+     - Default remains `newest`  
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`) + Cloudflare Worker (realtime only).  
-**Status:** implemented in code — run migrate, set env, deploy Worker (see task list).
+**Status:** `Done` (core) — REST + app inbox/thread/voice notes shipped. Remaining: deploy Worker + `REALTIME_*` env; claimed unit test file not present.
 
 **Schema:** Prisma models live in `prisma/schema.prisma` (`Conversation`, `Message`, enums). Do **not** paste or duplicate the full schema here — read the file. Run migrate + generate after schema is committed.
 
@@ -361,9 +361,10 @@ Remove fixture seed data and mock store mutations once API paths are stable.
 2. [x] Backend REST: request, accept, decline, inbox, requests, text messages, history
 3. [x] Mobile: wire request + inbox + text thread (drop fixtures for those paths)
 4. [x] Voice note upload + AUDIO messages (API + app)
-5. [x] Realtime token endpoint + Cloudflare Worker/DO + notify after write — *Worker scaffold in `workers/chat-realtime`; needs deploy + env*
+5. [x] Realtime token endpoint + Cloudflare Worker/DO scaffold + notify after write — *Worker in `workers/chat-realtime`; **ops still open:** deploy + env*
 6. [x] App: subscribe on conversation screen
-7. [x] OpenAPI paths + unit tests (`tests/unit/conversation.service.test.ts`)
+7. [x] OpenAPI paths
+7b. [ ] Unit tests for conversation service _(doc previously claimed `tests/unit/conversation.service.test.ts` — file not found)_
 8. [x] Trim unused fixture paths; empty/error states
 
 ---

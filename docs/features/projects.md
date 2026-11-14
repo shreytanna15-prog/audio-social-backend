@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** implemented — APIs + mobile wiring landed; run migrate/generate if needed after pull.
+**Status:** `Done` — APIs + mobile list/detail/create/attach/unlink shipped (audited 2026-11-14).
 
 **Schema:** `Project` + `ProjectTrack` live in `prisma/schema.prisma`. Do **not** invent alternate models or paste a full Prisma dump into PRs — read the file. Run migrate + generate after pulling.
 

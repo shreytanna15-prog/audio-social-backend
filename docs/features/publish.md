@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** implemented — cover/publish/unpublish/play APIs + mobile publish sheet landed; run migrate/generate if needed after pull. Commit/push when ready.
+**Status:** `Done` — cover/publish/unpublish/play APIs + mobile publish sheet shipped (audited 2026-11-14).
 
 **Schema:** Do **not** invent alternate models. Read `prisma/schema.prisma` and `track-genres.ts`. Do not paste full Prisma dumps into PRs.
 
@@ -55,9 +55,9 @@ flowchart LR
 ### Out of scope
 
 - Editing published tracks in place (must unpublish first)
-- Track likes → `docs/library-saves.md` (Liked Songs); comments → `docs/track-comments.md`; OS share only for now
+- Track likes → `./library-saves.md` (Liked Songs); comments → `./track-comments.md`; OS share only for now
 - Feed ranking algorithm (only need “list published” primitives)
-- Playlist / album modules (see `docs/playlists-and-albums.md`; Unavailable contract only here)
+- Playlist / album modules (see `./playlists-and-albums.md`; Unavailable contract only here)
 - Switching cover storage to R2 (adapter ready; creds later)
 - Anonymous plays
 

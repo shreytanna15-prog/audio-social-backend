@@ -2,9 +2,9 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** backend implemented; mobile lists, create, detail/edit/attach/release done — collage, reorder, cover upload still open. Do **not** invent alternate models.
+**Status:** `Partial` — Spotify-style **detail** (open one playlist/album → cover + title + song list + play/add) is shipped. **Still open:** owner **Edit** via ⋮ menu → dedicated edit form screen (title / description / visibility or album fields / cover); playlist collage fallback; track reorder on detail. Do **not** invent alternate models.
 
-**Related docs:** `docs/publish.md` (published-only tracks, Unavailable), `docs/projects.md` (private studio folders — different feature).
+**Related docs:** `./publish.md` (published-only tracks, Unavailable), `./projects.md` (private studio folders — different feature).
 
 **Naming:**
 
@@ -13,7 +13,7 @@
 | **Playlist** | Listener-curated list of **any** PUBLISHED tracks; private or public |
 | **Album** | Artist release grouping of **own** PUBLISHED tracks; DRAFT or RELEASED |
 | **Project** | Private workplace (drafts + published); not this module |
-| **Save / library** | See `docs/library-saves.md` (Liked Songs + saved playlists/albums) |
+| **Save / library** | See `./library-saves.md` (Liked Songs + saved playlists/albums) |
 
 Mobile Library albums/playlists panels are **UI reference only**. API + Prisma are SSOT.
 
@@ -72,7 +72,7 @@ flowchart TB
 
 ### Out of scope
 
-- **Save / follow** playlist, album, or song (see `docs/library-saves.md`)
+- **Save / follow** playlist, album, or song (see `./library-saves.md`)
 - Collaborative playlist editors
 - Unlisted / friends-only visibility
 - Generating and storing collage images on the server
@@ -99,7 +99,7 @@ flowchart TB
 9. Tracks: many-to-many with **any** user’s published tracks; ordered by `position` (0-based dense list).
 10. Same track may appear in many playlists; not twice in the same playlist (`@@unique([playlistId, trackId])`).
 11. Cover fallback: **client collage** of first 1–4 playable track covers (Spotify-style grids). Do not persist collage.
-12. Owner does not “save” their own playlist (no-op / hide control). Others save public playlists via `docs/library-saves.md`.
+12. Owner does not “save” their own playlist (no-op / hide control). Others save public playlists via `./library-saves.md`.
 
 ### Album
 
@@ -108,7 +108,7 @@ flowchart TB
 15. Status: **`DRAFT` | `RELEASED`**. Set `releasedAt` on first transition to RELEASED; keep on unrelease if you add unrelease later (v1: allow DRAFT ← → RELEASED).
 16. Album DRAFT does **not** hide member tracks from public profile as singles.
 17. Cover fallback: **first track by position** cover URL (not collage). Custom cover overrides.
-18. Album save: others only, via `docs/library-saves.md` (own albums never saved).
+18. Album save: others only, via `./library-saves.md` (own albums never saved).
 
 ### Relationship to singles workflow
 
@@ -137,7 +137,7 @@ Source of truth: `prisma/schema.prisma`.
 
 ## 5. Cover storage paths
 
-Via existing object-storage adapter pattern (`docs/publish.md`):
+Via existing object-storage adapter pattern (`./publish.md`):
 
 | Asset | Path helper |
 |-------|-------------|
@@ -315,19 +315,32 @@ Reuse Library **Playlists** / **Albums** tab chrome; replace fixtures with API.
 - Create (title, description, visibility)  
 - Detail: ordered tracks; tap available → player; unavailable → Unavailable state  
 - Add published tracks (search/picker — may start with “my published” + later any artist)  
-- Reorder; custom cover or show collage from fallback URLs  
-- Delete playlist confirm  
+- Owner ⋮ menu → **Edit** → dedicated edit form screen (not a dialog)  
+- Reorder on detail; cover from edit screen or collage fallback  
+- Delete playlist confirm (can stay on ⋮ menu)
 
 **Album**
 
 - Create DRAFT; add own published tracks; reorder  
-- Release / unrelease  
-- Cover custom or first-track fallback  
+- Owner ⋮ menu → **Edit** → dedicated edit form screen  
+- Release / unrelease (detail or ⋮)  
+- Cover custom (edit screen) or first-track fallback  
 - Profile: list RELEASED albums; track grid still shows all published singles  
 
-### 10.3 Collage
+### 10.3 Owner edit UX (locked)
 
-Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (match Spotify-ish layouts). No server image compose in v1.
+Detail stays the Spotify-style listen/manage list. Editing metadata/cover is a **separate simple form screen**:
+
+1. Owner taps **⋮** on playlist/album detail (menu icon already present).  
+2. Choose **Edit** → navigate to e.g. `/playlists/[id]/edit` or `/albums/[id]/edit`.  
+3. Form fields: title, description, playlist visibility (PUBLIC/PRIVATE), cover (pick / upload / remove).  
+4. Save → `PATCH` + cover upload APIs → back to detail.  
+
+Replace today’s `CollectionEditDialog` for this path. Keep attach-tracks / delete / release as menu or detail actions as today unless product moves them later.
+
+### 10.4 Collage
+
+Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (match Spotify-ish layouts). No server image compose in v1. Show collage on **detail** (and library cards) when `coverUrl` is null.
 
 ---
 
@@ -338,7 +351,7 @@ Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (
 | New playlist visibility | PRIVATE |
 | New album status | DRAFT |
 | Empty album release | Not allowed |
-| Save playlist/album/song | `docs/library-saves.md` |
+| Save playlist/album/song | `./library-saves.md` |
 | Position | 0-based, rewritten on mutate |
 | Unpublished member | Unavailable row |
 
@@ -346,7 +359,7 @@ Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (
 
 ## 12. Related plan
 
-**Library saves / Liked Songs** — separate slice: `docs/library-saves.md` (`LikedTrack` + `Track.likeCount`; `SavedPlaylist` / `SavedAlbum` + playlist `saveCount`). Song heart = Like → Liked Songs (not a second social-like system).
+**Library saves / Liked Songs** — separate slice: `./library-saves.md` (`LikedTrack` + `Track.likeCount`; `SavedPlaylist` / `SavedAlbum` + playlist `saveCount`). Song heart = Like → Liked Songs (not a second social-like system).
 
 ---
 
@@ -356,19 +369,28 @@ Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (
 2. [x] Migration applied + `prisma generate`  
 3. [x] Playlist module APIs  
 4. [x] Album module APIs + release  
-5. [x] Cover upload for both  
+5. [x] Cover upload APIs for both _(backend)_  
 6. [x] Public-by-user endpoints  
 7. [x] OpenAPI + tests  
-8. [x] Mobile list/detail/create/edit _(Library → `/playlists/[id]` and `/albums/[id]`: owner attach published tracks, unlink, edit title/description (+ playlist visibility), delete, album release/unrelease; non-owner view + Save/Saved; play via player store, Unavailable rows)_  
-8a. [ ] Mobile: client collage cover (uses first `coverFallbackUrls` only), track reorder, custom cover upload  
+8. [x] **Detail screen (Spotify visit-one-playlist/album):** Library → `/playlists/[id]` + `/albums/[id]` with overview cover, ordered song list, tap-to-play, Unavailable rows, owner attach/unlink/edit/delete, album release/unrelease, non-owner Save — `playlist-detail-screen.tsx` / `album-detail-screen.tsx`  
 9. [x] Remove album/playlist fixtures from Library tabs  
+
+### Remaining app work
+
+8a. [ ] **Edit form screens** (owner): from detail ⋮ → Edit → `/playlists/[id]/edit` + `/albums/[id]/edit`  
+     - Fields: title, description, playlist visibility; album title/description  
+     - Cover: pick image → existing cover upload-url / complete / delete APIs (same pattern as track/profile)  
+     - Replace `CollectionEditDialog` for metadata/cover edit  
+8b. [ ] **Client collage** on detail/library when playlist has no `coverUrl`: 1–4 tiles from `coverFallbackUrls` (today only `[0]` is used)  
+8c. [ ] **Track reorder UI** on owner **detail** (not edit form) — wire existing reorder API + hooks  
+
 
 ---
 
 ## 14. Non-goals reminder
 
 - Not Projects  
-- Not Library Saves APIs (see `docs/library-saves.md`)  
+- Not Library Saves APIs (see `./library-saves.md`)  
 - Not collaborative playlists  
 - Not server-side collage generation  
 - Not forcing album release to republish tracks (tracks stay independently PUBLISHED)  

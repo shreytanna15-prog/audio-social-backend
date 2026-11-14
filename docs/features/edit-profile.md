@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`) + **Cloudflare R2** (avatar/cover objects only).  
-**Status:** planning doc — implement in the order in [Task list](#12-task-list-implement-in-this-order).
+**Status:** `Done` — audited 2026-11-14: Prisma fields, `GET`/`PATCH` `/api/user`, avatar/cover R2 upload, Edit Profile screen, and profile DTO surfaces are shipped. Fixtures remain only for `SKIP_AUTH` / demo artists.
 
 **UI design:** Take layout, spacing, and visual language from **Figma** (Edit Profile). Product owner will point the implementing developer at the correct frame in chat — **do not** rely on an image or link inside this doc.
 
@@ -254,7 +254,7 @@ Exact OpenAPI schemas should be updated in the same PR as the service changes.
 - Keep mapping helpers (`mapPublicProfileToProfile`) updated for bio + media URLs
 - Initials fallback when `avatarUrl` is null
 
-Also update `docs/follow-and-artist-search.md` public-profile response section when implementing (or leave a short “superseded by edit-profile §7” note there).
+Also update `./follow-and-artist-search.md` public-profile response section when implementing (or leave a short “superseded by edit-profile §7” note there).
 
 ---
 
@@ -323,15 +323,17 @@ Also update `docs/follow-and-artist-search.md` public-profile response section w
 
 ---
 
-## 12. Task list (implement in this order)
+## 12. Task list (honest vs current code)
 
-1. Migrate + generate for User profile fields; verify signup cooldown default
-2. R2 env + client helpers (profile keys only)
-3. Expand `GET /api/user` + public profile + search DTOs ([§7](#7-update-all-fetch-user--profile-surfaces))
-4. `PATCH /api/user` + username availability + cooldown enforcement
-5. Avatar upload-url / complete / delete (R2)
-6. Cover upload-url / complete / delete (R2)
-7. OpenAPI + smoke tests
-8. App: Edit Profile screen (Figma + overlap note) + wire navigation
-9. App: my profile + public profile consume new fields; initials / cover placeholders
-10. Trim fixture dependency for fields now live from API
+Audited against repo **2026-11-14**.
+
+1. [x] Migrate + generate for User profile fields; verify signup cooldown default
+2. [x] R2 env + client helpers (profile keys only)
+3. [x] Expand `GET /api/user` + public profile + search DTOs ([§7](#7-update-all-fetch-user--profile-surfaces))
+4. [x] `PATCH /api/user` + username availability + cooldown enforcement
+5. [x] Avatar upload-url / complete / delete (R2)
+6. [x] Cover upload-url / complete / delete (R2)
+7. [x] OpenAPI + smoke tests
+8. [x] App: Edit Profile screen + wire navigation (`profile/edit`, `edit-profile-screen`)
+9. [x] App: my profile + public profile consume new fields; initials / cover placeholders
+10. [x] Trim fixture dependency for live API fields _(fixtures kept only for SKIP_AUTH / demo)_

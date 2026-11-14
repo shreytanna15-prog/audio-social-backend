@@ -39,7 +39,7 @@ Agent skills live under **`.agents/skills/`** only.
 - **IDs:** UUIDv7 — `@default(uuid(7)) @db.Uuid`.
 - **Auth:** JWT Bearer via `withAuth`. Email/password today; do not invent OAuth unless asked.
 - **Aliases:** `@/*` for imports from the project root mapping (e.g. `@/server/...`).
-- **Product / domain rules:** `docs/project-context.md` + feature guides in `docs/*.md`. **Never invent Prisma models** that contradict `schema.prisma` or those docs.
+- **Product / domain rules:** `docs/project-context.md` + feature guides in `docs/features/*.md`. **Never invent Prisma models** that contradict `schema.prisma` or those docs.
 - Generic Node/Express skills do **not** override this repository’s Next.js + module conventions.
 
 ---
@@ -65,8 +65,8 @@ src/
 prisma/
 ├── schema.prisma
 └── migrations/
-docs/                             # project-context + feature implementation guides
-workers/chat-realtime/            # chat Worker (see docs/chat.md)
+docs/                             # project-context.md + features/* guides
+workers/chat-realtime/            # chat Worker (see docs/features/chat.md)
 tests/                            # vitest unit / integration / e2e
 ```
 
@@ -182,7 +182,7 @@ import { prisma } from "@/server/config/prisma";
 - Do **not** update `docs/project-context.md` on every small incremental change.
 - Update it when completing a **major milestone**, when cross-cutting product status changes, or when the user asks — and **ask before git commits**.
 - Keep it high-level for AI transfer (architecture, domain, standards, status). Transient checklists belong in feature docs or the task at hand.
-- Feature-specific API contracts and locked rules belong in `docs/<feature>.md` (e.g. `projects.md`, `publish.md`). Update those when the module’s contract changes.
+- Feature-specific API contracts and locked rules belong in `docs/features/<feature>.md` (e.g. `projects.md`, `publish.md`). Update those when the module’s contract changes.
 
 ---
 
@@ -202,7 +202,7 @@ import { prisma } from "@/server/config/prisma";
 
 When adding an endpoint or module:
 
-1. Read `docs/project-context.md`, the relevant `docs/<feature>.md` (if any), `prisma/schema.prisma`, and a sibling module (`project` / `playlist` / `follow`).
+1. Read `docs/project-context.md`, the relevant `docs/features/<feature>.md` (if any), `prisma/schema.prisma`, and a sibling module (`project` / `playlist` / `follow`).
 2. If persistence changes: update Prisma schema + add a migration; do not invent alternate tables.
 3. Add/update Zod schemas in `<feature>.validator.ts` (with `.openapi` when listed in OpenAPI).
 4. Implement or extend `<feature>.service.ts` — domain rules + `AppError`.

@@ -57,19 +57,20 @@ Agents must trust, in order:
 
 1. **`prisma/schema.prisma`** — database models / enums (never invent alternate schemas).
 2. **`docs/project-context.md`** (this file) — product, repos, domain, status, agent rules.
-3. **Feature guides in `docs/`** — locked decisions + API surfaces for each module.
+3. **Feature guides in `docs/features/`** — locked decisions + API surfaces for each module (assignment docs for teammates).
 4. **Per-repo architecture / skills** — backend `.agents/skills/`: `audio-backend-api-patterns` (SSOT), plus `route-handlers`, `prisma-cli`, `prisma-client-api`, `prisma-postgres`, `prisma-upgrade-v7`. App: `audio-app-codebase-patterns` + kept Expo/RN skills. Product rules stay in `docs/`.
 
 | Feature doc | Topic |
 |-------------|--------|
-| `docs/projects.md` | Private project folders |
-| `docs/publish.md` | Publish / unpublish / plays / cover / genres |
-| `docs/playlists-and-albums.md` | Playlists + albums |
-| `docs/library-saves.md` | Liked Songs + save playlist/album |
-| `docs/track-comments.md` | Comments, 1-level replies, comment likes |
-| `docs/follow-and-artist-search.md` | Follow + artist search |
-| `docs/edit-profile.md` | Profile text + avatar/cover |
-| `docs/chat.md` | DMs, requests, voice notes |
+| [`docs/features/projects.md`](./features/projects.md) | Private project folders |
+| [`docs/features/publish.md`](./features/publish.md) | Publish / unpublish / plays / cover / genres |
+| [`docs/features/playlists-and-albums.md`](./features/playlists-and-albums.md) | Playlists + albums |
+| [`docs/features/library-saves.md`](./features/library-saves.md) | Liked Songs + save playlist/album (pilot rewritten format) |
+| [`docs/features/track-comments.md`](./features/track-comments.md) | Comments, 1-level replies, comment likes |
+| [`docs/features/follow-and-artist-search.md`](./features/follow-and-artist-search.md) | Follow + artist search |
+| [`docs/features/edit-profile.md`](./features/edit-profile.md) | Profile text + avatar/cover |
+| [`docs/features/chat.md`](./features/chat.md) | DMs, requests, voice notes |
+| [`docs/features/_TEMPLATE.md`](./features/_TEMPLATE.md) | Template for new / rewritten guides |
 
 Update **this file** when product direction or cross-cutting status changes. Update **feature docs** when a module’s rules/APIs change.
 
@@ -88,7 +89,7 @@ Update **this file** when product direction or cross-cutting status changes. Upd
 - **Object storage:**
   - **Today:** Supabase Storage (tracks, covers, chat audio) via object-storage adapter.
   - **Lead decision:** move to **Cloudflare R2** when client provides credentials (better fit / cost); profile media already aimed at R2 in edit-profile work.
-- **Realtime chat:** Cloudflare Worker under `workers/chat-realtime/` (see `docs/chat.md`).
+- **Realtime chat:** Cloudflare Worker under `workers/chat-realtime/` (see `docs/features/chat.md`).
 - **Tests:** Vitest (`tests/unit`, `tests/integration`, `tests/e2e`) — coverage uneven; do not assume all feature docs’ “tests done” checkboxes are accurate.
 
 ### 3.2 App (`audio-social-app`)
@@ -200,7 +201,7 @@ Editing a `SYNCED` draft typically marks storage dirty again (`SYNCED` → `LOCA
 
 ### Projects
 
-- **Project** + **ProjectTrack** — private M2M folder. Deleting a project does not delete tracks unless an explicit delete-tracks option is used (see `docs/projects.md`).
+- **Project** + **ProjectTrack** — private M2M folder. Deleting a project does not delete tracks unless an explicit delete-tracks option is used (see `docs/features/projects.md`).
 
 ### Playlists & albums
 
@@ -230,16 +231,16 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 | Area | Status | Notes / doc |
 |------|--------|-------------|
 | Auth (email/password, JWT, password reset) | Partial / Done-ish | Improve structure later; social login undecided |
-| Edit profile | Planned / Partial | `docs/edit-profile.md` |
+| Edit profile | Done | Avatar/cover R2 + Edit Profile UI — `docs/features/edit-profile.md` |
 | Studio record / multitrack / effects | Partial | App + Superpowered — **do not touch** unless asked |
 | Track create / backup / restore / delete | Largely Done | Track module + app sync |
-| Projects | Backend Done; app largely Done | `docs/projects.md` |
-| Publish / unpublish / play / cover / genres | Backend Done; app largely Done | `docs/publish.md` |
-| Playlists & albums | Backend Done; app Partial | Reorder / cover upload / collage still open — `docs/playlists-and-albums.md` |
-| Liked Songs + save playlist/album | Backend Done; app largely Done | `docs/library-saves.md`; ensure track DTOs expose `likeCount` / `isLiked` |
-| Track comments | Backend Done; app Partial | Sort UI / fixtures — `docs/track-comments.md` |
-| Follow + artist search | Done | `docs/follow-and-artist-search.md` |
-| Chat | Done (core) | `docs/chat.md`; block users later |
+| Projects | Done | `docs/features/projects.md` |
+| Publish / unpublish / play / cover / genres | Done | `docs/features/publish.md` |
+| Playlists & albums | Partial | Detail song-list shipped; remaining: ⋮ → Edit form screen (name/desc/cover), collage, reorder — `docs/features/playlists-and-albums.md` |
+| Liked Songs + save playlist/album | Partial | Core shipped; track GET DTOs still omit `likeCount` / `isLiked` — [`library-saves.md`](./features/library-saves.md) |
+| Track comments | Partial | Core shipped; Newest/Top sort UI open — `docs/features/track-comments.md` |
+| Follow + artist search | Done | `docs/features/follow-and-artist-search.md` |
+| Chat | Done (core) | `docs/features/chat.md`; Worker deploy + env; block users later |
 | Global listen player | Stub / Partial | Real stream/queue later; separate from studio |
 | Home / Explore discovery | Partial / fixtures | Beyond search |
 | Feed (reels/shorts) | Deferred | Different module; do not implement unless asked |
