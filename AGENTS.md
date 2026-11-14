@@ -1,3 +1,15 @@
+# VibeOGram backend (`audio-social-backend`)
+
+Before changing APIs, Prisma, or OpenAPI in this repo:
+
+1. Read **`docs/project-context.md`** (product + cross-repo map).
+2. Read the relevant feature guide under **`docs/`** (if any).
+3. Follow **`.agents/skills/audio-backend-api-patterns/SKILL.md`** (this repo’s coding SSOT).
+4. Use supporting skills only as secondary: `route-handlers`, `prisma-cli`, `prisma-client-api`, `prisma-postgres`, `prisma-upgrade-v7`.
+5. Trust **`prisma/schema.prisma`** — do not invent models.
+
+Sibling app: `../audio-social-app` (Expo). Skills live under **`.agents/skills/`** only.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
