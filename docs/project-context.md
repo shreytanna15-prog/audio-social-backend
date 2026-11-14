@@ -70,6 +70,8 @@ Agents must trust, in order:
 | [`docs/features/follow-and-artist-search.md`](./features/follow-and-artist-search.md) | Follow + artist search |
 | [`docs/features/edit-profile.md`](./features/edit-profile.md) | Profile text + avatar/cover |
 | [`docs/features/chat.md`](./features/chat.md) | DMs, requests, voice notes |
+| [`docs/features/home.md`](./features/home.md) | Home discovery sections (trending, featured artists, latest project, my playlists) |
+| [`docs/features/taste-and-recommendations.md`](./features/taste-and-recommendations.md) | preferredGenres + TrackPlay heuristic + Made for you tracks |
 | [`docs/features/_TEMPLATE.md`](./features/_TEMPLATE.md) | Template for new / rewritten guides |
 
 Update **this file** when product direction or cross-cutting status changes. Update **feature docs** when a module’s rules/APIs change.
@@ -242,10 +244,10 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 | Follow + artist search | Done | `docs/features/follow-and-artist-search.md` |
 | Chat | Done (core) | `docs/features/chat.md`; Worker deploy + env; block users later |
 | Global listen player | Stub / Partial | Real stream/queue later; separate from studio |
-| Home / Explore discovery | Partial / fixtures | Beyond search |
+| Home discovery | Planned | Fixtures today — [`home.md`](./features/home.md) (Explore body later; may reuse discover APIs) |
 | Feed (reels/shorts) | Deferred | Different module; do not implement unless asked |
 | Notifications | Deferred | Fixtures only |
-| Recommendation | Deferred | Not started |
+| Taste / Made for you | Planned | Small heuristic — [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) (not full ML Recommendation) |
 | Tanpura (studio) | Deferred | Not started app or backend |
 | Concerts + rewards / coins | Deferred | Not started |
 | Subscriptions + payments | Deferred | Not started |
@@ -258,7 +260,7 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 2. Publish  
 3. Library (projects / playlists / albums / likes)  
 4. Social (comments, follow, profile, chat polish)  
-5. Recommendation  
+5. Home discovery + taste / Made for you ([`home.md`](./features/home.md), [`taste-and-recommendations.md`](./features/taste-and-recommendations.md))  
 6. Feed  
 7. Concerts / coins / tanpura / subscriptions / admin  
 
