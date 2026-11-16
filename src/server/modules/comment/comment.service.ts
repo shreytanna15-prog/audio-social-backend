@@ -1,6 +1,11 @@
-import { Prisma, TrackStatus } from "@/generated/prisma/client";
+import {
+    NotificationType,
+    Prisma,
+    TrackStatus,
+} from "@/generated/prisma/client";
 import { prisma } from "@/server/config/prisma";
 import { publicUrl } from "@/server/config/r2";
+import { notificationService } from "@/server/modules/notification/notification.service";
 import { AppError } from "@/server/utils/global-error";
 import type { CommentSort, CreateCommentSchema } from "./comment.validator";
 
@@ -108,13 +113,19 @@ class CommentService {
         trackId: string,
         payload: CreateCommentSchema
     ): Promise<TrackCommentDto> {
-        await this.requirePublishedTrack(trackId);
+        const track = await this.requirePublishedTrack(trackId);
 
         const parentId = payload.parentId ?? null;
+        let parentAuthorId: string | null = null;
         if (parentId) {
             const parent = await prisma.trackComment.findUnique({
                 where: { id: parentId },
-                select: { id: true, trackId: true, parentId: true },
+                select: {
+                    id: true,
+                    trackId: true,
+                    parentId: true,
+                    userId: true,
+                },
             });
 
             if (!parent || parent.trackId !== trackId) {
@@ -132,6 +143,8 @@ class CommentService {
                     "BAD_REQUEST"
                 );
             }
+
+            parentAuthorId = parent.userId;
         }
 
         try {
@@ -153,6 +166,28 @@ class CommentService {
 
                 return created as CommentRow;
             });
+
+            await notificationService.createQuietly({
+                recipientId: track.userId,
+                actorId: viewerId,
+                type: NotificationType.COMMENT,
+                trackId,
+                commentId: row.id,
+            });
+
+            if (
+                parentAuthorId &&
+                parentAuthorId !== track.userId &&
+                parentAuthorId !== viewerId
+            ) {
+                await notificationService.createQuietly({
+                    recipientId: parentAuthorId,
+                    actorId: viewerId,
+                    type: NotificationType.COMMENT,
+                    trackId,
+                    commentId: row.id,
+                });
+            }
 
             return this.toDto(row, viewerId);
         } catch (error) {
@@ -330,15 +365,19 @@ class CommentService {
         return comment.likeCount;
     }
 
-    private async requirePublishedTrack(trackId: string): Promise<void> {
+    private async requirePublishedTrack(
+        trackId: string
+    ): Promise<{ id: string; userId: string }> {
         const track = await prisma.track.findFirst({
             where: { id: trackId, status: TrackStatus.PUBLISHED },
-            select: { id: true },
+            select: { id: true, userId: true },
         });
 
         if (!track) {
             throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
         }
+
+        return track;
     }
 
     private async requirePublishedComment(commentId: string): Promise<void> {

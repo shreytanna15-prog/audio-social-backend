@@ -1,4 +1,5 @@
 import { TrackStatus, type Track } from "@/generated/prisma/client";
+import { prisma } from "@/server/config/prisma";
 import { objectStorage } from "@/server/lib/object-storage";
 import { AppError } from "@/server/utils/global-error";
 
@@ -36,6 +37,8 @@ export type CollectionTrackItem =
           mixUrl: string | null;
           coverUrl: string | null;
           playCount: number;
+          likeCount: number;
+          isLiked: boolean;
           publishedAt: string | null;
           artist: CollectionTrackArtist;
       }
@@ -59,8 +62,25 @@ export async function signedUrlOrNull(
     return path ? objectStorage.createSignedDownloadUrl(path) : null;
 }
 
+export async function viewerLikedTrackIds(
+    userId: string,
+    trackIds: string[]
+): Promise<Set<string>> {
+    if (trackIds.length === 0) {
+        return new Set();
+    }
+
+    const rows = await prisma.likedTrack.findMany({
+        where: { userId, trackId: { in: trackIds } },
+        select: { trackId: true },
+    });
+
+    return new Set(rows.map((row) => row.trackId));
+}
+
 export async function toCollectionTrackItem(
-    link: CollectionTrackLink
+    link: CollectionTrackLink,
+    isLiked = false
 ): Promise<CollectionTrackItem> {
     const { track } = link;
     const base = {
@@ -89,6 +109,8 @@ export async function toCollectionTrackItem(
         mixUrl,
         coverUrl,
         playCount: track.playCount,
+        likeCount: track.likeCount,
+        isLiked,
         publishedAt: track.publishedAt?.toISOString() ?? null,
         artist: {
             id: track.user.id,

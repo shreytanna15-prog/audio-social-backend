@@ -74,6 +74,29 @@ class ProjectService {
         }));
     }
 
+    public async getLatestProject(
+        userId: string
+    ): Promise<ProjectSummary | null> {
+        const project = await prisma.project.findFirst({
+            where: { userId },
+            orderBy: { updatedAt: "desc" },
+            include: { _count: { select: { tracks: true } } },
+        });
+
+        if (!project) {
+            return null;
+        }
+
+        return {
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            trackCount: project._count.tracks,
+            updatedAt: project.updatedAt.toISOString(),
+            createdAt: project.createdAt.toISOString(),
+        };
+    }
+
     public async getProject(
         userId: string,
         projectId: string

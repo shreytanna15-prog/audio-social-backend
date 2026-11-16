@@ -66,6 +66,8 @@ export type TrackListItem = {
     mixUrl: string | null;
     coverUrl: string | null;
     playCount: number;
+    likeCount: number;
+    isLiked: boolean;
     publishedAt: string | null;
     createdAt: string;
 };
@@ -82,6 +84,8 @@ export type PublishedTrackItem = {
     mixUrl: string | null;
     coverUrl: string | null;
     playCount: number;
+    likeCount: number;
+    isLiked: boolean;
     commentCount: number;
     publishedAt: string | null;
     createdAt: string;
@@ -117,6 +121,8 @@ export type TrackDetail = {
     genres: string[];
     keywords: string[];
     playCount: number;
+    likeCount: number;
+    isLiked: boolean;
     commentCount: number;
     publishedAt: string | null;
     createdAt: string;
@@ -326,7 +332,13 @@ class TrackService {
             orderBy: { createdAt: "desc" },
         });
 
-        return Promise.all(tracks.map((track) => this.toListItem(track)));
+        const liked = await this.likedTrackIds(
+            userId,
+            tracks.map((track) => track.id)
+        );
+        return Promise.all(
+            tracks.map((track) => this.toListItem(track, liked.has(track.id)))
+        );
     }
 
     public async getTrackById(
@@ -344,7 +356,8 @@ class TrackService {
             throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
         }
 
-        return this.toDetail(track);
+        const liked = await this.likedTrackIds(userId, [track.id]);
+        return this.toDetail(track, liked.has(track.id));
     }
 
     public async deleteTrack(
@@ -645,7 +658,8 @@ class TrackService {
             },
         });
 
-        return this.toPublishedItem(updated);
+        const liked = await this.likedTrackIds(userId, [updated.id]);
+        return this.toPublishedItem(updated, liked.has(updated.id));
     }
 
     public async unpublishTrack(
@@ -711,7 +725,8 @@ class TrackService {
     }
 
     public async listPublishedByUser(
-        targetUserId: string
+        targetUserId: string,
+        viewerUserId: string
     ): Promise<PublishedTrackItem[]> {
         const tracks = await prisma.track.findMany({
             where: {
@@ -721,7 +736,15 @@ class TrackService {
             orderBy: { publishedAt: "desc" },
         });
 
-        return Promise.all(tracks.map((track) => this.toPublishedItem(track)));
+        const liked = await this.likedTrackIds(
+            viewerUserId,
+            tracks.map((track) => track.id)
+        );
+        return Promise.all(
+            tracks.map((track) =>
+                this.toPublishedItem(track, liked.has(track.id))
+            )
+        );
     }
 
     private async requireOwnedTrack(userId: string, trackId: string) {
@@ -746,7 +769,26 @@ class TrackService {
         }
     }
 
-    private async toPublishedItem(track: Track): Promise<PublishedTrackItem> {
+    private async likedTrackIds(
+        userId: string,
+        trackIds: string[]
+    ): Promise<Set<string>> {
+        if (trackIds.length === 0) {
+            return new Set();
+        }
+
+        const rows = await prisma.likedTrack.findMany({
+            where: { userId, trackId: { in: trackIds } },
+            select: { trackId: true },
+        });
+
+        return new Set(rows.map((row) => row.trackId));
+    }
+
+    private async toPublishedItem(
+        track: Track,
+        isLiked: boolean
+    ): Promise<PublishedTrackItem> {
         const [mixUrl, coverUrl] = await Promise.all([
             track.mixPath
                 ? objectStorage.createSignedDownloadUrl(track.mixPath)
@@ -768,6 +810,8 @@ class TrackService {
             mixUrl,
             coverUrl,
             playCount: track.playCount,
+            likeCount: track.likeCount,
+            isLiked,
             commentCount: track.commentCount,
             publishedAt: track.publishedAt?.toISOString() ?? null,
             createdAt: track.createdAt.toISOString(),
@@ -909,7 +953,10 @@ class TrackService {
         }
     }
 
-    private async toListItem(track: Track): Promise<TrackListItem> {
+    private async toListItem(
+        track: Track,
+        isLiked: boolean
+    ): Promise<TrackListItem> {
         const [mixUrl, coverUrl] = await Promise.all([
             this.createSignedUrl(track.mixPath),
             this.createSignedUrl(track.coverPath),
@@ -925,12 +972,17 @@ class TrackService {
             mixUrl,
             coverUrl,
             playCount: track.playCount,
+            likeCount: track.likeCount,
+            isLiked,
             publishedAt: track.publishedAt?.toISOString() ?? null,
             createdAt: track.createdAt.toISOString(),
         };
     }
 
-    private async toDetail(track: TrackWithLayers): Promise<TrackDetail> {
+    private async toDetail(
+        track: TrackWithLayers,
+        isLiked: boolean
+    ): Promise<TrackDetail> {
         const [mixUrl, coverUrl] = await Promise.all([
             this.createSignedUrl(track.mixPath),
             this.createSignedUrl(track.coverPath),
@@ -973,6 +1025,8 @@ class TrackService {
             genres: track.genres,
             keywords: track.keywords,
             playCount: track.playCount,
+            likeCount: track.likeCount,
+            isLiked,
             commentCount: track.commentCount,
             publishedAt: track.publishedAt?.toISOString() ?? null,
             createdAt: track.createdAt.toISOString(),

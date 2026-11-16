@@ -57,6 +57,27 @@ registry.registerPath({
 });
 
 registry.registerPath({
+    method: "get",
+    path: "/api/projects/latest",
+    tags: ["Projects"],
+    summary: "Get latest project",
+    description:
+        "Returns the viewer's most recently updated project summary, or null when they have none.",
+    security: [...bearerSecurity],
+    responses: {
+        200: {
+            description: "Latest project fetched successfully",
+            content: {
+                "application/json": {
+                    schema: projectSummarySuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
     method: "post",
     path: "/api/projects",
     tags: ["Projects"],

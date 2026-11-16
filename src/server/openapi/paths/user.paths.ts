@@ -38,7 +38,7 @@ registry.registerPath({
     tags: ["User"],
     summary: "Update current user profile",
     description:
-        "Patch dirty text fields only (name, bio, username). Username changes respect the 7-day cooldown.",
+        "Patch dirty text fields (name, bio, username) and optional preferredGenres (0 or 1–6 TRACK_GENRES ids). Username changes respect the 7-day cooldown.",
     security: [...bearerSecurity],
     request: {
         body: {

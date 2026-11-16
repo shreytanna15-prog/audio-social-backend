@@ -26,8 +26,10 @@ export const meSchema = registry.register(
         bio: z.string().nullable(),
         avatarUrl: z.url().nullable(),
         coverUrl: z.url().nullable(),
+        preferredGenres: z.array(z.string()),
         canChangeUsername: z.boolean(),
         usernameChangeAvailableAt: z.iso.datetime().nullable(),
+        unreadNotificationCount: z.number().int().nonnegative(),
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),
     })
@@ -124,6 +126,8 @@ export const trackListItemSchema = registry.register(
         mixUrl: z.url().nullable(),
         coverUrl: z.url().nullable(),
         playCount: z.number().int(),
+        likeCount: z.number().int(),
+        isLiked: z.boolean(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
     })
@@ -164,6 +168,8 @@ export const trackDetailSchema = registry.register(
         genres: z.array(z.string()),
         keywords: z.array(z.string()),
         playCount: z.number().int(),
+        likeCount: z.number().int(),
+        isLiked: z.boolean(),
         commentCount: z.number().int(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
@@ -186,6 +192,8 @@ export const publishedTrackItemSchema = registry.register(
         mixUrl: z.url().nullable(),
         coverUrl: z.url().nullable(),
         playCount: z.number().int(),
+        likeCount: z.number().int(),
+        isLiked: z.boolean(),
         commentCount: z.number().int(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
@@ -550,6 +558,96 @@ export const followActionSuccessResponseSchema = successResponseSchema(
 export const relationshipSuccessResponseSchema = successResponseSchema(
     relationshipDataSchema,
     "RelationshipSuccessResponse"
+);
+
+export const followListUserSchema = registry.register(
+    "FollowListUser",
+    z.object({
+        id: z.uuid(),
+        username: z.string(),
+        name: z.string().nullable(),
+        avatarUrl: z.url().nullable(),
+        isFollowing: z.boolean(),
+    })
+);
+
+export const followListPageSchema = registry.register(
+    "FollowListPage",
+    z.object({
+        items: z.array(followListUserSchema),
+        nextCursor: z.uuid().nullable(),
+    })
+);
+
+export const followListSuccessResponseSchema = successResponseSchema(
+    followListPageSchema,
+    "FollowListSuccessResponse"
+);
+
+export const searchTrackItemSchema = registry.register(
+    "SearchTrackItem",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        coverUrl: z.string().nullable(),
+        mixUrl: z.string().nullable(),
+        playCount: z.number().int(),
+        durationMs: z.number().int(),
+        artist: z.object({
+            id: z.uuid(),
+            username: z.string(),
+            name: z.string().nullable(),
+            avatarUrl: z.url().nullable(),
+        }),
+    })
+);
+
+export const searchPlaylistItemSchema = registry.register(
+    "SearchPlaylistItem",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        coverUrl: z.string().nullable(),
+        trackCount: z.number().int(),
+        owner: z.object({
+            id: z.uuid(),
+            username: z.string(),
+            name: z.string().nullable(),
+            avatarUrl: z.url().nullable(),
+        }),
+    })
+);
+
+export const searchAlbumItemSchema = registry.register(
+    "SearchAlbumItem",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        coverUrl: z.string().nullable(),
+        trackCount: z.number().int(),
+        releasedAt: z.iso.datetime().nullable(),
+        artist: z.object({
+            id: z.uuid(),
+            username: z.string(),
+            name: z.string().nullable(),
+            avatarUrl: z.url().nullable(),
+        }),
+    })
+);
+
+export const searchTrackListSuccessResponseSchema = successResponseSchema(
+    z.array(searchTrackItemSchema),
+    "SearchTrackListSuccessResponse"
+);
+
+export const searchPlaylistListSuccessResponseSchema = successResponseSchema(
+    z.array(searchPlaylistItemSchema),
+    "SearchPlaylistListSuccessResponse"
+);
+
+export const searchAlbumListSuccessResponseSchema = successResponseSchema(
+    z.array(searchAlbumItemSchema),
+    "SearchAlbumListSuccessResponse"
 );
 
 export const searchRecentListSuccessResponseSchema = successResponseSchema(

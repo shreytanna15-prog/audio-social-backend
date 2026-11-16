@@ -27,7 +27,14 @@ export async function notifyRealtime(
 
     if (!baseUrl || !secret) {
         if (env.NODE_ENV === "development") {
-            console.info("[realtime-notify] skipped (not configured)", event.type);
+            const partial =
+                Boolean(baseUrl) !== Boolean(secret)
+                    ? " (partial: set both REALTIME_WORKER_URL and REALTIME_NOTIFY_SECRET)"
+                    : "";
+            console.info(
+                `[realtime-notify] skipped (not configured)${partial}`,
+                event.type
+            );
         }
         return;
     }

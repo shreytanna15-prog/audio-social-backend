@@ -6,11 +6,13 @@ import {
 } from "@/server/openapi/registry";
 import {
     followActionSuccessResponseSchema,
+    followListSuccessResponseSchema,
     publicUserProfileSuccessResponseSchema,
     relationshipSuccessResponseSchema,
     userIdParamSchema,
     userSearchSuccessResponseSchema,
 } from "@/server/openapi/schemas";
+import { followListQuerySchema } from "@/server/modules/follow/follow.validator";
 import { searchUsersQuerySchema } from "@/server/modules/user/user.validator";
 
 const userIdParamsSchema = z.object({
@@ -128,6 +130,56 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: relationshipSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/api/users/{id}/followers",
+    tags: ["Users"],
+    summary: "List followers",
+    description:
+        "Paginated list of users who follow the target user. Newest follows first.",
+    security: [...bearerSecurity],
+    request: {
+        params: userIdParamsSchema,
+        query: followListQuerySchema,
+    },
+    responses: {
+        200: {
+            description: "Followers fetched successfully",
+            content: {
+                "application/json": {
+                    schema: followListSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/api/users/{id}/following",
+    tags: ["Users"],
+    summary: "List following",
+    description:
+        "Paginated list of users the target user follows. Newest follows first.",
+    security: [...bearerSecurity],
+    request: {
+        params: userIdParamsSchema,
+        query: followListQuerySchema,
+    },
+    responses: {
+        200: {
+            description: "Following fetched successfully",
+            content: {
+                "application/json": {
+                    schema: followListSuccessResponseSchema,
                 },
             },
         },

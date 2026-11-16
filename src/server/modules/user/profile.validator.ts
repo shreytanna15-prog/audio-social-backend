@@ -1,11 +1,16 @@
 import { z } from "@/server/lib/zod";
 import { PROFILE_MEDIA } from "@/server/constants/profile-media";
+import { TRACK_GENRES } from "@/server/constants/track-genres";
 import { usernameSchema } from "@/server/utils/common.validator";
 
 const emptyToNull = (value: string) => {
     const trimmed = value.trim();
     return trimmed.length === 0 ? null : trimmed;
 };
+
+const preferredGenreIdSchema = z.enum(TRACK_GENRES, {
+    message: "Invalid genre id",
+});
 
 export const patchProfileSchema = z
     .object({
@@ -22,12 +27,17 @@ export const patchProfileSchema = z
             .nullable()
             .optional(),
         username: usernameSchema.optional(),
+        preferredGenres: z
+            .array(preferredGenreIdSchema)
+            .max(6, "Select at most 6 genres")
+            .optional(),
     })
     .refine(
         (value) =>
             value.name !== undefined ||
             value.bio !== undefined ||
-            value.username !== undefined,
+            value.username !== undefined ||
+            value.preferredGenres !== undefined,
         { message: "At least one field is required" }
     )
     .openapi("PatchProfileBody");

@@ -5,10 +5,12 @@ import { parsePathUuid } from "@/server/lib/parse-path-uuid";
 import { trackService } from "@/server/modules/track/track.service";
 import { prisma } from "@/server/config/prisma";
 import { AppError } from "@/server/utils/global-error";
+import type { User } from "@/generated/prisma/client";
 
 export const GET = route()
     .use(withAuth)
     .handle(async (req) => {
+        const viewer = req.user as User;
         const userId = parsePathUuid(req.nextUrl.pathname, "user ID", 1);
 
         const user = await prisma.user.findUnique({
@@ -19,7 +21,10 @@ export const GET = route()
             throw new AppError("User not found", 404, "RESOURCE_NOT_FOUND");
         }
 
-        const tracks = await trackService.listPublishedByUser(userId);
+        const tracks = await trackService.listPublishedByUser(
+            userId,
+            viewer.id
+        );
 
         return NextResponse.json({
             success: true,

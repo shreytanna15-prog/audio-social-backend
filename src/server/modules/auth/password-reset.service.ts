@@ -4,7 +4,7 @@ import { env } from "@/server/config/env";
 import { AUTH_CONFIG } from "@/server/constants/auth.config";
 import { sendOtpEmail } from "@/server/lib/email";
 import { generateJwtToken, verifyJwtToken } from "@/server/lib/jwt";
-import { generatePasswordHash } from "@/server/lib/passsword";
+import { generatePasswordHash } from "@/server/lib/password";
 import { AppError } from "@/server/utils/global-error";
 import { userService } from "@/server/modules/user/user.service";
 import type {

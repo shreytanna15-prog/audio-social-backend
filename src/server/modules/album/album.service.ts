@@ -7,6 +7,7 @@ import {
     COVER_EXT_BY_TYPE,
     signedUrlOrNull,
     toCollectionTrackItem,
+    viewerLikedTrackIds,
     type CollectionTrackItem,
 } from "@/server/lib/collection-track";
 import { buildAlbumCoverPath } from "@/server/lib/storage-path";
@@ -132,7 +133,15 @@ class AlbumService {
             orderBy: { position: "asc" },
             include: COLLECTION_TRACK_INCLUDE,
         });
-        const tracks = await Promise.all(links.map(toCollectionTrackItem));
+        const liked = await viewerLikedTrackIds(
+            viewerId,
+            links.map((link) => link.track.id)
+        );
+        const tracks = await Promise.all(
+            links.map((link) =>
+                toCollectionTrackItem(link, liked.has(link.track.id))
+            )
+        );
         const summary = await this.toSummary(album);
         const isOwner = album.userId === viewerId;
         const isSaved = isOwner

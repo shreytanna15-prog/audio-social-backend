@@ -13,6 +13,7 @@ import { supabase } from "@/server/config/supabase";
 import { STORAGE_CONFIG } from "@/server/constants/storage.config";
 import { generateJwtToken } from "@/server/lib/jwt";
 import { notifyRealtime } from "@/server/lib/realtime-notify";
+import { toRealtimeWebSocketUrl } from "@/server/lib/realtime-ws-url";
 import {
     buildChatPrefix,
     buildChatVoiceNotePath,
@@ -564,7 +565,7 @@ class ConversationService {
             token,
             expiresIn,
             wsUrl: env.REALTIME_WORKER_URL
-                ? `${env.REALTIME_WORKER_URL.replace(/\/$/, "")}/ws`
+                ? toRealtimeWebSocketUrl(env.REALTIME_WORKER_URL)
                 : null,
         };
     }

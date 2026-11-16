@@ -48,6 +48,8 @@ export const collectionTrackItemSchema = registry.register(
         mixUrl: z.url().nullable().optional(),
         coverUrl: z.url().nullable().optional(),
         playCount: z.number().int().optional(),
+        likeCount: z.number().int().optional(),
+        isLiked: z.boolean().optional(),
         publishedAt: z.iso.datetime().nullable().optional(),
         artist: collectionTrackArtistSchema.optional(),
     })

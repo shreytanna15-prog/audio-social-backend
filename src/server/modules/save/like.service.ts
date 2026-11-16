@@ -1,7 +1,8 @@
-import { TrackStatus } from "@/generated/prisma/client";
+import { NotificationType, TrackStatus } from "@/generated/prisma/client";
 import { prisma } from "@/server/config/prisma";
 import { publicUrl } from "@/server/config/r2";
 import { objectStorage } from "@/server/lib/object-storage";
+import { notificationService } from "@/server/modules/notification/notification.service";
 import { AppError } from "@/server/utils/global-error";
 
 export type LikeActionResult = {
@@ -76,7 +77,27 @@ class LikeService {
                 select: { likeCount: true },
             });
 
-            return { id: trackId, isLiked: true, likeCount: updated.likeCount };
+            return {
+                id: trackId,
+                isLiked: true,
+                likeCount: updated.likeCount,
+                ownerId: track.userId,
+                newlyLiked: true as const,
+            };
+        }).then(async (result) => {
+            if ("newlyLiked" in result && result.newlyLiked) {
+                await notificationService.createQuietly({
+                    recipientId: result.ownerId,
+                    actorId: viewerId,
+                    type: NotificationType.LIKE,
+                    trackId,
+                });
+            }
+            return {
+                id: result.id,
+                isLiked: result.isLiked,
+                likeCount: result.likeCount,
+            };
         });
     }
 

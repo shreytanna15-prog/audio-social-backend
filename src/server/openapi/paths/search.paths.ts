@@ -6,9 +6,85 @@ import {
 } from "@/server/openapi/registry";
 import {
     clearSearchRecentSuccessResponseSchema,
+    searchAlbumListSuccessResponseSchema,
+    searchPlaylistListSuccessResponseSchema,
     searchRecentListSuccessResponseSchema,
+    searchTrackListSuccessResponseSchema,
 } from "@/server/openapi/schemas";
+import { catalogSearchQuerySchema } from "@/server/modules/search/catalog-search.validator";
 import { recordSearchRecentSchema } from "@/server/modules/search/search-recent.validator";
+
+registry.registerPath({
+    method: "get",
+    path: "/api/tracks/search",
+    tags: ["Search"],
+    summary: "Search published tracks",
+    description:
+        "Search PUBLISHED tracks by title, caption, or artist username/name.",
+    security: [...bearerSecurity],
+    request: {
+        query: catalogSearchQuerySchema,
+    },
+    responses: {
+        200: {
+            description: "Tracks fetched successfully",
+            content: {
+                "application/json": {
+                    schema: searchTrackListSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/api/playlists/search",
+    tags: ["Search"],
+    summary: "Search public playlists",
+    description:
+        "Search PUBLIC playlists by title, description, or owner username/name.",
+    security: [...bearerSecurity],
+    request: {
+        query: catalogSearchQuerySchema,
+    },
+    responses: {
+        200: {
+            description: "Playlists fetched successfully",
+            content: {
+                "application/json": {
+                    schema: searchPlaylistListSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/api/albums/search",
+    tags: ["Search"],
+    summary: "Search released albums",
+    description:
+        "Search RELEASED albums by title, description, or artist username/name.",
+    security: [...bearerSecurity],
+    request: {
+        query: catalogSearchQuerySchema,
+    },
+    responses: {
+        200: {
+            description: "Albums fetched successfully",
+            content: {
+                "application/json": {
+                    schema: searchAlbumListSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
 
 registry.registerPath({
     method: "get",

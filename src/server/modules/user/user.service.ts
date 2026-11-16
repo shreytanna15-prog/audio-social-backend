@@ -31,8 +31,10 @@ export type MeDto = {
     bio: string | null;
     avatarUrl: string | null;
     coverUrl: string | null;
+    preferredGenres: string[];
     canChangeUsername: boolean;
     usernameChangeAvailableAt: string | null;
+    unreadNotificationCount: number;
     createdAt: string;
     updatedAt: string;
 };
@@ -86,7 +88,10 @@ function cooldownMeta(usernameChangedAt: Date): {
     };
 }
 
-export function toMeDto(user: User): MeDto {
+export function toMeDto(
+    user: User,
+    unreadNotificationCount = 0
+): MeDto {
     const { canChangeUsername, usernameChangeAvailableAt } = cooldownMeta(
         user.usernameChangedAt
     );
@@ -98,8 +103,10 @@ export function toMeDto(user: User): MeDto {
         bio: user.bio,
         avatarUrl: publicUrl(user.avatarPath),
         coverUrl: publicUrl(user.coverPath),
+        preferredGenres: user.preferredGenres ?? [],
         canChangeUsername,
         usernameChangeAvailableAt,
+        unreadNotificationCount,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
     };
@@ -143,7 +150,14 @@ class UserService {
 
     public async getMe(userId: string): Promise<MeDto> {
         const user = await this.findById(userId);
-        return toMeDto(user);
+        return this.toMeDtoWithUnread(user);
+    }
+
+    private async toMeDtoWithUnread(user: User): Promise<MeDto> {
+        const unreadNotificationCount = await prisma.notification.count({
+            where: { recipientId: user.id, readAt: null },
+        });
+        return toMeDto(user, unreadNotificationCount);
     }
 
     public async searchUsers(
@@ -252,6 +266,7 @@ class UserService {
             bio?: string | null;
             username?: string;
             usernameChangedAt?: Date;
+            preferredGenres?: string[];
         } = {};
 
         if (payload.username !== undefined) {
@@ -283,16 +298,22 @@ class UserService {
         if (payload.bio !== undefined) {
             data.bio = payload.bio;
         }
+        if (payload.preferredGenres !== undefined) {
+            data.preferredGenres = [...new Set(payload.preferredGenres)].slice(
+                0,
+                6
+            );
+        }
 
         if (Object.keys(data).length === 0) {
-            return toMeDto(user);
+            return this.toMeDtoWithUnread(user);
         }
 
         const updated = await prisma.user.update({
             where: { id: userId },
             data,
         });
-        return toMeDto(updated);
+        return this.toMeDtoWithUnread(updated);
     }
 
     public async createAvatarUploadUrl(
@@ -341,13 +362,13 @@ class UserService {
             }
         }
 
-        return toMeDto(updated);
+        return this.toMeDtoWithUnread(updated);
     }
 
     public async deleteAvatar(userId: string): Promise<MeDto> {
         const user = await this.findById(userId);
         if (!user.avatarPath) {
-            return toMeDto(user);
+            return this.toMeDtoWithUnread(user);
         }
 
         const previous = user.avatarPath;
@@ -365,7 +386,7 @@ class UserService {
             }
         }
 
-        return toMeDto(updated);
+        return this.toMeDtoWithUnread(updated);
     }
 
     public async createCoverUploadUrl(
@@ -410,13 +431,13 @@ class UserService {
             }
         }
 
-        return toMeDto(updated);
+        return this.toMeDtoWithUnread(updated);
     }
 
     public async deleteCover(userId: string): Promise<MeDto> {
         const user = await this.findById(userId);
         if (!user.coverPath) {
-            return toMeDto(user);
+            return this.toMeDtoWithUnread(user);
         }
 
         const previous = user.coverPath;
@@ -434,7 +455,7 @@ class UserService {
             }
         }
 
-        return toMeDto(updated);
+        return this.toMeDtoWithUnread(updated);
     }
 
     private assertContentType(contentType: string): asserts contentType is ProfileImageContentType {

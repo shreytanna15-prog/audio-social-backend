@@ -10,3 +10,7 @@ import "@/server/openapi/paths/albums.paths";
 import "@/server/openapi/paths/users.paths";
 import "@/server/openapi/paths/search.paths";
 import "@/server/openapi/paths/conversations.paths";
+import "@/server/openapi/paths/discover.paths";
+import "@/server/openapi/paths/feed.paths";
+import "@/server/openapi/paths/notifications.paths";
+import "@/server/openapi/paths/plays.paths";

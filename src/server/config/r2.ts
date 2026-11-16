@@ -3,7 +3,6 @@ import {
     DeleteObjectCommand,
     HeadObjectCommand,
     PutObjectCommand,
-    S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "@/server/config/env";
@@ -11,48 +10,21 @@ import {
     PROFILE_MEDIA,
     type ProfileImageContentType,
 } from "@/server/constants/profile-media";
-import { AppError } from "@/server/utils/global-error";
+import {
+    assertR2Configured as assertR2ConfiguredCore,
+    getR2Bucket,
+    getR2Client,
+    isR2Configured,
+} from "@/server/lib/object-storage/r2-client";
 
 export { PROFILE_MEDIA, type ProfileImageContentType };
-
-const PRESIGN_EXPIRES_SEC = 60 * 15;
-
-function isR2Configured(): boolean {
-    return Boolean(
-        env.R2_ACCOUNT_ID &&
-            env.R2_ACCESS_KEY_ID &&
-            env.R2_SECRET_ACCESS_KEY &&
-            env.R2_BUCKET &&
-            env.R2_PUBLIC_BASE_URL
-    );
-}
+export { isR2Configured };
 
 export function assertR2Configured(): void {
-    if (!isR2Configured()) {
-        throw new AppError(
-            "Profile media storage is not configured",
-            503,
-            "R2_NOT_CONFIGURED"
-        );
-    }
+    assertR2ConfiguredCore("Profile media storage is not configured");
 }
 
-let client: S3Client | null = null;
-
-function getClient(): S3Client {
-    assertR2Configured();
-    if (!client) {
-        client = new S3Client({
-            region: "auto",
-            endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-            credentials: {
-                accessKeyId: env.R2_ACCESS_KEY_ID!,
-                secretAccessKey: env.R2_SECRET_ACCESS_KEY!,
-            },
-        });
-    }
-    return client;
-}
+const PRESIGN_EXPIRES_SEC = 60 * 15;
 
 function extensionFor(contentType: ProfileImageContentType): string {
     switch (contentType) {
@@ -95,11 +67,11 @@ export async function presignPut(input: {
     contentType: ProfileImageContentType;
 }): Promise<{ path: string; signedUrl: string }> {
     const command = new PutObjectCommand({
-        Bucket: env.R2_BUCKET!,
+        Bucket: getR2Bucket(),
         Key: input.path,
         ContentType: input.contentType,
     });
-    const signedUrl = await getSignedUrl(getClient(), command, {
+    const signedUrl = await getSignedUrl(getR2Client(), command, {
         expiresIn: PRESIGN_EXPIRES_SEC,
     });
     return { path: input.path, signedUrl };
@@ -107,9 +79,9 @@ export async function presignPut(input: {
 
 export async function objectExists(path: string): Promise<boolean> {
     try {
-        await getClient().send(
+        await getR2Client().send(
             new HeadObjectCommand({
-                Bucket: env.R2_BUCKET!,
+                Bucket: getR2Bucket(),
                 Key: path,
             })
         );
@@ -131,9 +103,9 @@ export async function objectExists(path: string): Promise<boolean> {
 
 export async function deleteObject(path: string): Promise<void> {
     assertR2Configured();
-    await getClient().send(
+    await getR2Client().send(
         new DeleteObjectCommand({
-            Bucket: env.R2_BUCKET!,
+            Bucket: getR2Bucket(),
             Key: path,
         })
     );

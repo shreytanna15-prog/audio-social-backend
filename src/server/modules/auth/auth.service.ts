@@ -4,7 +4,7 @@ import { userService } from "@/server/modules/user/user.service";
 import { LoginSchema, SignupSchema } from "@/server/modules/auth/auth.validator";
 import { env } from "@/server/config/env";
 
-import { comparePassword, generatePasswordHash } from "@/server/lib/passsword";
+import { comparePassword, generatePasswordHash } from "@/server/lib/password";
 import { generateJwtToken, verifyJwtToken } from "@/server/lib/jwt";
 import { AppError } from "@/server/utils/global-error";
 import { AUTH_CONFIG } from "@/server/constants/auth.config";
