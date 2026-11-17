@@ -261,8 +261,12 @@ class TrackService {
             );
         }
 
-        // Keep paths so abortIncompleteBackup cannot wipe the last good cloud objects.
+        // Only audio/layer changes invalidate the uploaded mix. Metadata-only
+        // edits (title, duration) keep the track SYNCED so it stays publishable
+        // without re-uploading. Keep paths so abortIncompleteBackup cannot wipe
+        // the last good cloud objects.
         const markDirty =
+            payload.layers !== undefined &&
             track.storageState === TrackStorageState.SYNCED
                 ? { storageState: TrackStorageState.LOCAL_ONLY }
                 : {};

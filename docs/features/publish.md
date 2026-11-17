@@ -196,6 +196,8 @@ Unpublished tracks must **not** appear in public list endpoints.
 
 Existing `PATCH /api/tracks/:id` remains **DRAFT only**.
 
+Metadata-only edits (title/duration, no `layers`) keep a `SYNCED` track `SYNCED`, so it stays publishable without re-uploading. Sending `layers` means the audio changed and flips the track to `LOCAL_ONLY` (re-backup before publish).
+
 ---
 
 ## 7. Visibility matrix
