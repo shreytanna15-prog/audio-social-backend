@@ -13,6 +13,18 @@
 # Local developer QA artifacts (screenshots, notes — never push)
 /developer/
 
+# Tests / e2e / developer-only (never push)
+tests/
+e2e/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+.cursor/
+*.code-workspace
+workers/**/.dev.vars
+workers/**/.dev.vars.example
+
 # testing
 /coverage
 
