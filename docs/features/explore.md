@@ -5,7 +5,7 @@
 **Status:** `Planned` — Explore body is mostly fixtures; Search is a **separate** plan. Wire public discovery rails per this doc.  
 **Do not** invent Prisma models. Reuse Track / User / Follow / Playlist. Do **not** reuse Home’s personal playlists or Made for you here.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./playlists-and-albums.md`](./playlists-and-albums.md), [`./follow-and-artist-search.md`](./follow-and-artist-search.md), [`./taste-and-recommendations.md`](./taste-and-recommendations.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./playlists-and-albums.md`](./playlists-and-albums.md), [`./search.md`](./search.md), [`./follow.md`](./follow.md), [`./taste-and-recommendations.md`](./taste-and-recommendations.md)
 
 **Naming:**
 

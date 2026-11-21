@@ -5,7 +5,7 @@
 **Status:** `Done` — lean inbox (FOLLOW / LIKE / COMMENT), mark-read, unread badge on Me + dedicated count endpoint; app wired.  
 **Do not** invent alternate activity tables; use `Notification` in `prisma/schema.prisma`.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./follow-and-artist-search.md`](./follow-and-artist-search.md), [`./library-saves.md`](./library-saves.md), [`./track-comments.md`](./track-comments.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./follow.md`](./follow.md), [`./library-saves.md`](./library-saves.md), [`./track-comments.md`](./track-comments.md)
 
 ---
 

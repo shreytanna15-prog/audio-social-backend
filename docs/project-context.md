@@ -67,7 +67,8 @@ Agents must trust, in order:
 | [`docs/features/playlists-and-albums.md`](./features/playlists-and-albums.md) | Playlists + albums |
 | [`docs/features/library-saves.md`](./features/library-saves.md) | Liked Songs + save playlist/album (pilot rewritten format) |
 | [`docs/features/track-comments.md`](./features/track-comments.md) | Comments, 1-level replies, comment likes |
-| [`docs/features/follow-and-artist-search.md`](./features/follow-and-artist-search.md) | Follow + artist search |
+| [`docs/features/follow.md`](./features/follow.md) | Follow + public profile + follower lists |
+| [`docs/features/search.md`](./features/search.md) | Instagram-like Search (Recent / Music / Artists) |
 | [`docs/features/edit-profile.md`](./features/edit-profile.md) | Profile text + avatar/cover |
 | [`docs/features/chat.md`](./features/chat.md) | DMs, requests, voice notes |
 | [`docs/features/home.md`](./features/home.md) | Home discovery sections (trending, featured artists, latest project, my playlists) |
@@ -242,7 +243,8 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 | Playlists & albums | Partial | Detail song-list shipped; remaining: ⋮ → Edit form screen (name/desc/cover), collage, reorder — `docs/features/playlists-and-albums.md` |
 | Liked Songs + save playlist/album | Partial | Core shipped; track GET DTOs still omit `likeCount` / `isLiked` — [`library-saves.md`](./features/library-saves.md) |
 | Track comments | Partial | Core shipped; Newest/Top sort UI open — `docs/features/track-comments.md` |
-| Follow + artist search | Done | `docs/features/follow-and-artist-search.md` |
+| Follow + public profile | Done | [`follow.md`](./features/follow.md) |
+| Search (Explore) | Planned | Instagram-like UX + Music API — [`search.md`](./features/search.md) |
 | Chat | Done (core) | `docs/features/chat.md`; Worker deploy + env; block users later |
 | Global listen player | Stub / Partial | Real stream/queue later; separate from studio |
 | Home discovery | Planned / Partial | See [`home.md`](./features/home.md) — much of Home may already be wired; keep doc honest vs code |
@@ -263,7 +265,7 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 3. Library (projects / playlists / albums / likes)  
 4. Social (comments, follow, profile, chat polish)  
 5. Home discovery + taste / Made for you ([`home.md`](./features/home.md), [`taste-and-recommendations.md`](./features/taste-and-recommendations.md))  
-6. Explore body ([`explore.md`](./features/explore.md)) then Search plan  
+6. Explore body ([`explore.md`](./features/explore.md)) then Search ([`search.md`](./features/search.md))  
 7. Feed  
 8. Concerts / coins / tanpura / subscriptions / admin  
 

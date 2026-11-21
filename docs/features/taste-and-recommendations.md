@@ -5,7 +5,7 @@
 **Status:** `Done` — lightweight heuristic personalization (not ML). Powers **Made for your vibe** on Home; genres from onboarding + `TrackPlay`.  
 **Do not** invent a parallel mobile history sync engine for v1. Do not treat this as the deferred “big Recommendation product” — this is a **small** taste module.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./edit-profile.md`](./edit-profile.md), [`./library-saves.md`](./library-saves.md), [`./follow-and-artist-search.md`](./follow-and-artist-search.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./edit-profile.md`](./edit-profile.md), [`./library-saves.md`](./library-saves.md), [`./follow.md`](./follow.md)
 
 **Naming:**
 

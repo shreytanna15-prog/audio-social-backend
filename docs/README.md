@@ -9,4 +9,4 @@
 
 New feature guides: copy [`features/_TEMPLATE.md`](./features/_TEMPLATE.md).
 
-Recent plans: [`features/home.md`](./features/home.md), [`features/explore.md`](./features/explore.md), [`features/taste-and-recommendations.md`](./features/taste-and-recommendations.md).
+Recent plans: [`features/home.md`](./features/home.md), [`features/explore.md`](./features/explore.md), [`features/search.md`](./features/search.md), [`features/taste-and-recommendations.md`](./features/taste-and-recommendations.md).

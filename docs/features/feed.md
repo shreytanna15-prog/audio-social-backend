@@ -5,7 +5,7 @@
 **Status:** `Done` — published-track feed API + app vertical reels wired (likes / comments / play / follow).  
 **Do not** invent Prisma models; reuse `Track` / `LikedTrack` / `Follow` / `TrackPlay`.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./publish.md`](./publish.md), [`./library-saves.md`](./library-saves.md), [`./track-comments.md`](./track-comments.md), [`./follow-and-artist-search.md`](./follow-and-artist-search.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./publish.md`](./publish.md), [`./library-saves.md`](./library-saves.md), [`./track-comments.md`](./track-comments.md), [`./follow.md`](./follow.md)
 
 **Naming:**
 

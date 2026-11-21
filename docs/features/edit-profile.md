@@ -254,7 +254,7 @@ Exact OpenAPI schemas should be updated in the same PR as the service changes.
 - Keep mapping helpers (`mapPublicProfileToProfile`) updated for bio + media URLs
 - Initials fallback when `avatarUrl` is null
 
-Also update `./follow-and-artist-search.md` public-profile response section when implementing (or leave a short “superseded by edit-profile §7” note there).
+Also update `./follow.md` public-profile response section when implementing (or leave a short “superseded by edit-profile §7” note there).
 
 ---
 
