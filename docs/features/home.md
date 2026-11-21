@@ -326,20 +326,12 @@ Do **not** change this copy in implementation PRs without updating this doc.
 
 ### Backend
 
-<<<<<<< Updated upstream
-- [ ] `GET /api/discover/tracks/trending`
-- [ ] `GET /api/discover/artists/featured`
-- [ ] `GET /api/projects/latest`
-- [ ] `GET /api/home/playlists` (owned + saved merge)
-- [ ] OpenAPI + tests (30d windows, limits, null latest project)
-=======
 - [x] `GET /api/discover/tracks/trending`
 - [x] `GET /api/discover/artists/featured`
 - [x] `GET /api/projects/latest`
 - [x] `GET /api/home/playlists` (owned + saved merge)
 - [x] `GET /api/me/recently-played` (distinct TrackPlay)
 - [x] OpenAPI registered + unit tests (discover / home playlists / recently played / latest project)
->>>>>>> Stashed changes
 
 ### App
 
