@@ -71,6 +71,7 @@ Agents must trust, in order:
 | [`docs/features/edit-profile.md`](./features/edit-profile.md) | Profile text + avatar/cover |
 | [`docs/features/chat.md`](./features/chat.md) | DMs, requests, voice notes |
 | [`docs/features/home.md`](./features/home.md) | Home discovery sections (trending, featured artists, latest project, my playlists) |
+| [`docs/features/explore.md`](./features/explore.md) | Explore body: all-time tops, rising, featured, public playlists (Search separate) |
 | [`docs/features/taste-and-recommendations.md`](./features/taste-and-recommendations.md) | preferredGenres + TrackPlay heuristic + Made for you tracks |
 | [`docs/features/_TEMPLATE.md`](./features/_TEMPLATE.md) | Template for new / rewritten guides |
 
@@ -244,7 +245,8 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 | Follow + artist search | Done | `docs/features/follow-and-artist-search.md` |
 | Chat | Done (core) | `docs/features/chat.md`; Worker deploy + env; block users later |
 | Global listen player | Stub / Partial | Real stream/queue later; separate from studio |
-| Home discovery | Planned | Fixtures today — [`home.md`](./features/home.md) (Explore body later; may reuse discover APIs) |
+| Home discovery | Planned / Partial | See [`home.md`](./features/home.md) — much of Home may already be wired; keep doc honest vs code |
+| Explore discovery | Planned | Body fixtures → [`explore.md`](./features/explore.md); Search is a separate plan |
 | Feed (reels/shorts) | Deferred | Different module; do not implement unless asked |
 | Notifications | Deferred | Fixtures only |
 | Taste / Made for you | Planned | Small heuristic — [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) (not full ML Recommendation) |
@@ -261,8 +263,9 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 3. Library (projects / playlists / albums / likes)  
 4. Social (comments, follow, profile, chat polish)  
 5. Home discovery + taste / Made for you ([`home.md`](./features/home.md), [`taste-and-recommendations.md`](./features/taste-and-recommendations.md))  
-6. Feed  
-7. Concerts / coins / tanpura / subscriptions / admin  
+6. Explore body ([`explore.md`](./features/explore.md)) then Search plan  
+7. Feed  
+8. Concerts / coins / tanpura / subscriptions / admin  
 
 ---
 
