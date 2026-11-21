@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Partial` — Spotify-style **detail** (open one playlist/album → cover + title + song list + play/add) is shipped. **Still open:** owner **Edit** via ⋮ menu → dedicated edit form screen (title / description / visibility or album fields / cover); playlist collage fallback; track reorder on detail. Do **not** invent alternate models.
+**Status:** `Done` — Spotify-style **detail** + dedicated owner **edit** screens (`/playlists/[id]/edit`, `/albums/[id]/edit`) with cover upload/remove, collage fallback, move up/down reorder for both. Do **not** invent alternate models.
 
 **Related docs:** `./publish.md` (published-only tracks, Unavailable), `./projects.md` (private studio folders — different feature).
 
@@ -336,7 +336,7 @@ Detail stays the Spotify-style listen/manage list. Editing metadata/cover is a *
 3. Form fields: title, description, playlist visibility (PUBLIC/PRIVATE), cover (pick / upload / remove).  
 4. Save → `PATCH` + cover upload APIs → back to detail.  
 
-Replace today’s `CollectionEditDialog` for this path. Keep attach-tracks / delete / release as menu or detail actions as today unless product moves them later.
+Shipped: dedicated edit screens replace the old `CollectionEditDialog` for this path. Keep attach-tracks / delete / release as menu or detail actions as today unless product moves them later.
 
 ### 10.4 Collage
 
@@ -377,12 +377,12 @@ Client builds 1 / 2×1 / L-shape or 2×2 from `coverFallbackUrls` length 1–4 (
 
 ### Remaining app work
 
-8a. [ ] **Edit form screens** (owner): from detail ⋮ → Edit → `/playlists/[id]/edit` + `/albums/[id]/edit`  
+8a. [x] **Edit form screens** (owner): from detail ⋮ → Edit → `/playlists/[id]/edit` + `/albums/[id]/edit`  
      - Fields: title, description, playlist visibility; album title/description  
      - Cover: pick image → existing cover upload-url / complete / delete APIs (same pattern as track/profile)  
-     - Replace `CollectionEditDialog` for metadata/cover edit  
-8b. [ ] **Client collage** on detail/library when playlist has no `coverUrl`: 1–4 tiles from `coverFallbackUrls` (today only `[0]` is used)  
-8c. [ ] **Track reorder UI** on owner **detail** (not edit form) — wire existing reorder API + hooks  
+     - Replaced `CollectionEditDialog` for metadata/cover edit on this path  
+8b. [x] **Client collage** on detail/library/profile when playlist has no `coverUrl`: 1–4 tiles from `coverFallbackUrls`  
+8c. [x] **Track reorder UI** on owner playlist **and album** detail — Move up / Move down via reorder API + hooks  
 
 
 ---

@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Partial` — core APIs + Library Saved tab + player heart + playlist/album Save are shipped; track GET/list DTOs still omit `likeCount` / `isLiked`.  
+**Status:** `Done` — core APIs + Library Saved tab + player heart + playlist/album Save; track list/detail/published DTOs and collection track rows include `likeCount` / viewer `isLiked`.  
 **Do not** invent Prisma models or a second “social like” table; Like **is** `LikedTrack`.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./publish.md`](./publish.md), [`./playlists-and-albums.md`](./playlists-and-albums.md), [`./track-comments.md`](./track-comments.md), [`./follow-and-artist-search.md`](./follow-and-artist-search.md)
@@ -189,6 +189,7 @@ Library Saved tab / player heart / collection Save
 | Feature | `src/features/saves/` |
 | Library UI | `src/features/library/` (`LibrarySavedPanel`, save button) |
 | Player heart | `src/features/player/store/player.store.ts` |
+| Listen stream / queue | `src/features/player/` (`mixUrl` via `expo-audio`, liked-songs queue from Library Saved) |
 
 ---
 
@@ -217,9 +218,9 @@ Audited against repo **2026-11-14**.
 - [x] Save/unsave albums + `isSaved` on album detail  
 - [x] Unavailable mapping on save/like lists  
 - [x] OpenAPI paths for likes/saves  
-- [ ] **Track DTO gap (not OpenAPI-only):** add `likeCount` + viewer `isLiked` in `track.service` serializers (`toDetail` / `toPublishedItem` / `toListItem` — and playlist/album collection track rows if those surfaces show hearts)  
-- [ ] Mirror those fields in OpenAPI `TrackDetail` / `PublishedTrackItem` / `TrackListItem` (and collection track schemas if needed)  
-- [ ] Unit tests for like/save eligibility + idempotent count bumps _(previously over-claimed)_
+- [x] **Track DTO:** `likeCount` + viewer `isLiked` in `track.service` serializers (`toDetail` / `toPublishedItem` / `toListItem`) and playlist/album collection track rows  
+- [x] Mirror those fields in OpenAPI `TrackDetail` / `PublishedTrackItem` / `TrackListItem` / `CollectionTrackItem`  
+- [x] Unit tests for like/save eligibility + idempotent count bumps  
 
 ### App
 
@@ -227,13 +228,13 @@ Audited against repo **2026-11-14**.
 - [x] Library Saved tab (songs / playlists / albums)  
 - [x] Player heart wired to like/unlike API (UUID tracks)  
 - [x] Save controls on playlist/album detail  
-- [ ] Extend track types to include `likeCount` / `isLiked` once API returns them  
-- [ ] Player / profile / list rows: prefer server `isLiked` + `likeCount` on cold open (keep optimistic cache as overlay)  
+- [x] Track types include `likeCount` / `isLiked`  
+- [x] Player / profile / library / collection rows: prefer server `isLiked` + `likeCount` on cold open (optimistic cache as overlay)  
 
 ### Docs / polish
 
 - [x] This guide relocated under `docs/features/` and rewritten to template  
-- [ ] Update `../project-context.md` status row when DTO gap is closed  
+- [x] Update `../project-context.md` status row when DTO gap is closed  
 
 ---
 
@@ -249,8 +250,4 @@ Audited against repo **2026-11-14**.
 
 ## 13. Code review notes
 
-Gaps vs this doc (2026-11-14):
-
-- `track.service` `toDetail` / OpenAPI `TrackDetail` & `PublishedTrackItem` expose `playCount` / `commentCount` but **not** `likeCount` / `isLiked`.
-- Playlist service correctly returns `saveCount` + `isSaved`.
-- App player likes via direct `likeTrack` / `unlikeTrack` and cache helpers; still needs server-provided `isLiked` on track payloads for cold open / profiles.
+Gaps vs this doc (2026-11-14): closed for track DTO + cold-open wiring. Playlist `saveCount` / `isSaved` remain as before.

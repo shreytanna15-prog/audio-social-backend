@@ -2,7 +2,7 @@
 
 **Audience:** humans and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`) + Cloudflare Worker (realtime only).  
-**Status:** `Done` (core) — REST + app inbox/thread/voice notes shipped. Remaining: deploy Worker + `REALTIME_*` env; claimed unit test file not present.
+**Status:** `Done` (core) — REST + app inbox/thread/voice notes + realtime wiring shipped. Ops: set matching `REALTIME_*` on Next + Worker (local via `wrangler dev` or deploy). Groups/reactions/presence/push deferred.
 
 **Schema:** Prisma models live in `prisma/schema.prisma` (`Conversation`, `Message`, enums). Do **not** paste or duplicate the full schema here — read the file. Run migrate + generate after schema is committed.
 
@@ -268,8 +268,17 @@ Include signed **playback** URL for `AUDIO` rows when returning messages.
 
 **Do not** accept arbitrary client “send message” over the Worker without going through the Next API.
 
-**Env (Worker):** verify secret / public key for tokens; backend notify secret.  
-**Env (Next):** Worker base URL + notify secret.
+### Ops / env (required for live fan-out)
+
+| Next.js (`audio-social-backend/.env`) | Worker (`wrangler secret` or `.dev.vars`) | Notes |
+|---------------------------------------|-------------------------------------------|--------|
+| `REALTIME_WORKER_URL` | — | HTTP(S) base only, e.g. `http://127.0.0.1:8787` or `https://….workers.dev`. API returns `ws://` / `wss://…/ws` to the app. |
+| `REALTIME_NOTIFY_SECRET` | `NOTIFY_SECRET` | Must match. Header: `x-notify-secret`. |
+| `REALTIME_TOKEN_SECRET` | `REALTIME_TOKEN_SECRET` | Must match. If Next leaves this empty, it falls back to `JWT_ACCESS_SECRET` — Worker must still use that same value. |
+
+- **Unset both URL + notify secret:** chat REST works; notify is a no-op (dev logs skip).
+- **Local:** `workers/chat-realtime` → copy `.dev.vars.example` → `npm run dev`. See Worker `README.md`.
+- **Deploy leftover:** Cloudflare account + `wrangler login` + `wrangler deploy` + production env mirror. Code path is ready without credentials in-repo.
 
 Free-tier habits: one room per open thread; no global “all chats” socket for v1.
 
@@ -361,11 +370,12 @@ Remove fixture seed data and mock store mutations once API paths are stable.
 2. [x] Backend REST: request, accept, decline, inbox, requests, text messages, history
 3. [x] Mobile: wire request + inbox + text thread (drop fixtures for those paths)
 4. [x] Voice note upload + AUDIO messages (API + app)
-5. [x] Realtime token endpoint + Cloudflare Worker/DO scaffold + notify after write — *Worker in `workers/chat-realtime`; **ops still open:** deploy + env*
+5. [x] Realtime token endpoint + Cloudflare Worker/DO + notify after write — *Worker in `workers/chat-realtime`; ws URL uses `wss`/`ws`; app reconnects while thread open*
 6. [x] App: subscribe on conversation screen
 7. [x] OpenAPI paths
-7b. [ ] Unit tests for conversation service _(doc previously claimed `tests/unit/conversation.service.test.ts` — file not found)_
+7b. [x] Unit tests for conversation service _(local / untracked unless explicitly committed)_
 8. [x] Trim unused fixture paths; empty/error states
+9. [ ] Production Worker deploy + env on hosting (credentials / Cloudflare login) — *code + `.env.example` + Worker README done*
 
 ---
 

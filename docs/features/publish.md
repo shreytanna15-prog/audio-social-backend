@@ -271,5 +271,5 @@ Select **1–3** per publish.
 
 - No in-place edit of published audio  
 - No feed algorithm in this slice  
-- No R2 until credentials — keep adapter boundary clean  
+- Tracks/covers stay on Supabase until cutover; `R2ObjectStorage` prepared under `object-storage/` but not the default — keep adapter boundary clean  
 - Playlist/album full modules come after this contract exists  

@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Planned` — lightweight heuristic personalization (not ML). Powers **Made for your vibe** on Home; genres from onboarding + `TrackPlay`.  
+**Status:** `Done` — lightweight heuristic personalization (not ML). Powers **Made for your vibe** on Home; genres from onboarding + `TrackPlay`.  
 **Do not** invent a parallel mobile history sync engine for v1. Do not treat this as the deferred “big Recommendation product” — this is a **small** taste module.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./edit-profile.md`](./edit-profile.md), [`./library-saves.md`](./library-saves.md), [`./follow-and-artist-search.md`](./follow-and-artist-search.md)
@@ -210,7 +210,7 @@ Home Made for your vibe section
 1. **Onboarding:** replace local genre catalog with shared `TRACK_GENRES` labels (mirror backend ids). Selection 1–6; skip allowed. On continue with selection → `PATCH /api/user`.
 2. **Edit later (optional in this slice):** settings/profile can PATCH genres; not required if only onboarding.
 3. **Home Made for you:** `useQuery` → `GET /api/discover/tracks/made-for-you`; hide section if empty; play with real UUIDs.
-4. Ensure social play path still records `TrackPlay` so taste improves over time (depends on listen player maturity — document dependency).
+4. Ensure social play path still records `TrackPlay` so taste improves over time (listen player records play on cold-open when `mixUrl` streams).
 
 ### Code map
 
@@ -251,23 +251,23 @@ Home Made for your vibe section
 
 ### Backend
 
-- [ ] Prisma `User.preferredGenres` + migrate
-- [ ] `MeDto` + `PATCH` validation for preferredGenres
-- [ ] `GET /api/discover/tracks/made-for-you` (taste + fresh fallback)
-- [ ] OpenAPI + tests (SSOT validation, exclude self, empty → `[]`)
+- [x] Prisma `User.preferredGenres` + migrate (`20261114160000_user_preferred_genres`)
+- [x] `MeDto` + `PATCH` validation for preferredGenres
+- [x] `GET /api/discover/tracks/made-for-you` (taste + fresh fallback)
+- [x] OpenAPI registered + unit tests (taste cold-start / ranking / fresh fallback)
 
 ### App
 
-- [ ] Onboarding genres = `TRACK_GENRES` SSOT (ids/labels)
-- [ ] Persist picks via `PATCH /api/user`
-- [ ] Home Made for you wired; hide if empty
-- [ ] Remove Made-for-you fixtures when live
+- [x] Onboarding genres = `TRACK_GENRES` SSOT (ids/labels)
+- [x] Persist picks via `PATCH /api/user` (draft held until after signup/login)
+- [x] Home Made for you wired; hide if empty
+- [x] Remove Made-for-you fixtures when live
 
 ### Docs / polish
 
 - [x] This guide created
-- [ ] Update `../project-context.md` when taste + Home section ship
-- [ ] Note: full ML Recommendation remains deferred
+- [x] Update `../project-context.md` when taste + Home section ship
+- [x] Note: full ML Recommendation remains deferred
 
 ---
 
@@ -283,9 +283,9 @@ Home Made for your vibe section
 
 ## 13. Code review notes
 
-Baseline **2026-11-14:**
+Shipped **2026-11-14:**
 
-- Onboarding genre picker uses a **different** id set than `TRACK_GENRES` (e.g. `hip-hop` vs `hip_hop_rap`).
-- `User` has no `preferredGenres` in schema yet.
-- `TrackPlay` exists and is the correct listen signal.
-- Home “Made for your vibe” is fixture-only.
+- `User.preferredGenres` + Me DTO / PATCH validation against `TRACK_GENRES`.
+- Onboarding picker uses `TRACK_GENRES` SSOT; picks flush via `PATCH /api/user` after auth.
+- `GET /api/discover/tracks/made-for-you` heuristic + fresh 14d cold start; Home section hides when empty.
+- Full ML Recommendation product remains deferred.
