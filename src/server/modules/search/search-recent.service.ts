@@ -85,7 +85,7 @@ class SearchRecentService {
                     coverUrl: null,
                 },
                 update: {
-                    query: payload.query ?? null,
+                    ...(payload.query !== undefined ? { query: payload.query } : {}),
                     targetUserId: payload.targetUserId,
                 },
             });
@@ -117,9 +117,13 @@ class SearchRecentService {
                 },
                 update: {
                     title: payload.title,
-                    subtitle: payload.subtitle ?? null,
-                    coverUrl: payload.coverUrl ?? null,
-                    query: payload.query ?? null,
+                    ...(payload.subtitle !== undefined
+                        ? { subtitle: payload.subtitle }
+                        : {}),
+                    ...(payload.coverUrl !== undefined
+                        ? { coverUrl: payload.coverUrl }
+                        : {}),
+                    ...(payload.query !== undefined ? { query: payload.query } : {}),
                 },
             });
         }
