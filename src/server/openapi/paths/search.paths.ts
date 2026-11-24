@@ -6,13 +6,33 @@ import {
 } from "@/server/openapi/registry";
 import {
     clearSearchRecentSuccessResponseSchema,
+    musicSearchListSuccessResponseSchema,
     searchAlbumListSuccessResponseSchema,
     searchPlaylistListSuccessResponseSchema,
     searchRecentListSuccessResponseSchema,
     searchTrackListSuccessResponseSchema,
 } from "@/server/openapi/schemas";
 import { catalogSearchQuerySchema } from "@/server/modules/search/catalog-search.validator";
+import { musicSearchQuerySchema } from "@/server/modules/search/music-search.validator";
 import { recordSearchRecentSchema } from "@/server/modules/search/search-recent.validator";
+
+registry.registerPath({
+    method: "get",
+    path: "/api/search/music",
+    tags: ["Search"],
+    summary: "Search songs, playlists, and albums in one ranked list",
+    security: [...bearerSecurity],
+    request: { query: musicSearchQuerySchema },
+    responses: {
+        200: {
+            description: "Music search results fetched successfully",
+            content: {
+                "application/json": { schema: musicSearchListSuccessResponseSchema },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
 
 registry.registerPath({
     method: "get",

@@ -635,6 +635,58 @@ export const searchAlbumItemSchema = registry.register(
     })
 );
 
+const firstMusicTrackSchema = z.object({
+    id: z.uuid(),
+    title: z.string(),
+    mixUrl: z.url().nullable(),
+    coverUrl: z.url().nullable(),
+    artistName: z.string(),
+});
+
+export const musicSearchItemSchema = registry.register(
+    "MusicSearchItem",
+    z.discriminatedUnion("type", [
+        z.object({
+            type: z.literal("song"),
+            id: z.uuid(),
+            title: z.string(),
+            subtitle: z.string(),
+            coverUrl: z.url().nullable(),
+            mixUrl: z.url().nullable(),
+            playCount: z.number().int(),
+            artist: z.object({
+                id: z.uuid(),
+                username: z.string(),
+                name: z.string().nullable(),
+            }),
+        }),
+        z.object({
+            type: z.literal("playlist"),
+            id: z.uuid(),
+            title: z.string(),
+            subtitle: z.string(),
+            coverUrl: z.url().nullable(),
+            trackCount: z.number().int(),
+            saveCount: z.number().int(),
+            firstTrack: firstMusicTrackSchema.nullable(),
+        }),
+        z.object({
+            type: z.literal("album"),
+            id: z.uuid(),
+            title: z.string(),
+            subtitle: z.string(),
+            coverUrl: z.url().nullable(),
+            trackCount: z.number().int(),
+            firstTrack: firstMusicTrackSchema.nullable(),
+        }),
+    ])
+);
+
+export const musicSearchListSuccessResponseSchema = successResponseSchema(
+    z.array(musicSearchItemSchema),
+    "MusicSearchListSuccessResponse"
+);
+
 export const searchTrackListSuccessResponseSchema = successResponseSchema(
     z.array(searchTrackItemSchema),
     "SearchTrackListSuccessResponse"

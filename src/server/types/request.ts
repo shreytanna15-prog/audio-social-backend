@@ -24,12 +24,12 @@ export function createApiRequest(nextReq: NextRequest): ApiRequest {
     const state: { body?: unknown; localsQuery?: unknown; user?: User } = {};
 
     return new Proxy(nextReq, {
-        get(target, prop, receiver) {
+        get(target, prop) {
             if (prop === "body") return state.body;
             if (prop === "localsQuery") return state.localsQuery;
             if (prop === "user") return state.user;
 
-            const value = Reflect.get(target, prop, receiver);
+            const value = Reflect.get(target, prop, target);
             return typeof value === "function" ? value.bind(target) : value;
         },
         set(target, prop, value, receiver) {
