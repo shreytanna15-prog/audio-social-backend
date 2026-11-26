@@ -2,8 +2,8 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Done` — lightweight heuristic personalization (not ML). Powers **Made for your vibe** on Home; genres from onboarding + `TrackPlay`.  
-**Do not** invent a parallel mobile history sync engine for v1. Do not treat this as the deferred “big Recommendation product” — this is a **small** taste module.
+**Status:** `Done` — lightweight heuristic personalization. Powers **Made for your vibe** on Home; genres from onboarding (`TRACK_GENRES` → `preferredGenres`) + `TrackPlay`.  
+**Do not** invent a parallel mobile history sync engine for v1. This is a **small** taste module only.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./edit-profile.md`](./edit-profile.md), [`./library-saves.md`](./library-saves.md), [`./follow.md`](./follow.md)
 
@@ -59,7 +59,7 @@ flowchart LR
 - Separate `UserTaste` / score table (v1 computes on read; cache later if needed)
 - Mobile offline history queue / daily sync engine
 - Recommend artists or playlists (later)
-- Full ML / collaborative filtering / Feed ranking
+- Feed ranking
 - Changing Home trending / featured artists (→ [`./home.md`](./home.md))
 
 ---
@@ -259,7 +259,7 @@ Home Made for your vibe section
 ### App
 
 - [x] Onboarding genres = `TRACK_GENRES` SSOT (ids/labels)
-- [x] Persist picks via `PATCH /api/user` (draft held until after signup/login)
+- [x] Persist picks via `PATCH /api/user` (draft held until after signup/login; skip = no PATCH)
 - [x] Home Made for you wired; hide if empty
 - [x] Remove Made-for-you fixtures when live
 
@@ -267,7 +267,6 @@ Home Made for your vibe section
 
 - [x] This guide created
 - [x] Update `../project-context.md` when taste + Home section ship
-- [x] Note: full ML Recommendation remains deferred
 
 ---
 
@@ -283,9 +282,8 @@ Home Made for your vibe section
 
 ## 13. Code review notes
 
-Shipped **2026-11-14:**
+Shipped **2026-11-14** (backend + Home); onboarding flush completed **2026-11-26:**
 
 - `User.preferredGenres` + Me DTO / PATCH validation against `TRACK_GENRES`.
-- Onboarding picker uses `TRACK_GENRES` SSOT; picks flush via `PATCH /api/user` after auth.
+- Onboarding picker uses `TRACK_GENRES` SSOT (max 6); draft → `PATCH /api/user` after signup/login; skip clears draft (no PATCH).
 - `GET /api/discover/tracks/made-for-you` heuristic + fresh 14d cold start; Home section hides when empty.
-- Full ML Recommendation product remains deferred.

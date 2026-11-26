@@ -68,7 +68,6 @@ flowchart TB
 - Made for your vibe / onboarding genres / taste (→ [`./taste-and-recommendations.md`](./taste-and-recommendations.md))
 - Explore tab body (later; may reuse discovery endpoints)
 - Challenge product, notifications badge logic, recently played server history
-- ML recommendation engine
 - Composite `GET /api/home` mega-payload
 
 ---
