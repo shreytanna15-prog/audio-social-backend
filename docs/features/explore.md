@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Planned` — Explore body is mostly fixtures; Search is a **separate** plan. Wire public discovery rails per this doc.  
+**Status:** `Done` — Explore body wired to discover APIs (`window=all`, rising, public playlists) with Home-like section skeletons/errors; Search remains a **separate** feature. Contest card still fixture.  
 **Do not** invent Prisma models. Reuse Track / User / Follow / Playlist. Do **not** reuse Home’s personal playlists or Made for you here.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./playlists-and-albums.md`](./playlists-and-albums.md), [`./search.md`](./search.md), [`./follow.md`](./follow.md), [`./taste-and-recommendations.md`](./taste-and-recommendations.md)
@@ -286,29 +286,30 @@ When `window` ships, Home must keep calling trending **without** `all` (or expli
 
 ### Backend
 
-- [ ] `window=30d|all` on `GET /api/discover/tracks/trending` (default `30d`)  
-- [ ] `GET /api/discover/artists/rising`  
-- [ ] `GET /api/discover/playlists`  
-- [ ] OpenAPI + tests  
+- [x] `window=30d|all` on `GET /api/discover/tracks/trending` (default `30d`)  
+- [x] `GET /api/discover/artists/rising`  
+- [x] `GET /api/discover/playlists`  
+- [x] OpenAPI + tests  
 
 ### App
 
-- [ ] Remove filter chips + View-all style actions from Explore  
-- [ ] Remove Explore 30d Trending Now section  
-- [ ] Hero carousel (top 3 all-time, 10s crossfade, pause off-screen)  
-- [ ] Rising card wired; hide if empty  
-- [ ] Top Creators ← featured API  
-- [ ] Top Songs ← `window=all`  
-- [ ] Discover playlists section  
-- [ ] Keep Challenge fixture  
-- [ ] Play with real UUIDs + `mixUrl`  
-- [ ] Remove Explore fixtures for replaced rails  
+- [x] Remove filter chips + View-all style actions from Explore  
+- [x] Remove Explore 30d Trending Now section  
+- [x] Hero carousel (top 3 all-time, 10s crossfade, pause off-screen)  
+- [x] Rising card wired; hide if empty  
+- [x] Top Creators ← featured API  
+- [x] Top Songs ← `window=all`  
+- [x] Discover playlists section  
+- [x] Keep Challenge fixture  
+- [x] Play with real UUIDs + `mixUrl`  
+- [x] Remove Explore fixtures for replaced rails  
+- [x] Section skeleton / error / retry (Home pattern)  
 
 ### Docs / polish
 
 - [x] This guide created  
-- [ ] Link + status in `../project-context.md`  
-- [ ] Note Home trending default when `window` lands  
+- [x] Link + status in `../project-context.md`  
+- [x] Note Home trending default when `window` lands  
 
 ---
 
@@ -330,3 +331,9 @@ Baseline **2026-11-21:**
 - `explore-screen.tsx` uses fixtures for hero / rising; shared sections fall back to fixture data; filter chips present; two track rails both fixture; Challenge fixture.  
 - Discover already has featured + 30d trending + made-for-you; **no** `window=all`, rising, or discover playlists yet.  
 - Search route exists separately under Explore stack.
+
+Shipped **2026-11-26:**
+
+- Backend: `window=30d|all` on trending; `GET /api/discover/artists/rising`; `GET /api/discover/playlists`; OpenAPI + unit tests.  
+- App: Explore wired to live rails; filter chips / View all / 30d Trending Now removed; hero carousel (10s, pause off-screen); section skeletons/errors like Home; Contest fixture kept; Search bar unchanged.  
+- API smoke against local backend returned live “Test audio” / rising Extra User / QA public playlist. Device UI E2E still recommended before marking fully verified.

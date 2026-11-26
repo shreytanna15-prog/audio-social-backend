@@ -112,7 +112,7 @@ Envelope `{ success, message, data }`. Follow `.agents/skills/audio-backend-api-
 | Method | Path | Auth | Notes |
 |--------|------|------|-------|
 | `GET` | `/api/discover/artists/featured?limit=8` | Optional | Default/max limit 8 |
-| `GET` | `/api/discover/tracks/trending?limit=12` | Optional | Default/max limit 12 |
+| `GET` | `/api/discover/tracks/trending?limit=12` | Optional | Default/max limit 12; default `window=30d` (Explore may pass `window=all` — see [`./explore.md`](./explore.md)) |
 
 **Featured artist item (sketch):**
 

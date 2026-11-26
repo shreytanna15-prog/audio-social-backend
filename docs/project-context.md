@@ -236,6 +236,8 @@ Editing a `SYNCED` draft typically marks storage dirty again (`SYNCED` → `LOCA
 
 Status is approximate (~app **60-70%** overall). Nothing is fully finalized; expect polish, bugs, and rework. Prefer feature docs for API detail.
 
+**Current execution order:** test Search first with a real backend/device, then the other implemented flows and fix findings; only then complete partial and planned features. Track the checklist in [`implementation-roadmap.md`](./implementation-roadmap.md).
+
 | Area | Status | Notes / doc |
 |------|--------|-------------|
 | Auth (email/password, JWT, password reset) | Partial / Done-ish | Improve structure later; social login undecided |
@@ -252,7 +254,7 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 | Chat | Done (core) | `docs/features/chat.md`; Worker deploy + env; block users later |
 | Global listen player | Partial | App player works; gaps vs plan - [`global-player.md`](./features/global-player.md) |
 | Home discovery | Done | [`home.md`](./features/home.md); Challenge cards -> Contests later |
-| Explore discovery | Planned | Body fixtures -> [`explore.md`](./features/explore.md) |
+| Explore discovery | Done | Live discover rails + skeletons/errors - [`explore.md`](./features/explore.md); Contest fixture remains |
 | Feed (reels/shorts) | Partial | Legacy feed live; clip redesign still Planned - [`feed.md`](./features/feed.md) |
 | Notifications | Done | Inbox + unread badge - [`notifications.md`](./features/notifications.md) |
 | Taste / Made for you | Done | [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) |

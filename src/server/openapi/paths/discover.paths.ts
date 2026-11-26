@@ -6,9 +6,11 @@ import {
     successResponseSchema,
 } from "@/server/openapi/registry";
 import {
+    discoverPlaylistsQuerySchema,
     featuredArtistsQuerySchema,
     homePlaylistsQuerySchema,
     madeForYouQuerySchema,
+    risingArtistsQuerySchema,
     trendingTracksQuerySchema,
 } from "@/server/modules/discover/discover.validator";
 
@@ -21,6 +23,23 @@ const discoverArtistSchema = registry.register(
         avatarUrl: z.url().nullable(),
         followerCount: z.number().int(),
         latestPublishedAt: z.iso.datetime().nullable(),
+    })
+);
+
+const risingSampleTrackSchema = registry.register(
+    "DiscoverRisingSampleTrack",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        coverUrl: z.url().nullable(),
+        mixUrl: z.url().nullable(),
+    })
+);
+
+const risingArtistSchema = registry.register(
+    "DiscoverRisingArtist",
+    discoverArtistSchema.extend({
+        sampleTrack: risingSampleTrackSchema.nullable(),
     })
 );
 
@@ -46,6 +65,24 @@ const discoverTrackSchema = registry.register(
         publishedAt: z.iso.datetime().nullable(),
         genres: z.array(z.string()),
         artist: discoverTrackArtistSchema,
+    })
+);
+
+const discoverPlaylistSchema = registry.register(
+    "DiscoverPlaylist",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        coverUrl: z.url().nullable(),
+        coverFallbackUrls: z.array(z.url()),
+        trackCount: z.number().int(),
+        saveCount: z.number().int(),
+        owner: z.object({
+            id: z.uuid(),
+            username: z.string(),
+            name: z.string().nullable(),
+            avatarUrl: z.url().nullable(),
+        }),
     })
 );
 
@@ -89,9 +126,19 @@ const featuredArtistsSuccessResponseSchema = successResponseSchema(
     "FeaturedArtistsSuccessResponse"
 );
 
+const risingArtistsSuccessResponseSchema = successResponseSchema(
+    z.array(risingArtistSchema),
+    "RisingArtistsSuccessResponse"
+);
+
 const trendingTracksSuccessResponseSchema = successResponseSchema(
     z.array(discoverTrackSchema),
     "TrendingTracksSuccessResponse"
+);
+
+const discoverPlaylistsSuccessResponseSchema = successResponseSchema(
+    z.array(discoverPlaylistSchema),
+    "DiscoverPlaylistsSuccessResponse"
 );
 
 const madeForYouSuccessResponseSchema = successResponseSchema(
@@ -127,11 +174,32 @@ registry.registerPath({
 
 registry.registerPath({
     method: "get",
+    path: "/api/discover/artists/rising",
+    tags: ["Discover"],
+    summary: "List rising artists",
+    description:
+        "Public catalog of recently active publishers (≥1 PUBLISHED in last 30 days), ordered by latest publish desc then followerCount asc. Includes optional sampleTrack from latest publish.",
+    request: { query: risingArtistsQuerySchema },
+    responses: {
+        200: {
+            description: "Rising artists fetched successfully",
+            content: {
+                "application/json": {
+                    schema: risingArtistsSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
     path: "/api/discover/tracks/trending",
     tags: ["Discover"],
-    summary: "List trending tracks",
+    summary: "List trending / all-time tracks",
     description:
-        "Public catalog of PUBLISHED tracks from the last 30 days, sorted by playCount desc.",
+        "Public catalog of PUBLISHED tracks. window=30d (default) limits to last 30 days; window=all uses all-time playCount. Sorted by playCount desc, publishedAt desc.",
     request: { query: trendingTracksQuerySchema },
     responses: {
         200: {
@@ -139,6 +207,27 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: trendingTracksSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/api/discover/playlists",
+    tags: ["Discover"],
+    summary: "List discover playlists",
+    description:
+        "Public playlists ordered by saveCount desc then updatedAt desc.",
+    request: { query: discoverPlaylistsQuerySchema },
+    responses: {
+        200: {
+            description: "Discover playlists fetched successfully",
+            content: {
+                "application/json": {
+                    schema: discoverPlaylistsSuccessResponseSchema,
                 },
             },
         },

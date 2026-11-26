@@ -4474,6 +4474,66 @@
           "latestPublishedAt"
         ]
       },
+      "DiscoverRisingSampleTrack": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "coverUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "mixUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "coverUrl",
+          "mixUrl"
+        ]
+      },
+      "DiscoverRisingArtist": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/DiscoverFeaturedArtist"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "sampleTrack": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/DiscoverRisingSampleTrack"
+                  },
+                  {
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "sampleTrack"
+            ]
+          }
+        ]
+      },
       "DiscoverTrackArtist": {
         "type": "object",
         "properties": {
@@ -4562,6 +4622,78 @@
           "publishedAt",
           "genres",
           "artist"
+        ]
+      },
+      "DiscoverPlaylist": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "coverUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "coverFallbackUrls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "trackCount": {
+            "type": "integer"
+          },
+          "saveCount": {
+            "type": "integer"
+          },
+          "owner": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "username": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "avatarUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "uri"
+              }
+            },
+            "required": [
+              "id",
+              "username",
+              "name",
+              "avatarUrl"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "coverUrl",
+          "coverFallbackUrls",
+          "trackCount",
+          "saveCount",
+          "owner"
         ]
       },
       "MadeForYouTrack": {
@@ -4722,6 +4854,30 @@
           "message"
         ]
       },
+      "RisingArtistsSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscoverRisingArtist"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
       "TrendingTracksSuccessResponse": {
         "type": "object",
         "properties": {
@@ -4738,6 +4894,30 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DiscoverTrack"
+            }
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ]
+      },
+      "DiscoverPlaylistsSuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscoverPlaylist"
             }
           }
         },
@@ -15322,13 +15502,97 @@
         }
       }
     },
+    "/api/discover/artists/rising": {
+      "get": {
+        "tags": [
+          "Discover"
+        ],
+        "summary": "List rising artists",
+        "description": "Public catalog of recently active publishers (≥1 PUBLISHED in last 30 days), ordered by latest publish desc then followerCount asc. Includes optional sampleTrack from latest publish.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3,
+              "default": 1
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rising artists fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RisingArtistsSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/discover/tracks/trending": {
       "get": {
         "tags": [
           "Discover"
         ],
-        "summary": "List trending tracks",
-        "description": "Public catalog of PUBLISHED tracks from the last 30 days, sorted by playCount desc.",
+        "summary": "List trending / all-time tracks",
+        "description": "Public catalog of PUBLISHED tracks. window=30d (default) limits to last 30 days; window=all uses all-time playCount. Sorted by playCount desc, publishedAt desc.",
         "parameters": [
           {
             "schema": {
@@ -15340,6 +15604,19 @@
             "required": false,
             "name": "limit",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "30d",
+                "all"
+              ],
+              "default": "30d"
+            },
+            "required": false,
+            "name": "window",
+            "in": "query"
           }
         ],
         "responses": {
@@ -15349,6 +15626,90 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TrendingTracksSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/discover/playlists": {
+      "get": {
+        "tags": [
+          "Discover"
+        ],
+        "summary": "List discover playlists",
+        "description": "Public playlists ordered by saveCount desc then updatedAt desc.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 8,
+              "default": 8
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Discover playlists fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverPlaylistsSuccessResponse"
                 }
               }
             }

@@ -11,7 +11,10 @@ export const GET = route()
     .use(validateQuery(trendingTracksQuerySchema))
     .handle(async (req) => {
         const query = req.localsQuery as TrendingTracksQuerySchema;
-        const tracks = await discoverService.listTrendingTracks(query.limit);
+        const tracks = await discoverService.listTrendingTracks(
+            query.limit,
+            query.window
+        );
 
         return NextResponse.json({
             success: true,
