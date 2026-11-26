@@ -59,7 +59,7 @@ flowchart TB
 | 4 | Featured artists | Public API; limit **8** |
 | 5 | Trending | Public API; limit **12** |
 | 6 | Playlists | Auth: viewer **created + saved**; limit **8** |
-| 7 | Challenge | Keep fixture |
+| 7 | Contest card | Keep fixture until [`./contests.md`](./contests.md); rename Challenge → Contest |
 | 8 | Recently played | Keep fixture until real player/queue |
 | 9 | Wiring | Drop Home fixtures for sections 3–6; play trending with real track UUIDs |
 

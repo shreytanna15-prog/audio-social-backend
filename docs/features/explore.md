@@ -61,7 +61,7 @@ flowchart TB
 | 4 | Rising creator | New rising artists API; **hide** section if empty |
 | 5 | Trending Now (30d) | **Remove** from Explore (Home keeps it) |
 | 6 | Top Creators | Shared section + existing featured artists API |
-| 7 | Challenge | Keep **dummy fixture** |
+| 7 | Contest card | Keep **dummy fixture** until [`./contests.md`](./contests.md); rename Challenge → Contest |
 | 8 | Top Songs | All-time list, limit **12**; same API family as hero |
 | 9 | Playlists | New public discover playlists API + shared section |
 | 10 | View all / Full Chart / See All | **Remove** |

@@ -72,10 +72,12 @@ Agents must trust, in order:
 | [`docs/features/edit-profile.md`](./features/edit-profile.md)                           | Profile text + avatar/cover                                                        |
 | [`docs/features/chat.md`](./features/chat.md)                                           | DMs, requests, voice notes                                                         |
 | [`docs/features/admin.md`](./features/admin.md)                                         | Super admin isolation, Admin model, dedicated JWT, withAdminAuth                   |
+| [`docs/features/coins-and-wallet.md`](./features/coins-and-wallet.md)                   | Double-entry coin ledger, User coin balance, Admin grant API, private mobile Wallet |
 | [`docs/features/global-player.md`](./features/global-player.md)                         | Social audio streaming, queue, 3-state loop, in-line comments, 30s play accounting |
 | [`docs/features/home.md`](./features/home.md)                                           | Home discovery sections (trending, featured artists, latest project, my playlists) |
 | [`docs/features/explore.md`](./features/explore.md)                                     | Explore body: all-time tops, rising, featured, public playlists (Search separate)  |
 | [`docs/features/taste-and-recommendations.md`](./features/taste-and-recommendations.md) | preferredGenres + TrackPlay heuristic + Made for you tracks                        |
+| [`docs/features/contests.md`](./features/contests.md)                                   | Timed Contests (submit/vote phases, genres, admin confirm, coin prizes)            |
 | [`docs/features/_TEMPLATE.md`](./features/_TEMPLATE.md)                                 | Template for new / rewritten guides                                                |
 
 Update **this file** when product direction or cross-cutting status changes. Update **feature docs** when a module’s rules/APIs change.
@@ -232,33 +234,34 @@ Editing a `SYNCED` draft typically marks storage dirty again (`SYNCED` → `LOCA
 
 ## 6. Implemented / Partial / Deferred Features
 
-Status is approximate (~app **60–70%** overall). Nothing is fully finalized; expect polish, bugs, and rework. Prefer feature docs for API detail.
+Status is approximate (~app **60-70%** overall). Nothing is fully finalized; expect polish, bugs, and rework. Prefer feature docs for API detail.
 
-| Area                                        | Status              | Notes / doc                                                                                                                             |
-| ------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Auth (email/password, JWT, password reset)  | Partial / Done-ish  | Improve structure later; social login undecided                                                                                         |
-| Edit profile                                | Done                | Avatar/cover R2 + Edit Profile UI — `docs/features/edit-profile.md`                                                                     |
-| Studio record / multitrack / effects        | Partial             | App + Superpowered — **do not touch** unless asked                                                                                      |
-| Track create / backup / restore / delete    | Largely Done        | Track module + app sync                                                                                                                 |
-| Projects                                    | Done                | `docs/features/projects.md`                                                                                                             |
-| Publish / unpublish / play / cover / genres | Done                | `docs/features/publish.md`                                                                                                              |
-| Playlists & albums                          | Partial             | Detail song-list shipped; remaining: ⋮ → Edit form screen (name/desc/cover), collage, reorder — `docs/features/playlists-and-albums.md` |
-| Liked Songs + save playlist/album           | Partial             | Core shipped; track GET DTOs still omit `likeCount` / `isLiked` — [`library-saves.md`](./features/library-saves.md)                     |
-| Track comments                              | Partial             | Core shipped; Newest/Top sort UI open — `docs/features/track-comments.md`                                                               |
-| Follow + public profile                     | Done                | [`follow.md`](./features/follow.md)                                                                                                     |
-| Search (Explore)                            | Done                | Instagram-like UX + Music API — [`search.md`](./features/search.md)                                                                     |
-| Chat                                        | Done (core)         | `docs/features/chat.md`; Worker deploy + env; block users later                                                                         |
-| Global listen player                        | Planned (Arch Done) | Streaming queue, 3-state repeat, 30s play accounting, single-track API — [`global-player.md`](./features/global-player.md)              |
-| Home discovery                              | Done                | Home discovery sections (trending, featured artists, latest project, my playlists, recently played) — [`home.md`](./features/home.md) |
-| Explore discovery                           | Planned             | Body fixtures → [`explore.md`](./features/explore.md); Search is a separate plan                                                        |
-| Feed (reels/shorts)                         | Planned (Arch Done) | 10s–30s snippet trimmer, dedicated FeedClip model, 3-loop feed player, semi-random discovery — [`feed.md`](./features/feed.md) |
-| Notifications                               | Deferred            | Fixtures only                                                                                                                           |
-| Taste / Made for you                        | Planned             | Small heuristic — [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) (not full ML Recommendation)                |
-| Tanpura (studio)                            | Deferred            | Not started app or backend                                                                                                              |
-| Concerts + rewards / coins                  | Deferred            | Not started                                                                                                                             |
-| Subscriptions + payments                    | Deferred            | Not started                                                                                                                             |
-| Admin (foundation)                          | Planned (Arch Done) | Separate Admin model, dedicated JWT, withAdminAuth middleware — [`admin.md`](./features/admin.md)                                      |
-| Import format/limits hardening              | Open                | Still to specify fully                                                                                                                  |
+| Area | Status | Notes / doc |
+|------|--------|-------------|
+| Auth (email/password, JWT, password reset) | Partial / Done-ish | Improve structure later; social login undecided |
+| Edit profile | Done | Avatar/cover R2 + Edit Profile UI - `docs/features/edit-profile.md` |
+| Studio record / multitrack / effects | Partial | App + Superpowered - **do not touch** unless asked |
+| Track create / backup / restore / delete | Largely Done | Track module + app sync |
+| Projects | Done | `docs/features/projects.md` |
+| Publish / unpublish / play / cover / genres | Done | `docs/features/publish.md` |
+| Playlists & albums | Done | Detail + edit shipped - [`playlists-and-albums.md`](./features/playlists-and-albums.md) (retest polish as needed) |
+| Liked Songs + save playlist/album | Done | APIs + Saved tab + `likeCount`/`isLiked` - [`library-saves.md`](./features/library-saves.md) |
+| Track comments | Done | APIs + Now Playing + Newest/Top - [`track-comments.md`](./features/track-comments.md) |
+| Follow + public profile | Done | [`follow.md`](./features/follow.md) |
+| Search (Explore) | Done | Instagram-like UX + Music API - [`search.md`](./features/search.md) |
+| Chat | Done (core) | `docs/features/chat.md`; Worker deploy + env; block users later |
+| Global listen player | Partial | App player works; gaps vs plan - [`global-player.md`](./features/global-player.md) |
+| Home discovery | Done | [`home.md`](./features/home.md); Challenge cards -> Contests later |
+| Explore discovery | Planned | Body fixtures -> [`explore.md`](./features/explore.md) |
+| Feed (reels/shorts) | Partial | Legacy feed live; clip redesign still Planned - [`feed.md`](./features/feed.md) |
+| Notifications | Done | Inbox + unread badge - [`notifications.md`](./features/notifications.md) |
+| Taste / Made for you | Done | [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) |
+| Contests | Planned | Needs Admin + Coins - [`contests.md`](./features/contests.md) |
+| Tanpura (studio) | Deferred | Not started |
+| Coins / wallet | Planned (Arch Done) | [`coins-and-wallet.md`](./features/coins-and-wallet.md) |
+| Subscriptions + payments | Deferred | Not started |
+| Admin (foundation) | Planned (Arch Done) | [`admin.md`](./features/admin.md) |
+| Import format/limits hardening | Open | Still to specify fully |
 
 ### Recommended build priority (product)
 
@@ -268,8 +271,9 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 4. Social (comments, follow, profile, chat polish)
 5. Home discovery + taste / Made for you ([`home.md`](./features/home.md), [`taste-and-recommendations.md`](./features/taste-and-recommendations.md))
 6. Explore body ([`explore.md`](./features/explore.md)) then Search ([`search.md`](./features/search.md))
-7. Feed
-8. Concerts / coins / tanpura / subscriptions / admin
+7. Feed / global-player polish
+8. Admin -> Coins -> Contests ([`admin.md`](./features/admin.md), [`coins-and-wallet.md`](./features/coins-and-wallet.md), [`contests.md`](./features/contests.md))
+9. Subscriptions / tanpura / payments
 
 ---
 
@@ -297,7 +301,7 @@ Status is approximate (~app **60–70%** overall). Nothing is fully finalized; e
 3. Prefer **small diffs**; match existing module patterns (`service` + Zod + `route().use(withAuth)` on backend; feature `api/hooks` on app).
 4. Comments in code: only non-obvious **why** (see `.cursor/rules/comments.mdc` / AGENTS guidance).
 5. Do **not** casually rewrite Superpowered, effect presets, or native audio patches.
-6. Do **not** start Feed, Notifications, Admin, Payments, Concerts, Tanpura, or Recommendation unless explicitly requested.
+6. Do **not** start Feed redesign, Admin, Payments, Contests, Tanpura, or Coins unless explicitly requested (or their feature doc is the active task). Notifications / Search / Home already shipped — do not re-defer them.
 7. Feature API tables belong in feature docs; keep this file as the map + status + decisions.
 8. When shipping a cross-cutting change, **update this doc’s status table** and the feature doc in the same PR/session when practical.
 9. Other developers’ work may be incomplete or wrong — verify against docs; fix rather than invent parallel systems.

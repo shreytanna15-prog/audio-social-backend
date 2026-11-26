@@ -5,7 +5,7 @@
 **Status:** `Planned` (Arch Done) — Independent `Admin` model, dedicated `ADMIN_JWT_SECRET`, and `withAdminAuth` middleware.  
 **Do not** invent Prisma models or alternate APIs; read `prisma/schema.prisma` and this doc.
 
-**Related docs:** `../project-context.md`
+**Related docs:** [`../project-context.md`](../project-context.md), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`./contests.md`](./contests.md)
 
 ---
 
