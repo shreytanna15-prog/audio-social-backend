@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing the Feed clip creation and discovery feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Planned` (Arch Done) — Upgraded architecture replacing legacy full-track feed with dedicated 10s–30s snippet clips ("Audio Shorts/Reels") created by artists from their published tracks.  
+**Status:** `In Progress` — Backend FeedClip CRUD/like + rewritten `GET /api/feed` shipped; app create/consume wired (trimmer + 3-loop player). Device E2E still pending.  
 **Do not** invent Prisma models or alternate APIs; read `prisma/schema.prisma` and this doc.
 
 **Related docs:** `../project-context.md`, `./publish.md`, `./global-player.md`, `./follow.md`, `./track-comments.md`
@@ -278,18 +278,22 @@ Standard envelope: `{ "success": true, "message": "...", "data": { ... } }`.
 ## 7. Implementation Checklist
 
 ### Backend:
-- [ ] Add `FeedClip` and `FeedClipLike` models in `prisma/schema.prisma`.
-- [ ] Run Prisma migration: `add_feed_clips_and_likes`.
-- [ ] Create `src/server/modules/feed/feed-clip.service.ts` with create, delete, like toggle, and discovery query logic.
-- [ ] Implement `src/app/api/feed/clips/route.ts` (POST) and `src/app/api/feed/clips/[id]/route.ts` (DELETE).
-- [ ] Implement `src/app/api/feed/clips/[id]/like/route.ts` (POST/DELETE).
-- [ ] Update `src/app/api/feed/route.ts` to return `FeedClipItemDto` using semi-random discovery.
-- [ ] Register paths in OpenAPI.
+- [x] Add `FeedClip` and `FeedClipLike` models in `prisma/schema.prisma`.
+- [x] Run Prisma migration: `add_feed_clips_and_likes`.
+- [x] Create `src/server/modules/feed/feed-clip.service.ts` with create, delete, like toggle, and discovery query logic.
+- [x] Implement `src/app/api/feed/clips/route.ts` (POST) and `src/app/api/feed/clips/[id]/route.ts` (DELETE).
+- [x] Implement `src/app/api/feed/clips/[id]/like/route.ts` (POST/DELETE).
+- [x] Update `src/app/api/feed/route.ts` to return `FeedClipItemDto` using semi-random discovery.
+- [x] Register paths in OpenAPI.
 
 ### Mobile App:
-- [ ] Build `CreateFeedClipScreen` with waveform range slider (10s–30s).
-- [ ] Implement client-side FFmpeg trimming and audio upload service.
-- [ ] Add "Add to Feed / Edit Feed Clip / Remove from Feed" options to Library and Publish Success screens.
-- [ ] Update `FeedScreen` and `FeedVibePage` to stream `clipAudioUrl`, render blurred background, and implement the 3-loop auto-stop with center replay button.
-- [ ] Hook up `FeedClipLike` to the rail heart icon.
-- [ ] Verify "Listen Full Song" CTA seamlessly hands off playback to Global Player.
+- [x] Build `CreateFeedClipScreen` with range selection (10s–30s) + loop preview.
+- [x] Implement client-side FFmpeg trimming and audio upload service.
+- [x] Add "Create Feed Clip" from Library published menu and post-publish navigation.
+- [x] Update `FeedScreen` / `FeedVibePage` for `clipAudioUrl`, 3-loop auto-stop, center replay.
+- [x] Hook up `FeedClipLike` to the rail heart icon.
+- [x] In-feed comments sheet on parent `trackId`.
+- [x] Library Edit / Remove Feed Clip (via `feedClipId` on track list).
+- [x] Blurred cover + centered artwork on Feed cards; save stub removed from rail.
+- [ ] Verify "Listen Full Song" CTA seamlessly hands off playback to Global Player (device E2E).
+- [ ] Device E2E for create → feed swipe → like → open full song.

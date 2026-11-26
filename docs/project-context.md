@@ -255,7 +255,7 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 | Global listen player | Partial | App player works; gaps vs plan - [`global-player.md`](./features/global-player.md) |
 | Home discovery | Done | [`home.md`](./features/home.md); Challenge cards -> Contests later |
 | Explore discovery | Done | Live discover rails + skeletons/errors - [`explore.md`](./features/explore.md); Contest fixture remains |
-| Feed (reels/shorts) | Partial | Legacy feed live; clip redesign still Planned - [`feed.md`](./features/feed.md) |
+| Feed (reels/shorts) | In Progress | Clip APIs + app create/consume wired; device E2E pending - [`feed.md`](./features/feed.md) |
 | Notifications | Done | Inbox + unread badge - [`notifications.md`](./features/notifications.md) |
 | Taste / Made for you | Done | [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) |
 | Contests | Planned | Needs Admin + Coins - [`contests.md`](./features/contests.md) |

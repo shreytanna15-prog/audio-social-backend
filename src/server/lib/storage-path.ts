@@ -45,6 +45,11 @@ export function buildCoverPath(
     return `${buildTrackPrefix(userId, trackId)}/${STORAGE_CONFIG.files.cover}.${normalizeExtension(extension)}`;
 }
 
+/** Client-trimmed feed clip (AAC/M4A). */
+export function buildFeedClipPath(userId: string, trackId: string): string {
+    return `${buildTrackPrefix(userId, trackId)}/feed-clip.${STORAGE_CONFIG.chat.extension}`;
+}
+
 export function buildPlaylistCoverPath(
     userId: string,
     playlistId: string,

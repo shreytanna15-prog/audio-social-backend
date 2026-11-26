@@ -68,6 +68,8 @@ export type TrackListItem = {
     playCount: number;
     likeCount: number;
     isLiked: boolean;
+    /** Present when the owner has an active FeedClip for this track. */
+    feedClipId: string | null;
     publishedAt: string | null;
     createdAt: string;
 };
@@ -330,6 +332,9 @@ class TrackService {
                 ...(query.status ? { status: query.status as TrackStatus } : {}),
             },
             orderBy: { createdAt: "desc" },
+            include: {
+                feedClip: { select: { id: true } },
+            },
         });
 
         const liked = await this.likedTrackIds(
@@ -337,7 +342,9 @@ class TrackService {
             tracks.map((track) => track.id)
         );
         return Promise.all(
-            tracks.map((track) => this.toListItem(track, liked.has(track.id)))
+            tracks.map((track) =>
+                this.toListItem(track, liked.has(track.id), track.feedClip?.id ?? null)
+            )
         );
     }
 
@@ -955,7 +962,8 @@ class TrackService {
 
     private async toListItem(
         track: Track,
-        isLiked: boolean
+        isLiked: boolean,
+        feedClipId: string | null = null
     ): Promise<TrackListItem> {
         const [mixUrl, coverUrl] = await Promise.all([
             this.createSignedUrl(track.mixPath),
@@ -974,6 +982,7 @@ class TrackService {
             playCount: track.playCount,
             likeCount: track.likeCount,
             isLiked,
+            feedClipId,
             publishedAt: track.publishedAt?.toISOString() ?? null,
             createdAt: track.createdAt.toISOString(),
         };

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { route } from "@/server/utils/route";
 import { withAuth } from "@/server/middlewares/with-auth";
 import { validateQuery } from "@/server/middlewares/validate";
-import { feedService } from "@/server/modules/feed/feed.service";
+import { feedClipService } from "@/server/modules/feed/feed-clip.service";
 import {
     listFeedQuerySchema,
     type ListFeedQuerySchema,
@@ -15,7 +15,7 @@ export const GET = route()
     .handle(async (req) => {
         const user = req.user as User;
         const query = req.localsQuery as ListFeedQuerySchema;
-        const data = await feedService.listFeed(user.id, query);
+        const data = await feedClipService.listFeed(user.id, query);
 
         return NextResponse.json({
             success: true,

@@ -128,6 +128,7 @@ export const trackListItemSchema = registry.register(
         playCount: z.number().int(),
         likeCount: z.number().int(),
         isLiked: z.boolean(),
+        feedClipId: z.uuid().nullable(),
         publishedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
     })
