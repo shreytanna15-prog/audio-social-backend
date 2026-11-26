@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Planned` — Home UI exists on fixtures; wire real discovery + personal sections per this doc.  
+**Status:** `Done` — Home screen discovery endpoints (trending, featured artists, latest project, created + saved playlists, made for you, recently played) wired to live APIs.  
 **Do not** invent Prisma models; reuse Project / Track / User / Playlist / SavedPlaylist. Made for you is **not** owned here — see [`./taste-and-recommendations.md`](./taste-and-recommendations.md).
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./projects.md`](./projects.md), [`./publish.md`](./publish.md), [`./playlists-and-albums.md`](./playlists-and-albums.md), [`./library-saves.md`](./library-saves.md), [`./follow.md`](./follow.md), [`./taste-and-recommendations.md`](./taste-and-recommendations.md)

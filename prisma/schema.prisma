@@ -31,6 +31,8 @@ model User {
   savedAlbums        SavedAlbum[]
   trackComments      TrackComment[]
   trackCommentLikes  TrackCommentLike[]
+  feedClips          FeedClip[]
+  feedClipLikes      FeedClipLike[]
 
   followers            Follow[]       @relation("UserFollowers")
   following            Follow[]       @relation("UserFollowing")
@@ -137,6 +139,7 @@ model Track {
   likedBy        LikedTrack[]
   comments       TrackComment[]
   notifications  Notification[]
+  feedClip       FeedClip?
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
@@ -448,3 +451,56 @@ model Notification {
   @@index([actorId, createdAt(sort: Desc)])
   @@index([trackId])
 }
+
+model Admin {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model FeedClip {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  trackId       String         @unique @db.Uuid
+  track         Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  userId        String         @db.Uuid
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Object storage key for the trimmed lightweight audio snippet
+  clipAudioPath String
+
+  /// Start and end offsets in the original master mix
+  startMs       Int
+  endMs         Int
+  durationMs    Int
+
+  /// Denormalized count of FeedClipLike
+  likeCount     Int            @default(0)
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  likes         FeedClipLike[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+}
+
+model FeedClipLike {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  clipId    String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  clip FeedClip @relation(fields: [clipId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clipId, userId])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+

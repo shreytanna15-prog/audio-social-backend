@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Planned` — catalog + artist + recent APIs largely exist; **Search UI/UX must change** to Instagram-like flow (not only wire under old chips).  
+**Status:** `Done` — catalog + artist + recent APIs and Instagram-like Search screen with Recent, Music, and Artists tabs wired.  
 **Do not** invent Prisma models. Follow graph stays in [`./follow.md`](./follow.md). Explore body is [`./explore.md`](./explore.md).
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./explore.md`](./explore.md), [`./follow.md`](./follow.md), [`./publish.md`](./publish.md), [`./playlists-and-albums.md`](./playlists-and-albums.md)
