@@ -1,4 +1,4 @@
-# VibeOGram (Audio App) — Project Context & Architecture
+# VibeOGram (Audio App) ? Project Context & Architecture
 
 > **Notice for AI Agents:** This document is the primary **product + cross-repo** source of truth for VibeOGram. Read it **before** modifying either codebase. Feature-level API contracts and locked rules live in sibling files under `docs/`. Database shape is defined only in `prisma/schema.prisma`. Do **not** invent Prisma models, storage layouts, or product rules that contradict this file or those docs.
 
@@ -28,8 +28,8 @@ VibeOGram is an **audio recording / editing app for artists and singers**, with 
 
 ### Two product pillars
 
-1. **Studio (creator)** — Record, import, multitrack, apply effects (Superpowered), save drafts, backup to cloud, publish a finished **mix**.
-2. **Social (listener + artist)** — Profiles, follow, library (projects / playlists / albums / liked songs), publish gate, plays, comments, DMs.
+1. **Studio (creator)** ? Record, import, multitrack, apply effects (Superpowered), save drafts, backup to cloud, publish a finished **mix**.
+2. **Social (listener + artist)** ? Profiles, follow, library (projects / playlists / albums / liked songs), publish gate, plays, comments, DMs.
 
 ### Ownership split (critical)
 
@@ -38,15 +38,15 @@ VibeOGram is an **audio recording / editing app for artists and singers**, with 
 | Recording, effects, Superpowered, local files, studio UX                                                             | **App**                                 | Do **not** change Superpowered / approved effect values unless the user explicitly asks |
 | Auth, users, tracks metadata, publish, projects, playlists, albums, likes/saves, comments, follow, chat, object keys | **Backend**                             | Prefer feature docs + Prisma                                                            |
 | Global **listen** player (stream published mix)                                                                      | **App** (separate from studio playback) | Still incomplete; do not confuse with studio engines                                    |
-| Admin dashboard                                                                                                      | **Same Next.js backend repo**           | **Later** — out of scope until requested                                                |
+| Admin dashboard                                                                                                      | **Same Next.js backend repo**           | **Later** ? out of scope until requested                                                |
 
 ### Core philosophy: Track is the audio entity
 
 - A **Track** is the first-class audio work (draft or published).
 - **Project** = private workplace **folder** (many-to-many with tracks). Not an album.
 - **Playlist** = listener-curated list of **PUBLISHED** tracks (anyone can create; private/public).
-- **Album** = artist release of **own PUBLISHED** tracks only (DRAFT / RELEASED; one track ≤ one album).
-- **Liked Songs** = song **heart** → `LikedTrack` (not a Playlist row). Same action as “save song to library.”
+- **Album** = artist release of **own PUBLISHED** tracks only (DRAFT / RELEASED; one track ? one album).
+- **Liked Songs** = song **heart** ? `LikedTrack` (not a Playlist row). Same action as ?save song to library.?
 - **Social publish** exposes the **mix only** (one finished audio), not stems.
 
 ---
@@ -55,10 +55,10 @@ VibeOGram is an **audio recording / editing app for artists and singers**, with 
 
 Agents must trust, in order:
 
-1. **`prisma/schema.prisma`** — database models / enums (never invent alternate schemas).
-2. **`docs/project-context.md`** (this file) — product, repos, domain, status, agent rules.
-3. **Feature guides in `docs/features/`** — locked decisions + API surfaces for each module (assignment docs for teammates).
-4. **Per-repo architecture / skills** — backend `.agents/skills/`: `audio-backend-api-patterns` (SSOT), plus `route-handlers`, `prisma-cli`, `prisma-client-api`, `prisma-postgres`, `prisma-upgrade-v7`. App: `audio-app-codebase-patterns` + kept Expo/RN skills. Product rules stay in `docs/`.
+1. **`prisma/schema.prisma`** ? database models / enums (never invent alternate schemas).
+2. **`docs/project-context.md`** (this file) ? product, repos, domain, status, agent rules.
+3. **Feature guides in `docs/features/`** ? locked decisions + API surfaces for each module (assignment docs for teammates).
+4. **Per-repo architecture / skills** ? backend `.agents/skills/`: `audio-backend-api-patterns` (SSOT), plus `route-handlers`, `prisma-cli`, `prisma-client-api`, `prisma-postgres`, `prisma-upgrade-v7`. App: `audio-app-codebase-patterns` + kept Expo/RN skills. Product rules stay in `docs/`.
 
 | Feature doc                                                                             | Topic                                                                              |
 | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -80,7 +80,7 @@ Agents must trust, in order:
 | [`docs/features/contests.md`](./features/contests.md)                                   | Timed Contests (submit/vote phases, genres, admin confirm, coin prizes)            |
 | [`docs/features/_TEMPLATE.md`](./features/_TEMPLATE.md)                                 | Template for new / rewritten guides                                                |
 
-Update **this file** when product direction or cross-cutting status changes. Update **feature docs** when a module’s rules/APIs change.
+Update **this file** when product direction or cross-cutting status changes. Update **feature docs** when a module?s rules/APIs change.
 
 ---
 
@@ -98,7 +98,7 @@ Update **this file** when product direction or cross-cutting status changes. Upd
   - **Today:** Supabase Storage (tracks, covers, chat audio) via object-storage adapter.
   - **Lead decision:** move to **Cloudflare R2** when client provides credentials (better fit / cost); profile media already aimed at R2 in edit-profile work.
 - **Realtime chat:** Cloudflare Worker under `workers/chat-realtime/` (see `docs/features/chat.md`).
-- **Tests:** Vitest (`tests/unit`, `tests/integration`, `tests/e2e`) — coverage uneven; do not assume all feature docs’ “tests done” checkboxes are accurate.
+- **Tests:** Vitest (`tests/unit`, `tests/integration`, `tests/e2e`) ? coverage uneven; do not assume all feature docs? ?tests done? checkboxes are accurate.
 
 ### 3.2 App (`audio-social-app`)
 
@@ -117,18 +117,18 @@ Update **this file** when product direction or cross-cutting status changes. Upd
 
 ```text
 src/
-├── app/api/                 # Next.js route handlers per resource
-├── server/
-│   ├── modules/<feature>/   # *.service.ts, *.validator.ts
-│   ├── middlewares/         # withAuth, validateBody/Query
-│   ├── lib/                 # storage-path, object-storage, helpers
-│   ├── constants/           # storage.config, track-genres, ...
-│   ├── openapi/             # paths + schemas
-│   └── utils/               # route(), AppError, apiWrapper
-├── generated/prisma/        # generated client (do not hand-edit)
+??? app/api/                 # Next.js route handlers per resource
+??? server/
+?   ??? modules/<feature>/   # *.service.ts, *.validator.ts
+?   ??? middlewares/         # withAuth, validateBody/Query
+?   ??? lib/                 # storage-path, object-storage, helpers
+?   ??? constants/           # storage.config, track-genres, ...
+?   ??? openapi/             # paths + schemas
+?   ??? utils/               # route(), AppError, apiWrapper
+??? generated/prisma/        # generated client (do not hand-edit)
 prisma/
-├── schema.prisma
-└── migrations/
+??? schema.prisma
+??? migrations/
 docs/                        # project-context + feature guides
 workers/chat-realtime/       # chat realtime worker
 ```
@@ -137,10 +137,10 @@ workers/chat-realtime/       # chat realtime worker
 
 ```text
 App Router route.ts
-  → route().use(withAuth).use(validateBody|Query).handle(...)
-      → module service
-          → Prisma / object storage
-      → NextResponse.json({ success, message, data })
+  ? route().use(withAuth).use(validateBody|Query).handle(...)
+      ? module service
+          ? Prisma / object storage
+      ? NextResponse.json({ success, message, data })
 ```
 
 **Success envelope** (consistent):
@@ -153,16 +153,16 @@ App Router route.ts
 }
 ```
 
-**Errors:** `AppError` → global wrapper; body shaped with `success: false`, `code`, `message` (see `src/server/utils/global-error.ts`).
+**Errors:** `AppError` ? global wrapper; body shaped with `success: false`, `code`, `message` (see `src/server/utils/global-error.ts`).
 
 ### 4.2 App (typical)
 
 ```text
 src/
-├── app/                     # Expo Router screens / tabs
-├── features/<domain>/       # screens, components, api/, hooks, types
-├── shared/                  # UI kit, navigation, lib
-└── modules/                 # native / local packages (superpowered, input-monitor)
+??? app/                     # Expo Router screens / tabs
+??? features/<domain>/       # screens, components, api/, hooks, types
+??? shared/                  # UI kit, navigation, lib
+??? modules/                 # native / local packages (superpowered, input-monitor)
 ```
 
 **Patterns to copy:** `features/tracks`, `features/users`, `features/projects`, `features/saves`, `features/comments`.
@@ -175,19 +175,19 @@ Full detail: `prisma/schema.prisma`. Agents must not redefine these.
 
 ### User & social graph
 
-- **User** — email, username, password hash, profile fields, avatar/cover paths.
-- **Follow** — artist follow edges.
-- **SearchRecent** — recent search chips (artist / song / album / playlist).
-- **Conversation / Message** — DM requests + text/audio messages.
+- **User** ? email, username, password hash, profile fields, avatar/cover paths.
+- **Follow** ? artist follow edges.
+- **SearchRecent** ? recent search chips (artist / song / album / playlist).
+- **Conversation / Message** ? DM requests + text/audio messages.
 
 ### Track & studio sync
 
-- **Track** — `kind` (`SINGLE` | `MULTI`), `status` (`DRAFT` | `PUBLISHED`), `storageState` (`LOCAL_ONLY` | `SYNCED` | `CLOUD_ONLY`), mix/cover paths, publish meta (caption, description, genres[], keywords[]), `publishedAt`, `playCount`, `likeCount`, `commentCount`.
-- **TrackLayer** — per-layer stem/source paths, timing, effects JSON, peaks.
-- **TrackPlay** — play events (feeds `playCount`).
+- **Track** ? `kind` (`SINGLE` | `MULTI`), `status` (`DRAFT` | `PUBLISHED`), `storageState` (`LOCAL_ONLY` | `SYNCED` | `CLOUD_ONLY`), mix/cover paths, publish meta (caption, description, genres[], keywords[]), `publishedAt`, `playCount`, `likeCount`, `commentCount`.
+- **TrackLayer** ? per-layer stem/source paths, timing, effects JSON, peaks.
+- **TrackPlay** ? play events (feeds `playCount`).
 
 **SINGLE vs MULTI (product):**  
-App-side editing modes. SINGLE = one audio timeline; MULTI = multiple layers (vocals, instruments, etc.). **Publish always ships one mix** — the finished bounce — even for MULTI.
+App-side editing modes. SINGLE = one audio timeline; MULTI = multiple layers (vocals, instruments, etc.). **Publish always ships one mix** ? the finished bounce ? even for MULTI.
 
 **Storage states (backend + app sync):**
 
@@ -197,7 +197,7 @@ App-side editing modes. SINGLE = one audio timeline; MULTI = multiple layers (vo
 | `SYNCED`     | Backup complete; eligible to publish (with cover etc.)                     |
 | `CLOUD_ONLY` | Cloud copy without full local set (restore flows)                          |
 
-Editing a `SYNCED` draft typically marks storage dirty again (`SYNCED` → `LOCAL_ONLY`) until re-backup. Exact client file layout is app-owned; cloud keys use helpers in `src/server/lib/storage-path.ts`.
+Editing a `SYNCED` draft typically marks storage dirty again (`SYNCED` ? `LOCAL_ONLY`) until re-backup. Exact client file layout is app-owned; cloud keys use helpers in `src/server/lib/storage-path.ts`.
 
 **Audio files (naming):**
 
@@ -209,25 +209,25 @@ Editing a `SYNCED` draft typically marks storage dirty again (`SYNCED` → `LOCA
 
 ### Projects
 
-- **Project** + **ProjectTrack** — private M2M folder. Deleting a project does not delete tracks unless an explicit delete-tracks option is used (see `docs/features/projects.md`).
+- **Project** + **ProjectTrack** ? private M2M folder. Deleting a project does not delete tracks unless an explicit delete-tracks option is used (see `docs/features/projects.md`).
 
 ### Playlists & albums
 
-- **Playlist** / **PlaylistTrack** — `PRIVATE` | `PUBLIC`; `saveCount`.
-- **Album** / **AlbumTrack** — `DRAFT` | `RELEASED`; `AlbumTrack.trackId` **globally unique** (one album per track).
-- Unpublished members kept in joins → UI **Unavailable** (do not auto-remove).
+- **Playlist** / **PlaylistTrack** ? `PRIVATE` | `PUBLIC`; `saveCount`.
+- **Album** / **AlbumTrack** ? `DRAFT` | `RELEASED`; `AlbumTrack.trackId` **globally unique** (one album per track).
+- Unpublished members kept in joins ? UI **Unavailable** (do not auto-remove).
 
 ### Likes & saves
 
-- **LikedTrack** — song heart / Liked Songs; bumps **`Track.likeCount`**.
-- **SavedPlaylist** / **SavedAlbum** — bookmark others’ public playlist / released album; playlist bumps **`Playlist.saveCount`**. No album save count in v1.
+- **LikedTrack** ? song heart / Liked Songs; bumps **`Track.likeCount`**.
+- **SavedPlaylist** / **SavedAlbum** ? bookmark others? public playlist / released album; playlist bumps **`Playlist.saveCount`**. No album save count in v1.
 - Own playlist/album: **cannot** save. Own published track: **can** like.
 
 ### Comments
 
-- **TrackComment** — max **300** chars; optional `parentId` for **one-level** reply only.
-- **TrackCommentLike** — likes on comments (≠ song like).
-- **Hard delete**; author only; deleting a parent cascades replies. Track owner cannot delete others’ comments in v1.
+- **TrackComment** ? max **300** chars; optional `parentId` for **one-level** reply only.
+- **TrackCommentLike** ? likes on comments (? song like).
+- **Hard delete**; author only; deleting a parent cascades replies. Track owner cannot delete others? comments in v1.
 - **`Track.commentCount`** includes top-level + replies.
 
 ---
@@ -252,7 +252,7 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 | Follow + public profile | Done | [`follow.md`](./features/follow.md) |
 | Search (Explore) | Done | Instagram-like UX + Music API - [`search.md`](./features/search.md) |
 | Chat | Done (core) | `docs/features/chat.md`; Worker deploy + env; block users later |
-| Global listen player | Partial | App player works; gaps vs plan - [`global-player.md`](./features/global-player.md) |
+| Global listen player | Partial | Public track detail + 3-state repeat + 30s play in progress; device QA open - [`global-player.md`](./features/global-player.md) |
 | Home discovery | Done | [`home.md`](./features/home.md); Challenge cards -> Contests later |
 | Explore discovery | Done | Live discover rails + skeletons/errors - [`explore.md`](./features/explore.md); Contest fixture remains |
 | Feed (reels/shorts) | In Progress | Clip APIs + app create/consume wired; device E2E pending - [`feed.md`](./features/feed.md) |
@@ -282,11 +282,11 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 ## 7. Key Locked Product Rules
 
 1. **Publish** requires `SYNCED` + mix + cover (+ genres/keywords rules in publish doc). While `PUBLISHED`, track audio/meta are **frozen**.
-2. **Edit published work:** **unpublish → edit → re-backup if needed → publish again**. No in-place published edit for now.
+2. **Edit published work:** **unpublish ? edit ? re-backup if needed ? publish again**. No in-place published edit for now.
 3. **Social playback** = mix URL from object storage; studio uses local/Superpowered/`expo-audio` pipelines.
 4. **Playlist** membership: PUBLISHED tracks only at attach time; anyone may create playlists.
-5. **Album** membership: owner’s PUBLISHED tracks only; album DRAFT does **not** hide singles from public profile.
-6. **Song heart** = Liked Songs (`LikedTrack`), not a second “social like” system. Comment likes are separate.
+5. **Album** membership: owner?s PUBLISHED tracks only; album DRAFT does **not** hide singles from public profile.
+6. **Song heart** = Liked Songs (`LikedTrack`), not a second ?social like? system. Comment likes are separate.
 7. **Share** = OS share for MVP (no share-count API required).
 8. **Chat** starts as a **message request** even if users follow each other.
 9. **Follow** = artists only (no private accounts / follow requests in current scope).
@@ -303,11 +303,11 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 3. Prefer **small diffs**; match existing module patterns (`service` + Zod + `route().use(withAuth)` on backend; feature `api/hooks` on app).
 4. Comments in code: only non-obvious **why** (see `.cursor/rules/comments.mdc` / AGENTS guidance).
 5. Do **not** casually rewrite Superpowered, effect presets, or native audio patches.
-6. Do **not** start Feed redesign, Admin, Payments, Contests, Tanpura, or Coins unless explicitly requested (or their feature doc is the active task). Notifications / Search / Home already shipped — do not re-defer them.
+6. Do **not** start Feed redesign, Admin, Payments, Contests, Tanpura, or Coins unless explicitly requested (or their feature doc is the active task). Notifications / Search / Home already shipped ? do not re-defer them.
 7. Feature API tables belong in feature docs; keep this file as the map + status + decisions.
-8. When shipping a cross-cutting change, **update this doc’s status table** and the feature doc in the same PR/session when practical.
-9. Other developers’ work may be incomplete or wrong — verify against docs; fix rather than invent parallel systems.
-10. Follow **codebase architecture skills** in each repo’s `.agents/skills/` for folder/API patterns; do not add parallel `.claude/skills` trees.
+8. When shipping a cross-cutting change, **update this doc?s status table** and the feature doc in the same PR/session when practical.
+9. Other developers? work may be incomplete or wrong ? verify against docs; fix rather than invent parallel systems.
+10. Follow **codebase architecture skills** in each repo?s `.agents/skills/` for folder/API patterns; do not add parallel `.claude/skills` trees.
 
 ---
 
@@ -316,13 +316,13 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 - Backend local API commonly on Next ports used in `package.json` scripts (e.g. `3015` dev).
 - App talks to backend via configured API base URL + JWT (SecureStore / app auth hooks).
 - Never commit secrets (`.env`, credentials). Prefer documenting **names** of required env vars in feature docs, not values.
-- Prisma migrations live under `prisma/migrations/` — apply with project’s usual `prisma migrate` workflow.
+- Prisma migrations live under `prisma/migrations/` ? apply with project?s usual `prisma migrate` workflow.
 
 ---
 
-## 10. What “done” means here
+## 10. What ?done? means here
 
-The product is **actively evolving**. “Done” in a feature doc usually means:
+The product is **actively evolving**. ?Done? in a feature doc usually means:
 
 - Schema + migrations exist
 - Core APIs exist and roughly match the doc
@@ -338,8 +338,8 @@ Always re-check code against docs before assuming a checkbox is literally comple
 | ----------------------------------------- | ------------------------------------------------ |
 | New major feature planned                 | Add/adjust Deferred table + link new `docs/*.md` |
 | Module ships or scope changes             | Feature doc + status row here                    |
-| Storage provider switches (Supabase → R2) | §3.1 + publish/edit-profile docs                 |
-| Auth gains OAuth/social login             | §3.1 + this decisions list                       |
-| Architecture skills land                  | §2 + §8 pointer                                  |
+| Storage provider switches (Supabase ? R2) | �3.1 + publish/edit-profile docs                 |
+| Auth gains OAuth/social login             | �3.1 + this decisions list                       |
+| Architecture skills land                  | �2 + �8 pointer                                  |
 
 **Last aligned with product discussion:** 2026-11-13 (studio + social split, unpublish-then-edit, deferred concerts/coins/tanpura/feed/subscriptions/admin, Like = Liked Songs, comments v1 locked).

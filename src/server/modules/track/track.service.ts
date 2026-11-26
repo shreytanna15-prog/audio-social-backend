@@ -8,6 +8,7 @@ import {
     TrackStorageState,
 } from "@/generated/prisma/client";
 import { prisma } from "@/server/config/prisma";
+import { publicUrl } from "@/server/config/r2";
 import { supabase } from "@/server/config/supabase";
 import { STORAGE_CONFIG } from "@/server/constants/storage.config";
 import { objectStorage } from "@/server/lib/object-storage";
@@ -19,6 +20,7 @@ import {
     buildStemPath,
     buildTrackPrefix,
 } from "@/server/lib/storage-path";
+import { followService } from "@/server/modules/follow/follow.service";
 import { AppError } from "@/server/utils/global-error";
 import type {
     CreateTrackSchema,
@@ -91,6 +93,32 @@ export type PublishedTrackItem = {
     commentCount: number;
     publishedAt: string | null;
     createdAt: string;
+};
+
+/** Social listen detail for the global player (not owner studio GET). */
+export type PublicTrackDetail = {
+    id: string;
+    title: string;
+    durationMs: number;
+    durationSec: number;
+    mixUrl: string | null;
+    coverUrl: string | null;
+    caption: string | null;
+    description: string | null;
+    genres: string[];
+    keywords: string[];
+    publishedAt: string | null;
+    playCount: number;
+    likeCount: number;
+    commentCount: number;
+    isLiked: boolean;
+    artist: {
+        id: string;
+        username: string;
+        name: string | null;
+        avatarUrl: string | null;
+        isFollowing: boolean;
+    };
 };
 
 export type TrackLayerDetail = {
@@ -729,6 +757,67 @@ class TrackService {
         });
 
         return { playCount: updated.playCount, recorded: true };
+    }
+
+    public async getPublishedPublicDetail(
+        trackId: string,
+        viewerUserId: string
+    ): Promise<PublicTrackDetail> {
+        const track = await prisma.track.findFirst({
+            where: { id: trackId, status: TrackStatus.PUBLISHED },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        name: true,
+                        avatarPath: true,
+                    },
+                },
+            },
+        });
+
+        if (!track) {
+            throw new AppError("Track not found", 404, "RESOURCE_NOT_FOUND");
+        }
+
+        const [liked, relationship, mixUrl, coverUrl] = await Promise.all([
+            this.likedTrackIds(viewerUserId, [track.id]),
+            followService.getRelationship(viewerUserId, track.user.id),
+            track.mixPath
+                ? objectStorage.createSignedDownloadUrl(track.mixPath)
+                : Promise.resolve(null),
+            track.coverPath
+                ? objectStorage.createSignedDownloadUrl(track.coverPath)
+                : Promise.resolve(null),
+        ]);
+
+        const durationSec = Math.max(1, Math.round(track.durationMs / 1000));
+
+        return {
+            id: track.id,
+            title: track.title,
+            durationMs: track.durationMs,
+            durationSec,
+            mixUrl,
+            coverUrl,
+            caption: track.caption,
+            description: track.description,
+            genres: track.genres,
+            keywords: track.keywords,
+            publishedAt: track.publishedAt?.toISOString() ?? null,
+            playCount: track.playCount,
+            likeCount: track.likeCount,
+            commentCount: track.commentCount,
+            isLiked: liked.has(track.id),
+            artist: {
+                id: track.user.id,
+                username: track.user.username,
+                name: track.user.name,
+                avatarUrl: publicUrl(track.user.avatarPath),
+                isFollowing: relationship.isFollowing,
+            },
+        };
     }
 
     public async listPublishedByUser(

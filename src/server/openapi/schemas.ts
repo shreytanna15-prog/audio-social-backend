@@ -201,6 +201,34 @@ export const publishedTrackItemSchema = registry.register(
     })
 );
 
+export const publicTrackDetailSchema = registry.register(
+    "PublicTrackDetail",
+    z.object({
+        id: z.uuid(),
+        title: z.string(),
+        durationMs: z.number().int(),
+        durationSec: z.number().int(),
+        mixUrl: z.url().nullable(),
+        coverUrl: z.url().nullable(),
+        caption: z.string().nullable(),
+        description: z.string().nullable(),
+        genres: z.array(z.string()),
+        keywords: z.array(z.string()),
+        publishedAt: z.iso.datetime().nullable(),
+        playCount: z.number().int(),
+        likeCount: z.number().int(),
+        commentCount: z.number().int(),
+        isLiked: z.boolean(),
+        artist: z.object({
+            id: z.uuid(),
+            username: z.string(),
+            name: z.string().nullable(),
+            avatarUrl: z.string().nullable(),
+            isFollowing: z.boolean(),
+        }),
+    })
+);
+
 export const projectSummarySchema = registry.register(
     "ProjectSummary",
     z.object({
@@ -424,6 +452,11 @@ export const publishedTrackListSuccessResponseSchema = successResponseSchema(
 export const publishedTrackSuccessResponseSchema = successResponseSchema(
     publishedTrackItemSchema,
     "PublishedTrackSuccessResponse"
+);
+
+export const publicTrackDetailSuccessResponseSchema = successResponseSchema(
+    publicTrackDetailSchema,
+    "PublicTrackDetailSuccessResponse"
 );
 
 export const trackCommentListSuccessResponseSchema = successResponseSchema(

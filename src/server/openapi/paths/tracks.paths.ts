@@ -8,6 +8,7 @@ import {
     createTrackUploadUrlsSuccessResponseSchema,
     publishedTrackListSuccessResponseSchema,
     publishedTrackSuccessResponseSchema,
+    publicTrackDetailSuccessResponseSchema,
     trackBackupCompleteSuccessResponseSchema,
     trackDetailSuccessResponseSchema,
     trackIdParamSchema,
@@ -381,6 +382,28 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: trackIdSuccessResponseSchema,
+                },
+            },
+        },
+        ...standardErrorResponses,
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/api/tracks/{id}/public",
+    tags: ["Tracks"],
+    summary: "Get published track for social player",
+    description:
+        "Published-only social detail for the global listen player. Owner studio detail remains GET /api/tracks/{id}.",
+    security: [...bearerSecurity],
+    request: { params: trackIdParamsSchema },
+    responses: {
+        200: {
+            description: "Public track fetched successfully",
+            content: {
+                "application/json": {
+                    schema: publicTrackDetailSuccessResponseSchema,
                 },
             },
         },

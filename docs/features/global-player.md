@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing the social listening player end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Planned` — Existing player in app is partial/prototype (`features/player/`); backend lacks dedicated single-track detail endpoint for the player.  
+**Status:** `Partial` — App player shell exists; shipping `GET /api/tracks/:id/public` (social detail) + 3-state repeat + 30s play accounting. Owner studio `GET /api/tracks/:id` stays unchanged.  
 **Do not** invent Prisma models or alternate APIs; read `prisma/schema.prisma` and this doc.
 
 **Related docs:** `../project-context.md`, `./publish.md`, `./track-comments.md`, `./library-saves.md`, `./follow.md`
@@ -33,7 +33,7 @@ flowchart TD
   Tap[User taps Play on Track / Playlist / Album] --> QueueInit[Initialize Queue in Zustand Player Store]
   QueueInit --> Stream[Stream mixPath from R2 / Supabase Storage via expo-audio]
   Stream --> Mini[Show Mini Player Dock]
-  Stream --> Fetch[Fetch GET /api/tracks/:id for fresh social state]
+  Stream --> Fetch[Fetch GET /api/tracks/:id/public for fresh social state]
   Stream --> Timer[Listen Timer reaches 30s / 50%]
   Timer --> PlayCount[POST /api/tracks/:id/play]
   Mini --> Expand[Tap Mini Player -> Expand /player]
@@ -48,7 +48,7 @@ flowchart TD
 
 | # | Item |
 |---|------|
-| 1 | **Backend API**: `GET /api/tracks/:id` returning published social track detail (plays, likes, comments, artist info, `isLiked`, `isFollowing`). |
+| 1 | **Backend API**: `GET /api/tracks/:id/public` returning published social track detail (plays, likes, comments, artist info, `isLiked`, `isFollowing`). Owner studio remains `GET /api/tracks/:id`. |
 | 2 | **Backend API**: Verify `POST /api/tracks/:id/play` increments `playCount` and inserts `TrackPlay` correctly. |
 | 3 | **Player State**: Zustand `usePlayerStore` managing `track`, `queue`, `queueIndex`, `repeatMode` (`off`, `all`, `one`), `isPlaying`, `progress`. |
 | 4 | **Lock Screen & Background Audio**: Native notification controls and lock screen metadata (`expo-audio`). |
@@ -75,7 +75,7 @@ flowchart TD
    - `OFF`: When the last track in the queue finishes, audio stops.
    - `REPEAT_ALL`: When the last track finishes, it wraps around to index `0` of the queue.
    - `REPEAT_ONE`: Uses native `player.loop = true` to replay the same audio file indefinitely.
-5. **Fresh Metadata on Track Change:** When a track begins playing, the client fires `GET /api/tracks/:id` to fetch server-authoritative `likeCount`, `playCount`, `commentCount`, `isLiked`, and artist `isFollowing`.
+5. **Fresh Metadata on Track Change:** When a track begins playing, the client fires `GET /api/tracks/:id/public` to fetch server-authoritative `likeCount`, `playCount`, `commentCount`, `isLiked`, and artist `isFollowing`.
 6. **Play Tracking (30-second rule):**
    - Track duration ≥ 30s: trigger `POST /api/tracks/:id/play` once playback reaches 30 seconds.
    - Track duration < 30s: trigger after 50% of the duration has elapsed.
@@ -108,16 +108,16 @@ Source of truth: `prisma/schema.prisma`.
 All routes follow `@/server/utils/route`, `withAuth` (optional/required), and standard envelope:
 `{ "success": true, "message": "...", "data": { ... } }`.
 
-### 5.1 Track Social Detail (`GET /api/tracks/[id]`)
+### 5.1 Track Social Detail (`GET /api/tracks/[id]/public`)
 
-Fetches authoritative social detail for a published track.
+Fetches authoritative social detail for a **published** track (global player). Does **not** replace owner studio `GET /api/tracks/[id]`.
 
-- **Route:** `src/app/api/tracks/[id]/route.ts`
-- **Auth:** Optional (`withAuth` if token provided to populate `isLiked` and `isFollowing`).
+- **Route:** `src/app/api/tracks/[id]/public/route.ts`
+- **Auth:** Required (`withAuth`) — app session always authenticated for social listen.
 - **Response `200`:**
 
 ```ts
-export type TrackDetailDto = {
+export type PublicTrackDetail = {
   id: string;
   title: string;
   durationMs: number;
@@ -144,7 +144,7 @@ export type TrackDetailDto = {
 ```
 
 - **Validation / Errors:**
-  - `404 NOT_FOUND`: Track does not exist, or track `status !== 'PUBLISHED'` (unless requested by the owner themselves).
+  - `404 NOT_FOUND`: Track does not exist, or `status !== 'PUBLISHED'`.
 
 ### 5.2 Record Play (`POST /api/tracks/[id]/play`)
 
@@ -263,17 +263,17 @@ src/features/player/
 
 ## 8. Implementation Steps & Verification
 
-### Step 1: Backend Single-Track API
-1. Implement `src/app/api/tracks/[id]/route.ts` using `route().use(withAuthOptional).handle(...)`.
-2. Connect to `track.service.ts` method `getPublishedTrackDetail(id, viewerUserId)`.
-3. Register path in `src/server/openapi/paths/track.paths.ts`.
-4. Verify with curl/Postman: returns full `TrackDetailDto` with correct `isLiked` and `isFollowing`.
+### Step 1: Backend Public Track API
+1. Implement `src/app/api/tracks/[id]/public/route.ts` using `route().use(withAuth).handle(...)`.
+2. Connect to `track.service.ts` method `getPublishedPublicDetail(id, viewerUserId)`.
+3. Register path in `src/server/openapi/paths/tracks.paths.ts`.
+4. Verify: returns `PublicTrackDetail` with correct `isLiked` and `isFollowing`. Owner studio `GET /api/tracks/{id}` unchanged.
 
 ### Step 2: App Player Store Upgrade
 1. Update `PlayerState` to include `repeatMode: 'off' | 'all' | 'one'`.
 2. Replace simple loop toggle with `cycleRepeatMode()`.
 3. Add `onPlaybackTick` with 30-second play counting verification.
-4. Hook up `GET /api/tracks/:id` upon `applyTrack` to refresh like count and artist relationship.
+4. Hook up `GET /api/tracks/:id/public` upon `applyTrack` to refresh like count and artist relationship.
 
 ### Step 3: Now Playing Screen Polish
 1. Update Repeat button in `now-playing-screen.tsx` to handle 3 states.
@@ -281,8 +281,12 @@ src/features/player/
 3. Ensure in-line comments load real thread for the active `trackId`.
 
 ### Step 4: Verification Checklist
-- [ ] Tapping any track in Explore / Search / Playlist plays audio via `mixUrl`.
-- [ ] Mini player docks above bottom tabs without overlapping content.
-- [ ] Lock screen controls show track title, artist name, and artwork.
-- [ ] Repeat 1 loops track smoothly; Repeat All loops entire list; Off stops at end.
-- [ ] Listening for 30 seconds increments `playCount` in DB by 1.
+- [x] `GET /api/tracks/:id/public` returns published social detail (studio GET unchanged)
+- [x] 3-state repeat (`off` → `all` → `one`) in player store + Now Playing UI
+- [x] Play accounting after 30s / 50% (not on cold open)
+- [x] Fresh metadata via public detail on track change
+- [ ] Tapping any track in Explore / Search / Playlist plays audio via `mixUrl` (device QA)
+- [ ] Mini player docks above bottom tabs without overlapping content (device QA)
+- [ ] Lock screen controls show track title, artist name, and artwork (device QA)
+- [ ] Repeat 1 / All / Off behavior verified on device
+- [ ] Listening for 30 seconds increments `playCount` in DB by 1 (device QA)
