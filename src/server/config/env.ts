@@ -39,6 +39,7 @@ const envSchema = z.object({
 
     JWT_ACCESS_SECRET: requiredSecret,
     JWT_REFRESH_SECRET: requiredSecret,
+    ADMIN_JWT_SECRET: requiredSecret,
 
     SUPABASE_URL: z.url("Invalid SUPABASE_URL"),
     SUPABASE_SERVICE_ROLE_KEY: requiredSecret,
@@ -67,6 +68,7 @@ export const env = envSchema.parse({
     DIRECT_URL: process.env.DIRECT_URL,
     JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+    ADMIN_JWT_SECRET: process.env.ADMIN_JWT_SECRET,
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     REALTIME_WORKER_URL: process.env.REALTIME_WORKER_URL,

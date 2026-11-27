@@ -24,3 +24,93 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.admin-theme {
+  --background: #131319;
+  --foreground: #e4e1ea;
+  --card: #1b1b21;
+  --muted: #2a2930;
+  --muted-foreground: #958ea0;
+  --border: rgba(255, 255, 255, 0.08);
+  --primary: #a078ff;
+  --on-primary: #340080;
+  --destructive: #ef4444;
+  --surface-lowest: #0e0e14;
+  --surface-low: #1b1b21;
+  --ring: #d0bcff;
+  --chart-grid: rgba(255, 255, 255, 0.05);
+  --chart-tick: #958ea0;
+  --chart-users: #a078ff;
+  --chart-tracks: #d0bcff;
+  --chart-tooltip-bg: #1b1b21;
+  --font-sans: var(--font-admin-sans), ui-sans-serif, system-ui, sans-serif;
+
+  color-scheme: dark;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.admin-theme[data-theme="light"] {
+  --background: #f6f6f8;
+  --foreground: #17171c;
+  --card: #ffffff;
+  --muted: #ececf1;
+  --muted-foreground: #6b6675;
+  --border: rgba(20, 20, 28, 0.1);
+  --primary: #7c3aed;
+  --on-primary: #ffffff;
+  --destructive: #dc2626;
+  --surface-lowest: #ffffff;
+  --surface-low: #f0f0f4;
+  --ring: #a078ff;
+  --chart-grid: rgba(20, 20, 28, 0.08);
+  --chart-tick: #6b6675;
+  --chart-users: #7c3aed;
+  --chart-tracks: #9333ea;
+  --chart-tooltip-bg: #ffffff;
+
+  color-scheme: light;
+}
+
+.admin-theme ::selection {
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
+  color: var(--foreground);
+}
+
+.admin-theme {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 18%, transparent)
+    transparent;
+}
+
+.admin-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.admin-theme ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--foreground) 18%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.admin-theme ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@theme inline {
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-destructive: var(--destructive);
+  --color-surface-lowest: var(--surface-lowest);
+  --color-surface-low: var(--surface-low);
+}

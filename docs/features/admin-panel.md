@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents building the Next.js admin portal (UI + admin APIs) in `audio-social-backend`.  
 **Repos:** `audio-social-backend` only (`/admin/*` pages, `src/admin/**`, `/api/admin/**`). Not the Expo app.  
-**Status:** `Planned` — foundation auth in [`admin.md`](./admin.md); this doc locks v1 panel screens and supporting APIs.  
+**Status:** `Done` (v1) — auth cookies, metrics/users APIs, login + shell + Dashboard + Users UI.  
 **Do not** invent Prisma models; read `prisma/schema.prisma`. Do not invent mobile routes.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./contests.md`](./contests.md) (Contests admin UI - later slice), [`../../DESIGN.md`](../../DESIGN.md)  
@@ -274,20 +274,20 @@ Follow `nextjs-admin-api-patterns` for client hooks/registries.
 ## 7. Implementation checklist
 
 ### Backend
-- [ ] Admin auth + cookies + seed ([`admin.md`](./admin.md))
-- [ ] `GET /api/admin/metrics/growth`
-- [ ] `GET /api/admin/users`
-- [ ] `GET /api/admin/users/:id`
-- [ ] Nested list routes (tracks, playlists, albums, feed-clips)
-- [ ] OpenAPI paths for all of the above
+- [x] Admin auth + cookies + seed ([`admin.md`](./admin.md))
+- [x] `GET /api/admin/metrics/growth`
+- [x] `GET /api/admin/users`
+- [x] `GET /api/admin/users/:id`
+- [x] Nested list routes (tracks, playlists, albums, feed-clips)
+- [x] OpenAPI paths for all of the above
 
 ### Admin UI
-- [ ] Design tokens / ui primitives / shared composites (`DESIGN.md`)
-- [ ] Login page
-- [ ] Shell (sidebar Dashboard + Users, top bar logout)
-- [ ] Dashboard charts + 7d/30d
-- [ ] Users table + search + pagination
-- [ ] User detail + four tabs
+- [x] Design tokens / ui primitives / shared composites (`DESIGN.md`)
+- [x] Login page
+- [x] Shell (sidebar Dashboard + Users, top bar logout)
+- [x] Dashboard charts + 7d/30d
+- [x] Users table + search + pagination
+- [x] User detail + four tabs
 
 ### Build order
 1. Auth APIs + seed + login UI + session gate  

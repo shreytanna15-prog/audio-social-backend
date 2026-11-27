@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing the backend admin authentication and role isolation.  
 **Repos:** backend (`audio-social-backend`) only (future Next.js admin portal in same repo).  
-**Status:** `Planned` (Arch Done) — Independent `Admin` model, dedicated `ADMIN_JWT_SECRET`, and `withAdminAuth` middleware.  
+**Status:** `Done` — Independent `Admin` model, dedicated `ADMIN_JWT_SECRET`, `withAdminAuth` (cookie or Bearer), auth routes, seed script.  
 **Do not** invent Prisma models or alternate APIs; read `prisma/schema.prisma` and this doc.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./admin-panel.md`](./admin-panel.md) (portal UI + users/metrics APIs), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`./contests.md`](./contests.md)
@@ -112,9 +112,9 @@ All endpoints follow `@/server/utils/route`, Zod validation, and the standard en
   ```
 - **Behavior:**
   - Verifies email and hashed password against the `Admin` table.
-  - Generates an Admin JWT using `ADMIN_JWT_SECRET`:
+  - Generates an Admin JWT using `ADMIN_JWT_SECRET` (claim `sub` = admin id, matches shared JWT helpers):
     ```ts
-    { adminId: admin.id, email: admin.email, type: "ADMIN" }
+    { sub: admin.id, email: admin.email, type: "ADMIN" }
     ```
   - Returns:
     ```json
@@ -205,14 +205,14 @@ File: `scripts/seed-admin.ts`
 ## 8. Implementation Checklist
 
 ### Backend:
-- [ ] Add `model Admin` in `prisma/schema.prisma`.
-- [ ] Run Prisma migration: `add_admin_table`.
-- [ ] Add `ADMIN_JWT_SECRET` to `.env.example` and validation config (`src/server/config/env.ts`).
-- [ ] Create `withAdminAuth` middleware in `src/server/middlewares/with-admin-auth.ts`.
-- [ ] Create `src/server/modules/admin/admin-auth.validator.ts`.
-- [ ] Create `src/server/modules/admin/admin-auth.service.ts`.
-- [ ] Implement `src/app/api/admin/auth/login/route.ts`.
-- [ ] Implement `src/app/api/admin/auth/me/route.ts`.
-- [ ] Implement `src/app/api/admin/auth/logout/route.ts`.
-- [ ] Register routes in OpenAPI under `src/server/openapi/paths/admin.paths.ts`.
-- [ ] Add `scripts/seed-admin.ts` to `package.json`.
+- [x] Add `model Admin` in `prisma/schema.prisma`.
+- [x] Run Prisma migration: `add_admin_table`.
+- [x] Add `ADMIN_JWT_SECRET` to `.env.example` and validation config (`src/server/config/env.ts`).
+- [x] Create `withAdminAuth` middleware in `src/server/middlewares/with-admin-auth.ts`.
+- [x] Create `src/server/modules/admin/admin-auth.validator.ts`.
+- [x] Create `src/server/modules/admin/admin-auth.service.ts`.
+- [x] Implement `src/app/api/admin/auth/login/route.ts`.
+- [x] Implement `src/app/api/admin/auth/me/route.ts`.
+- [x] Implement `src/app/api/admin/auth/logout/route.ts`.
+- [x] Register routes in OpenAPI under `src/server/openapi/paths/admin.paths.ts`.
+- [x] Add `scripts/seed-admin.ts` to `package.json`.
