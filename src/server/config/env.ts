@@ -1,6 +1,7 @@
 import "server-only";
 import z from "zod";
 import "dotenv/config";
+import { AppError } from "@/server/utils/global-error";
 
 function stripWrappingQuotes(value: string): string {
     const trimmed = value.trim();
@@ -39,7 +40,7 @@ const envSchema = z.object({
 
     JWT_ACCESS_SECRET: requiredSecret,
     JWT_REFRESH_SECRET: requiredSecret,
-    ADMIN_JWT_SECRET: requiredSecret,
+    ADMIN_JWT_SECRET: optionalSecret,
 
     SUPABASE_URL: z.url("Invalid SUPABASE_URL"),
     SUPABASE_SERVICE_ROLE_KEY: requiredSecret,
@@ -82,3 +83,14 @@ export const env = envSchema.parse({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
 });
+
+export function requireAdminJwtSecret(): string {
+    if (!env.ADMIN_JWT_SECRET) {
+        throw new AppError(
+            "Server configuration error: ADMIN_JWT_SECRET missing",
+            500,
+            "INTERNAL_SERVER_ERROR"
+        );
+    }
+    return env.ADMIN_JWT_SECRET;
+}

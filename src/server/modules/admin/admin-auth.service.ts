@@ -1,5 +1,5 @@
 import { prisma } from "@/server/config/prisma";
-import { env } from "@/server/config/env";
+import { requireAdminJwtSecret } from "@/server/config/env";
 import { AUTH_CONFIG } from "@/server/constants/auth.config";
 import { comparePassword } from "@/server/lib/password";
 import { generateJwtToken } from "@/server/lib/jwt";
@@ -43,7 +43,7 @@ class AdminAuthService {
                 email: admin.email,
                 type: "ADMIN",
             },
-            env.ADMIN_JWT_SECRET,
+            requireAdminJwtSecret(),
             AUTH_CONFIG.jwtExpiry.adminAccessToken
         );
 
