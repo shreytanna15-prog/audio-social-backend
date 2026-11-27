@@ -1,4 +1,4 @@
-import { requireAdminJwtSecret } from "@/server/config/env";
+import { env } from "@/server/config/env";
 import { AUTH_CONFIG } from "@/server/constants/auth.config";
 import { verifyJwtToken } from "@/server/lib/jwt";
 import { adminAuthService } from "@/server/modules/admin/admin-auth.service";
@@ -24,7 +24,7 @@ export const withAdminAuth: ApiMiddleware = async (req, _res, next) => {
         throw new AppError("Unauthorized", 401, "UNAUTHORIZED");
     }
 
-    const decoded = verifyJwtToken(accessToken, requireAdminJwtSecret());
+    const decoded = verifyJwtToken(accessToken, env.ADMIN_JWT_SECRET);
 
     if (!decoded?.sub || decoded.type !== "ADMIN") {
         throw new AppError("Invalid or expired admin token", 401, "UNAUTHORIZED");
