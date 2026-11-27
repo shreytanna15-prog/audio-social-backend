@@ -9,4 +9,4 @@
 
 New feature guides: copy [`features/_TEMPLATE.md`](./features/_TEMPLATE.md).
 
-Recent plans: [`features/contests.md`](./features/contests.md), [`features/explore.md`](./features/explore.md), [`features/search.md`](./features/search.md), [`features/admin.md`](./features/admin.md), [`features/coins-and-wallet.md`](./features/coins-and-wallet.md).
+Recent plans: [`features/admin-panel.md`](./features/admin-panel.md), [`features/contests.md`](./features/contests.md), [`features/explore.md`](./features/explore.md), [`features/search.md`](./features/search.md), [`features/admin.md`](./features/admin.md), [`features/coins-and-wallet.md`](./features/coins-and-wallet.md).

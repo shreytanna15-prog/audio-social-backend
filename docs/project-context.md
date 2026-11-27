@@ -58,7 +58,7 @@ Agents must trust, in order:
 1. **`prisma/schema.prisma`** ? database models / enums (never invent alternate schemas).
 2. **`docs/project-context.md`** (this file) ? product, repos, domain, status, agent rules.
 3. **Feature guides in `docs/features/`** ? locked decisions + API surfaces for each module (assignment docs for teammates).
-4. **Per-repo architecture / skills** ? backend `.agents/skills/`: `audio-backend-api-patterns` (SSOT), plus `route-handlers`, `prisma-cli`, `prisma-client-api`, `prisma-postgres`, `prisma-upgrade-v7`. App: `audio-app-codebase-patterns` + kept Expo/RN skills. Product rules stay in `docs/`.
+4. **Per-repo architecture / skills** - backend `.agents/skills/`: `audio-backend-api-patterns` (API SSOT), plus `route-handlers`, `prisma-cli`, `prisma-client-api`. Admin UI in this repo: root **`DESIGN.md`** (web admin tokens/layout) + `nextjs-admin-design-system` + `nextjs-admin-api-patterns`. App: `audio-app-codebase-patterns` + kept Expo/RN skills + app `DESIGN.md`. Product rules stay in `docs/`.
 
 | Feature doc                                                                             | Topic                                                                              |
 | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -72,12 +72,13 @@ Agents must trust, in order:
 | [`docs/features/edit-profile.md`](./features/edit-profile.md)                           | Profile text + avatar/cover                                                        |
 | [`docs/features/chat.md`](./features/chat.md)                                           | DMs, requests, voice notes                                                         |
 | [`docs/features/admin.md`](./features/admin.md)                                         | Super admin isolation, Admin model, dedicated JWT, withAdminAuth                   |
+| [`docs/features/admin-panel.md`](./features/admin-panel.md)                             | Next.js admin portal UI + users/metrics admin APIs (v1: login, dashboard, users)   |
 | [`docs/features/coins-and-wallet.md`](./features/coins-and-wallet.md)                   | Double-entry coin ledger, User coin balance, Admin grant API, private mobile Wallet |
 | [`docs/features/global-player.md`](./features/global-player.md)                         | Social audio streaming, queue, 3-state loop, in-line comments, 30s play accounting |
 | [`docs/features/home.md`](./features/home.md)                                           | Home discovery sections (trending, featured artists, latest project, my playlists) |
 | [`docs/features/explore.md`](./features/explore.md)                                     | Explore body: all-time tops, rising, featured, public playlists (Search separate)  |
 | [`docs/features/taste-and-recommendations.md`](./features/taste-and-recommendations.md) | preferredGenres + TrackPlay heuristic + Made for you tracks                        |
-| [`docs/features/contests.md`](./features/contests.md)                                   | Timed Contests (submit/vote phases, genres, admin confirm, coin prizes)            |
+| [`docs/features/contests.md`](./features/contests.md)                                   | Contests + admin UI (placement/payout modes, cancel, confirm/auto coin prizes)     |
 | [`docs/features/_TEMPLATE.md`](./features/_TEMPLATE.md)                                 | Template for new / rewritten guides                                                |
 
 Update **this file** when product direction or cross-cutting status changes. Update **feature docs** when a module?s rules/APIs change.
@@ -258,11 +259,12 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 | Feed (reels/shorts) | In Progress | Clip APIs + app create/consume wired; device E2E pending - [`feed.md`](./features/feed.md) |
 | Notifications | Done | Inbox + unread badge - [`notifications.md`](./features/notifications.md) |
 | Taste / Made for you | Done | [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) |
-| Contests | Planned | Needs Admin + Coins - [`contests.md`](./features/contests.md) |
+| Contests | Planned | Needs Admin panel v1 + Coins; includes `/admin/contests*` - [`contests.md`](./features/contests.md) |
 | Tanpura (studio) | Deferred | Not started |
 | Coins / wallet | Planned (Arch Done) | [`coins-and-wallet.md`](./features/coins-and-wallet.md) |
 | Subscriptions + payments | Deferred | Not started |
 | Admin (foundation) | Planned (Arch Done) | [`admin.md`](./features/admin.md) |
+| Admin panel (UI) | Planned | Login + shell + dashboard + users - [`admin-panel.md`](./features/admin-panel.md) |
 | Import format/limits hardening | Open | Still to specify fully |
 
 ### Recommended build priority (product)
@@ -274,7 +276,7 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 5. Home discovery + taste / Made for you ([`home.md`](./features/home.md), [`taste-and-recommendations.md`](./features/taste-and-recommendations.md))
 6. Explore body ([`explore.md`](./features/explore.md)) then Search ([`search.md`](./features/search.md))
 7. Feed / global-player polish
-8. Admin -> Coins -> Contests ([`admin.md`](./features/admin.md), [`coins-and-wallet.md`](./features/coins-and-wallet.md), [`contests.md`](./features/contests.md))
+8. Admin foundation -> Admin panel v1 -> Coins -> Contests (+ Contests admin UI) ([`admin.md`](./features/admin.md), [`admin-panel.md`](./features/admin-panel.md), [`coins-and-wallet.md`](./features/coins-and-wallet.md), [`contests.md`](./features/contests.md))
 9. Subscriptions / tanpura / payments
 
 ---
@@ -338,8 +340,8 @@ Always re-check code against docs before assuming a checkbox is literally comple
 | ----------------------------------------- | ------------------------------------------------ |
 | New major feature planned                 | Add/adjust Deferred table + link new `docs/*.md` |
 | Module ships or scope changes             | Feature doc + status row here                    |
-| Storage provider switches (Supabase ? R2) | §3.1 + publish/edit-profile docs                 |
-| Auth gains OAuth/social login             | §3.1 + this decisions list                       |
-| Architecture skills land                  | §2 + §8 pointer                                  |
+| Storage provider switches (Supabase ? R2) | ?3.1 + publish/edit-profile docs                 |
+| Auth gains OAuth/social login             | ?3.1 + this decisions list                       |
+| Architecture skills land                  | ?2 + ?8 pointer                                  |
 
 **Last aligned with product discussion:** 2026-11-13 (studio + social split, unpublish-then-edit, deferred concerts/coins/tanpura/feed/subscriptions/admin, Like = Liked Songs, comments v1 locked).

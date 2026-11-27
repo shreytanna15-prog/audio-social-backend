@@ -5,7 +5,7 @@
 **Status:** `Planned` (Arch Done) — Independent `Admin` model, dedicated `ADMIN_JWT_SECRET`, and `withAdminAuth` middleware.  
 **Do not** invent Prisma models or alternate APIs; read `prisma/schema.prisma` and this doc.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`./contests.md`](./contests.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./admin-panel.md`](./admin-panel.md) (portal UI + users/metrics APIs), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`./contests.md`](./contests.md)
 
 ---
 
@@ -50,7 +50,7 @@ flowchart LR
 
 ### Out of scope
 
-- Admin frontend UI dashboard (out of scope for now; APIs will be tested via Postman / curl).
+- Full portal screens (login shell, dashboard, users) - see [`admin-panel.md`](./admin-panel.md). Auth APIs here remain the foundation; portal prefers **HttpOnly cookies** on login/logout.
 - Multi-role permission matrices (strictly single Super Admin tier in v1).
 - Merging admin with regular user table.
 

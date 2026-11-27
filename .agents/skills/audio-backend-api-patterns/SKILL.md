@@ -21,7 +21,7 @@ Do **not** apply Express / Habit Server layouts (no `controller` / `repository` 
 | Concern | Follow |
 |---------|--------|
 | Module layout, `route().use(withAuth)`, envelopes, OpenAPI registry, storage adapter, product rules | **This skill** + `docs/` + `prisma/schema.prisma` |
-| Prisma schema / migrate / client query style (v7) | `prisma-cli`, `prisma-client-api`, `prisma-postgres`, `prisma-upgrade-v7` — **adapt** to this repo’s `src/server/config/prisma` + modules |
+| Prisma schema / migrate / client query style (v7) | `prisma-cli`, `prisma-client-api` — **adapt** to this repo’s `src/server/config/prisma` + modules |
 | Next.js `route.ts` mechanics (methods, `params`, Request/Response) | `route-handlers` — **secondary**; still wire handlers through `route()` + validators + services here |
 | Fullstack RSC / Server Actions / shadcn Next apps | **Do not apply** — this backend is mobile API route handlers |
 | Supabase Auth / RLS-as-app-backend | **Do not apply** — JWT auth + Prisma; Supabase is DB host + object storage via adapter |

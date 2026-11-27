@@ -22,7 +22,7 @@
 
 1. Establish a secure **virtual coin currency system** for VibeOGram.
 2. In v1, coins are **earned only** via:
-   - **Contest Rewards** (winners confirmed by admin — see [`./contests.md`](./contests.md)).
+   - **Contest Rewards** (MANUAL confirm or AUTO resolve on Closed — see [`./contests.md`](./contests.md)).
    - **Super Admin Grants** (manual rewards or promotions).
 3. Use a strict **double-entry ledger** pattern (`CoinTransaction`) so every coin balance change is recorded with an audit trail, description, and `balanceAfter` snapshot.
 4. Provide Super Admin APIs under `withAdminAuth` to grant coins to any user.
@@ -33,7 +33,7 @@
 ```mermaid
 flowchart TD
   subgraph Inflow [Earning Coins v1]
-    Contest[Win Contest + admin confirm] --> Credit[WalletService.creditCoins]
+    Contest[Contest MANUAL confirm or AUTO resolve] --> Credit[WalletService.creditCoins]
     AdminGrant[Super Admin Manual Grant] --> Credit
   end
 
@@ -42,8 +42,8 @@ flowchart TD
 
   subgraph Mobile Experience [Private Wallet]
     MyProfile[My Profile Screen] --> WalletBtn[Private Wallet Icon Button]
-    WalletBtn --> WalletScreen[Wallet & History Screen /wallet]
-    WalletScreen --> Display[View Balance 🪙 + Transaction History List]
+    WalletBtn --> WalletScreen[Wallet and History Screen /wallet]
+    WalletScreen --> Display[View Balance + Transaction History List]
   end
 ```
 
@@ -73,7 +73,7 @@ flowchart TD
 
 ## 3. Locked Product Decisions
 
-1. **Earned Only in v1:** In this phase, coins are acquired exclusively through **Contest Rewards** (admin grant after winner confirm) and **Super Admin Grants**. No spending or cashout mechanisms are enabled yet.
+1. **Earned Only in v1:** In this phase, coins are acquired exclusively through **Contest Rewards** (`creditCoins` from contest MANUAL confirm or AUTO Closed resolve — see [`./contests.md`](./contests.md)) and **Super Admin Grants**. No spending or cashout mechanisms are enabled yet.
 2. **Immutable Ledger Audit Trail:** Coin balances must **never** be updated in isolation. Any change to `User.coinBalance` MUST occur inside a Prisma interactive transaction (`prisma.$transaction`) alongside an inserted `CoinTransaction` record.
 3. **No Negative Balance:** Under no circumstances can a user's coin balance drop below 0 (`balance >= 0`).
 4. **Strictly Private:** A user's coin balance and transaction history are private financial data. They are **never** exposed on public artist profiles (`GET /api/users/:id`), public search, or feed cards.
