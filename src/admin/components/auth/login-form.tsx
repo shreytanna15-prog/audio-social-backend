@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/admin/components/ui/button";
 import { Input } from "@/admin/components/ui/input";
 import { Label } from "@/admin/components/ui/label";
@@ -103,11 +103,6 @@ export function LoginForm() {
             >
                 {login.isPending ? "Logging in…" : "Log in"}
             </Button>
-
-            <p className="flex items-center justify-center gap-1.5 pt-1 text-xs text-muted-foreground">
-                <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Sessions expire after 24 hours.
-            </p>
         </form>
     );
 }
