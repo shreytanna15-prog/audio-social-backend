@@ -2,10 +2,11 @@
 
 **Audience:** teammates and AI agents building the Next.js admin portal (UI + admin APIs) in `audio-social-backend`.  
 **Repos:** `audio-social-backend` only (`/admin/*` pages, `src/admin/**`, `/api/admin/**`). Not the Expo app.  
-**Status:** `Done` (v1) — auth cookies, metrics/users APIs, login + shell + Dashboard + Users UI.  
+**Status:** `Done` (v1) - auth cookies, metrics/users APIs, login + shell + Dashboard + Users UI. Contests admin UI shipped separately.  
+**Next (planned):** Admin **Coins** UI (grant + ledger) - APIs in [`./coins-and-wallet.md`](./coins-and-wallet.md) section 9.  
 **Do not** invent Prisma models; read `prisma/schema.prisma`. Do not invent mobile routes.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./contests.md`](./contests.md) (Contests admin UI - later slice), [`../../DESIGN.md`](../../DESIGN.md)  
+**Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./contests.md`](./contests.md), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`../../DESIGN.md`](../../DESIGN.md)  
 **Skills:** `nextjs-admin-design-system`, `nextjs-admin-api-patterns`, `audio-backend-api-patterns`, `AGENTS.md` craftsmanship.
 
 ---
@@ -49,15 +50,26 @@ flowchart TB
 
 ### Out of scope (v1)
 
-- Coins, Contests, Subscriptions nav or pages (add when those modules ship)
+- Coins / Subscriptions nav or pages (Coins planned next - see below; Contests UI shipped in [`./contests.md`](./contests.md))
 - User moderation actions (disable, ban, edit profile) - **read-only**
 - Multi-role RBAC
 - Fake / decorative charts without API data
 - Expo admin UI
 
-### Later: Contests (not v1)
+### Later: Contests (shipped)
 
-When Contests ship, add sidebar **Contests** and routes `/admin/contests`, `/admin/contests/new`, `/admin/contests/[id]`, `/admin/contests/[id]/edit`. Specs (placement/payout, `resultsVisibleDays` presets, cancel, confirm/auto, no cover upload) live in [`./contests.md`](./contests.md) - do not duplicate here.
+Sidebar **Contests** and routes `/admin/contests`, `/admin/contests/new`, `/admin/contests/[id]`, `/admin/contests/[id]/edit`. Specs live in [`./contests.md`](./contests.md) - do not duplicate here.
+
+### Later: Coins UI (planned; do before contest-rewards UX)
+
+Add sidebar **Coins** and screens that call existing wallet admin APIs (no new ledger rules):
+
+| Path | Screen |
+|------|--------|
+| `/admin/coins` | Global transaction ledger (`GET /api/admin/coins/transactions`, optional `userId` filter) |
+| `/admin/coins/grant` | Grant form (`POST /api/admin/coins/grant`: user, amount, reason) |
+
+Optional: show `coinBalance` on `/admin/users/[id]`. Full locks in [`./coins-and-wallet.md`](./coins-and-wallet.md) section 9.
 
 ---
 
@@ -300,7 +312,7 @@ Follow `nextjs-admin-api-patterns` for client hooks/registries.
 
 ## 8. Non-goals reminder
 
-- No Contests / Coins / Subscriptions in this **v1** slice (Contests UI → [`./contests.md`](./contests.md)).  
-- No write actions on users.  
+- No Coins / Subscriptions in this **v1** slice (Coins UI planned - [`./coins-and-wallet.md`](./coins-and-wallet.md) section 9; Contests UI → [`./contests.md`](./contests.md)).  
+- No write actions on users (grant coins is a Coins screen, not user-edit).  
 - No mobile app changes.  
 - Charts only from `/api/admin/metrics/growth` (or documented successor).

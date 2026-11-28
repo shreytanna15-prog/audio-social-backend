@@ -2,10 +2,11 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Done` — lean inbox (FOLLOW / LIKE / COMMENT), mark-read, unread badge on Me + dedicated count endpoint; app wired.  
+**Status:** `Done` (v1 inbox) — lean inbox (FOLLOW / LIKE / COMMENT), mark-read, unread badge on Me + dedicated count endpoint; app wired.  
+**Next (planned):** Contest results / win notification types — [`./contest-rewards-ux.md`](./contest-rewards-ux.md).  
 **Do not** invent alternate activity tables; use `Notification` in `prisma/schema.prisma`.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./follow.md`](./follow.md), [`./library-saves.md`](./library-saves.md), [`./track-comments.md`](./track-comments.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./follow.md`](./follow.md), [`./library-saves.md`](./library-saves.md), [`./track-comments.md`](./track-comments.md), [`./contest-rewards-ux.md`](./contest-rewards-ux.md), [`./contests.md`](./contests.md)
 
 ---
 
@@ -31,20 +32,23 @@
 
 ### Out of scope
 
-- Push / email delivery
+- Push / email delivery (unless already free to wire; not required for contest rewards v1)
 - Collab / remix / DM notification types (v1)
 - Perfect fan-out / digests / aggregation (“X and 3 others”)
+- Claimable-coin notification CTAs (contest payouts are auto-credit)
 
 ---
 
 ## 3. Locked product decisions
 
-1. Types: `FOLLOW` | `LIKE` | `COMMENT` only.
-2. Never notify yourself (`recipientId === actorId` skipped).
-3. Emission is **best-effort** — failures must not fail the primary action.
-4. Like notifies only on a **new** like row; follow only when a new edge is created.
-5. Comment notifies track owner; replies also notify parent author when different.
-6. Mark-read: omit/empty `ids` → mark **all** unread.
+1. Types (shipped): `FOLLOW` | `LIKE` | `COMMENT`.
+2. Types (planned — see [`./contest-rewards-ux.md`](./contest-rewards-ux.md)): contest **results out** (participants) and contest **won / coins credited** (winners when `creditCoins` succeeds). Exact enum names chosen at implement time to match Prisma.
+3. Never notify yourself (`recipientId === actorId` skipped).
+4. Emission is **best-effort** — failures must not fail the primary action (including contest payout).
+5. Like notifies only on a **new** like row; follow only when a new edge is created.
+6. Comment notifies track owner; replies also notify parent author when different.
+7. Mark-read: omit/empty `ids` → mark **all** unread.
+8. Opening a contest win notification should trigger the one-shot celebration modal and mark that notification read/seen.
 
 ---
 
@@ -123,3 +127,4 @@ On inbox focus: fetch list; mark all unread as read; invalidate Me / unread coun
 - [x] Emit from follow / like / comment
 - [x] App replace fixtures + badge
 - [x] Docs
+- [ ] Contest results / win types + emission (planned — [`./contest-rewards-ux.md`](./contest-rewards-ux.md))

@@ -3,9 +3,10 @@
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
 **Status:** `Done` — follow, relationship, public profile, followers/following lists shipped.  
+**Next (planned):** Public contest wins count + expandable 1st/2nd/3rd medals (no wallet balance) - [`./contest-rewards-ux.md`](./contest-rewards-ux.md).  
 **Search UI / catalog search** moved to [`./search.md`](./search.md) (do not implement Search chips here).
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./search.md`](./search.md), [`./edit-profile.md`](./edit-profile.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./search.md`](./search.md), [`./edit-profile.md`](./edit-profile.md), [`./contest-rewards-ux.md`](./contest-rewards-ux.md)
 
 **Naming:**
 
@@ -48,6 +49,7 @@ flowchart LR
 ### Out of scope
 
 - Search screen / Music / Artists chips / recent searches → [`./search.md`](./search.md)  
+- Public contest wins count / medals → [`./contest-rewards-ux.md`](./contest-rewards-ux.md)  
 - Private accounts, follow requests  
 - Block / mute  
 - Push “X followed you” (notifications may cover separately)

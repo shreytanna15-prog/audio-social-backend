@@ -2,10 +2,11 @@
 
 **Audience:** teammates and AI agents implementing the virtual coin wallet, transaction ledger, and admin grant features end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Done` — Append-only coin ledger, `User.coinBalance`, admin grant/audit APIs, `creditCoins` for Contests, and private mobile Wallet screen.  
+**Status:** `Done` (ledger + wallet v1) - Append-only coin ledger, `User.coinBalance`, admin grant/audit APIs, `creditCoins` for Contests, and private mobile Wallet screen.  
+**Next (planned):** Admin portal Coins UI (grant + ledger) - see section 9 below and [`./admin-panel.md`](./admin-panel.md). Then contest receive UX - [`./contest-rewards-ux.md`](./contest-rewards-ux.md).  
 **Do not** invent Prisma models or alternate APIs; read `prisma/schema.prisma` and this doc.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./contests.md`](./contests.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./admin-panel.md`](./admin-panel.md), [`./contests.md`](./contests.md), [`./contest-rewards-ux.md`](./contest-rewards-ux.md)
 
 **Terminology:**
 
@@ -68,6 +69,7 @@ flowchart TD
 - Cashing out / withdrawing coins for fiat money.
 - Peer-to-peer tipping between users.
 - In-app purchase (IAP) integration with Apple StoreKit or Google Play Billing.
+- Admin portal Coins pages (planned next; APIs already shipped - see section 9).
 
 ---
 
@@ -79,6 +81,7 @@ flowchart TD
 4. **Strictly Private:** A user's coin balance and transaction history are private financial data. They are **never** exposed on public artist profiles (`GET /api/users/:id`), public search, or feed cards.
 5. **Admin Isolation:** Manual grants can only be issued by the authenticated Super Admin via `POST /api/admin/coins/grant` using `withAdminAuth`.
 6. **Running Balance Snapshot:** Every ledger row stores `balanceAfter` at the moment of execution for instant reconciliation and fraud prevention.
+7. **Contest payout UX (planned):** Contest coins remain **auto-credit** into spendable balance (no claimable pending state). Receive moment, notifications, celebration, `prizeNote` privacy, and public wins medals are specified in [`./contest-rewards-ux.md`](./contest-rewards-ux.md) — do not invent a Claim ledger without updating that doc.
 
 ---
 
@@ -346,3 +349,31 @@ export const walletService = new WalletService();
 - [x] Add route `/wallet` in Expo Router (`src/app/wallet.tsx`).
 - [x] Add wallet action with coin balance to `MyProfileScreen`.
 - [x] Wallet entry is my-profile only (not on public profile).
+
+### Admin portal Coins UI (planned - section 9):
+- [ ] Sidebar **Coins** + `/admin/coins` (ledger) + `/admin/coins/grant`
+- [ ] Wire grant form to `POST /api/admin/coins/grant`
+- [ ] Wire ledger table to `GET /api/admin/coins/transactions` (filter `userId`)
+- [ ] Optional: show `coinBalance` on `/admin/users/[id]`
+
+---
+
+## 9. Admin portal Coins UI (planned)
+
+**Priority:** Build this **before** contest-rewards UX so ops can grant and inspect credits without Prisma Studio.
+
+**APIs already exist** (no new backend required for v1 of this UI):
+
+| Method | Path | UI use |
+|--------|------|--------|
+| `POST` | `/api/admin/coins/grant` | Grant form |
+| `GET` | `/api/admin/coins/transactions?limit=&cursor=&userId=` | Global ledger + filter by user |
+
+### Locked UI decisions
+
+1. Sidebar nav item **Coins** (alongside Dashboard, Users, Contests).
+2. **Grant screen** (`/admin/coins/grant` or primary action on Coins): pick user (search existing users API), positive amount (respect API max), required reason; success shows new balance.
+3. **Ledger screen** (`/admin/coins`): paginated table of all `CoinTransaction` rows (amount, type, description, user, `balanceAfter`, createdAt). Optional filter by `userId`.
+4. No charts, no fake telemetry, no debit/clawback UI.
+5. Optional polish: show read-only `coinBalance` on user detail header (extend admin user DTO only if not already present).
+6. Follow [`./admin-panel.md`](./admin-panel.md) + `DESIGN.md` + admin design/API skills.

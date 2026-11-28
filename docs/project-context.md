@@ -72,8 +72,9 @@ Agents must trust, in order:
 | [`docs/features/edit-profile.md`](./features/edit-profile.md)                           | Profile text + avatar/cover                                                        |
 | [`docs/features/chat.md`](./features/chat.md)                                           | DMs, requests, voice notes                                                         |
 | [`docs/features/admin.md`](./features/admin.md)                                         | Super admin isolation, Admin model, dedicated JWT, withAdminAuth                   |
-| [`docs/features/admin-panel.md`](./features/admin-panel.md)                             | Next.js admin portal UI + users/metrics admin APIs (v1: login, dashboard, users)   |
-| [`docs/features/coins-and-wallet.md`](./features/coins-and-wallet.md)                   | Double-entry coin ledger, User coin balance, Admin grant API, private mobile Wallet |
+| [`docs/features/admin-panel.md`](./features/admin-panel.md)                             | Next.js admin portal UI + users/metrics admin APIs (v1: login, dashboard, users; Coins UI planned) |
+| [`docs/features/coins-and-wallet.md`](./features/coins-and-wallet.md)                   | Coin ledger + grant APIs + mobile Wallet; planned admin Coins UI (grant + ledger) |
+| [`docs/features/contest-rewards-ux.md`](./features/contest-rewards-ux.md)               | Planned: auto-credit receive UX, contest notifications, celebration, public wins   |
 | [`docs/features/global-player.md`](./features/global-player.md)                         | Social audio streaming, queue, 3-state loop, in-line comments, 30s play accounting |
 | [`docs/features/home.md`](./features/home.md)                                           | Home discovery sections (trending, featured artists, latest project, my playlists) |
 | [`docs/features/explore.md`](./features/explore.md)                                     | Explore body: all-time tops, rising, featured, public playlists (Search separate)  |
@@ -257,14 +258,16 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 | Home discovery | Done | [`home.md`](./features/home.md); Challenge cards -> Contests later |
 | Explore discovery | Done | Live discover rails + skeletons/errors - [`explore.md`](./features/explore.md); Contest fixture remains |
 | Feed (reels/shorts) | In Progress | Clip APIs + app create/consume wired; device E2E pending - [`feed.md`](./features/feed.md) |
-| Notifications | Done | Inbox + unread badge - [`notifications.md`](./features/notifications.md) |
+| Notifications | Done (v1) | Inbox + unread badge - [`notifications.md`](./features/notifications.md); contest types planned in [`contest-rewards-ux.md`](./features/contest-rewards-ux.md) |
 | Taste / Made for you | Done | [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) |
 | Contests | Done | Admin/user APIs + `/admin/contests*` + mobile + Home/Explore cards - [`contests.md`](./features/contests.md) |
+| Contest rewards UX | Planned | Auto-credit receive moment, notifications, celebration, public wins - [`contest-rewards-ux.md`](./features/contest-rewards-ux.md) |
 | Tanpura (studio) | Done | App studio module shipped (local engine/UI); polish as needed |
-| Coins / wallet | Done | Ledger + grant APIs + mobile `/wallet` - [`coins-and-wallet.md`](./features/coins-and-wallet.md) |
+| Coins / wallet | Done (ledger v1) | Ledger + grant APIs + mobile `/wallet` - [`coins-and-wallet.md`](./features/coins-and-wallet.md); admin Coins UI planned next; receive UX in contest-rewards-ux |
+| Admin Coins UI | Planned | Grant + ledger in `/admin/coins*` - [`coins-and-wallet.md`](./features/coins-and-wallet.md) §9, [`admin-panel.md`](./features/admin-panel.md) |
 | Subscriptions + payments | Deferred | Not started |
 | Admin (foundation) | Done | `Admin` model, `ADMIN_JWT_SECRET`, `withAdminAuth`, seed - [`admin.md`](./features/admin.md) |
-| Admin panel (UI) | Done (v1) | Login + shell + dashboard + users - [`admin-panel.md`](./features/admin-panel.md) |
+| Admin panel (UI) | Done (v1) | Login + shell + dashboard + users (+ Contests); Coins UI planned - [`admin-panel.md`](./features/admin-panel.md) |
 | Import format/limits hardening | Open | Still to specify fully |
 
 ### Recommended build priority (product)
@@ -276,8 +279,9 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 5. Home discovery + taste / Made for you ([`home.md`](./features/home.md), [`taste-and-recommendations.md`](./features/taste-and-recommendations.md))
 6. Explore body ([`explore.md`](./features/explore.md)) then Search ([`search.md`](./features/search.md))
 7. Feed / global-player polish
-8. Contests shipped ([`contests.md`](./features/contests.md)); next product slices per backlog
-9. Subscriptions / payments
+8. Contests shipped ([`contests.md`](./features/contests.md))
+9. Admin Coins UI (grant + ledger) ([`coins-and-wallet.md`](./features/coins-and-wallet.md) §9) then contest rewards UX ([`contest-rewards-ux.md`](./features/contest-rewards-ux.md))
+10. Subscriptions / payments
 
 ---
 

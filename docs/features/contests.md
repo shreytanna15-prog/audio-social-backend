@@ -3,9 +3,9 @@
 **Audience:** teammates and AI agents implementing Contests end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`) + Next.js admin portal (`/admin/contests*`).  
 **Status:** `Done` — Prisma Contests, admin/user APIs, admin `/admin/contests*` UI, mobile contests + Home/Explore cards. Replaces Home/Explore **Challenge** fixtures with live Contest cards.  
-**Do not** invent alternate reward systems; coin payouts use [`./coins-and-wallet.md`](./coins-and-wallet.md) `creditCoins` (via confirm or auto-resolve). Subscriptions/payments are **out of scope**.
+**Do not** invent alternate reward systems; coin payouts use [`./coins-and-wallet.md`](./coins-and-wallet.md) `creditCoins` (via confirm or auto-resolve). Receive UX (notifications, celebration, public wins) is planned in [`./contest-rewards-ux.md`](./contest-rewards-ux.md). Subscriptions/payments are **out of scope**.
 
-**Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./admin-panel.md`](./admin-panel.md) (shell; Contests nav ships with this slice), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`./publish.md`](./publish.md), [`./home.md`](./home.md), [`./explore.md`](./explore.md)
+**Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./admin-panel.md`](./admin-panel.md) (shell; Contests nav ships with this slice), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`./contest-rewards-ux.md`](./contest-rewards-ux.md), [`./notifications.md`](./notifications.md), [`./publish.md`](./publish.md), [`./home.md`](./home.md), [`./explore.md`](./explore.md)
 
 **Naming:**
 
@@ -27,7 +27,7 @@
 2. Eligible artists submit **one** published track during **Submit**; may publish during that window then enter. **No entry swap** after submit.
 3. **Any signed-in user** casts **one vote** during **Vote** (not for their own entry).
 4. After Vote ends (**Closed**): public leaderboard; ranking by votes.
-5. **Prizes:** `prizeNote` (free text / physical offline) + **pre-configured coin amounts** by place. Payout is either **MANUAL** (admin confirms → grant) or **AUTO** (when results go public, winners get coins in the same resolve step).
+5. **Prizes:** `prizeNote` (free text / physical offline) + **pre-configured coin amounts** by place. Payout is either **MANUAL** (admin confirms → auto-credit) or **AUTO** (when results go public, winners get coins in the same resolve step). Coins are **auto-credited** (no Claim button). `prizeNote` is never shown on browse cards; show only on private receive/celebration UI — see [`./contest-rewards-ux.md`](./contest-rewards-ux.md).
 6. Admin can **cancel** a contest (before winners paid); entry track locks release.
 7. App: Contest list/detail/leaderboard + submit picker; Home + Explore Contest cards for **active, upcoming, and recently closed** (within `resultsVisibleDays`). Branded **placeholder** art only (no cover upload in v1).
 
@@ -299,10 +299,13 @@ Module: `src/server/modules/contest/`. Admin routes: `src/app/api/admin/contests
 
 ## 13. Non-goals reminder
 
-- Not cover upload, payments, Liked Songs as votes, multi-entry/vote, cherry-pick winners, results-end user timer  
+- Not cover upload, payments, Liked Songs as votes, multi-entry/vote, cherry-pick winners, results-end user timer
+- Not claimable/pending coin balances (auto-credit only; receive UX in [`./contest-rewards-ux.md`](./contest-rewards-ux.md))
 
 ---
 
 ## 14. Code review notes
 
 Shipped **2026-11-28:** Contests end-to-end per locked plan (no cover upload; `resultsVisibleDays` presets; lazy AUTO resolve).
+
+**Follow-up planned:** Contest rewards UX (notifications, celebration, public wins medals) — [`./contest-rewards-ux.md`](./contest-rewards-ux.md).
