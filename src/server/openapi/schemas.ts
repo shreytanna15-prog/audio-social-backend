@@ -30,6 +30,7 @@ export const meSchema = registry.register(
         canChangeUsername: z.boolean(),
         usernameChangeAvailableAt: z.iso.datetime().nullable(),
         unreadNotificationCount: z.number().int().nonnegative(),
+        coinBalance: z.number().int().nonnegative(),
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),
     })

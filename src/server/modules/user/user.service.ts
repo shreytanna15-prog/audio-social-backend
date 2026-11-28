@@ -35,6 +35,7 @@ export type MeDto = {
     canChangeUsername: boolean;
     usernameChangeAvailableAt: string | null;
     unreadNotificationCount: number;
+    coinBalance: number;
     createdAt: string;
     updatedAt: string;
 };
@@ -107,6 +108,7 @@ export function toMeDto(
         canChangeUsername,
         usernameChangeAvailableAt,
         unreadNotificationCount,
+        coinBalance: user.coinBalance,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
     };

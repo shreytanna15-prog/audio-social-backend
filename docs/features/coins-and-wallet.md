@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing the virtual coin wallet, transaction ledger, and admin grant features end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Planned` (Arch Done) — Double-entry coin ledger, User coin balance, Admin grant API, and private mobile Wallet screen.  
+**Status:** `Done` — Append-only coin ledger, `User.coinBalance`, admin grant/audit APIs, `creditCoins` for Contests, and private mobile Wallet screen.  
 **Do not** invent Prisma models or alternate APIs; read `prisma/schema.prisma` and this doc.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./contests.md`](./contests.md)
@@ -12,7 +12,7 @@
 | Term | Meaning |
 |------|---------|
 | **Coin Balance** | The current integer total of virtual coins owned by a user (`User.coinBalance`). |
-| **Coin Transaction Ledger** | Immutable audit log table (`CoinTransaction`) recording every coin inflow (grant, reward) with running balance snapshot. |
+| **Coin Transaction Ledger** | Append-only audit log table (`CoinTransaction`) recording every coin inflow (grant, reward) with running balance snapshot. |
 | **Private Wallet** | User-facing mobile UI on `MyProfileScreen` showing coin balance and transaction history. Never visible on public profiles. |
 | **Admin Grant** | Direct awarding of coins to a user by the Super Admin using `withAdminAuth`. |
 
@@ -24,7 +24,7 @@
 2. In v1, coins are **earned only** via:
    - **Contest Rewards** (MANUAL confirm or AUTO resolve on Closed — see [`./contests.md`](./contests.md)).
    - **Super Admin Grants** (manual rewards or promotions).
-3. Use a strict **double-entry ledger** pattern (`CoinTransaction`) so every coin balance change is recorded with an audit trail, description, and `balanceAfter` snapshot.
+3. Use an **append-only ledger** (`CoinTransaction`) so every coin balance change is recorded with an audit trail, description, and `balanceAfter` snapshot (balance is never updated without a ledger row).
 4. Provide Super Admin APIs under `withAdminAuth` to grant coins to any user.
 5. Provide user APIs under `withAuth` to view personal private wallet balance and transaction history.
 6. Provide a dedicated **Wallet Screen** in the mobile app, accessible exclusively from the user's own profile.
@@ -74,7 +74,7 @@ flowchart TD
 ## 3. Locked Product Decisions
 
 1. **Earned Only in v1:** In this phase, coins are acquired exclusively through **Contest Rewards** (`creditCoins` from contest MANUAL confirm or AUTO Closed resolve — see [`./contests.md`](./contests.md)) and **Super Admin Grants**. No spending or cashout mechanisms are enabled yet.
-2. **Immutable Ledger Audit Trail:** Coin balances must **never** be updated in isolation. Any change to `User.coinBalance` MUST occur inside a Prisma interactive transaction (`prisma.$transaction`) alongside an inserted `CoinTransaction` record.
+2. **Append-only Ledger Audit Trail:** Coin balances must **never** be updated in isolation. Any change to `User.coinBalance` MUST occur inside a Prisma interactive transaction (`prisma.$transaction`) alongside an inserted `CoinTransaction` record. Idempotent contest payouts use unique `(type, referenceId)`.
 3. **No Negative Balance:** Under no circumstances can a user's coin balance drop below 0 (`balance >= 0`).
 4. **Strictly Private:** A user's coin balance and transaction history are private financial data. They are **never** exposed on public artist profiles (`GET /api/users/:id`), public search, or feed cards.
 5. **Admin Isolation:** Manual grants can only be issued by the authenticated Super Admin via `POST /api/admin/coins/grant` using `withAdminAuth`.
@@ -88,7 +88,7 @@ Add to `prisma/schema.prisma`:
 
 ```prisma
 enum CoinTransactionType {
-  CHALLENGE_REWARD
+  CONTEST_REWARD
   ADMIN_GRANT
 }
 
@@ -106,11 +106,12 @@ model CoinTransaction {
   type         CoinTransactionType
   description  String              // e.g. "Awarded by admin: Great beta track feedback" or "Won 1st place in Summer Acoustic Jam"
   
-  /// Optional reference key (e.g. challengeId)
+  /// Optional reference key (e.g. contest payout id); unique with type when set
   referenceId  String?
   
   createdAt    DateTime            @default(now())
 
+  @@unique([type, referenceId])
   @@index([userId, createdAt(sort: Desc)])
 }
 ```
@@ -194,13 +195,13 @@ All endpoints follow `@/server/utils/route`, Zod validation, and the standard en
       id: string;
       amount: number;
       balanceAfter: number;
-      type: 'CHALLENGE_REWARD' | 'ADMIN_GRANT';
+      type: 'CONTEST_REWARD' | 'ADMIN_GRANT';
       description: string;
       createdAt: string;
     }[];
     nextCursor: string | null;
   };
-  ```
+```
 
 ### 5.4 Update Me Endpoint (`GET /api/user`)
 - Add `coinBalance: number` to the private user session payload so mobile app header/profile has the current balance cached without an extra network call.
@@ -303,8 +304,7 @@ export const walletService = new WalletService();
 
 ### 7.1 Profile Screen Integration
 1. **`MyProfileScreen` (Owner View):**
-   - Add a private **Wallet Button** (Wallet / Coins icon: 🪙) in the top-right header action row or right next to "Edit Profile".
-   - Shows badge with cached balance: e.g. `🪙 1,500`.
+   - Private **Wallet** action next to Edit / Library (label includes cached balance).
    - Tapping navigates to `/wallet`.
 2. **`PublicProfileScreen` (Other Users' View):**
    - Strictly **hidden**. No visitor can see another artist's coin balance or transactions.
@@ -313,37 +313,36 @@ export const walletService = new WalletService();
 - **Route:** `/wallet` (Expo Router).
 - **Header:** Back button + "Wallet & Rewards".
 - **Balance Card (Hero):**
-  - Gradient container with gold/purple accents.
-  - Large label: `1,500` with gold coin icon.
-  - Subtitle: *"Total Available Coins"*.
+  - Surface card with total available coins.
+  - Large balance number.
 - **Info Banner:**
-  - *"Earn coins by winning community vocal challenges and participating in events. Future perks coming soon!"*
+  - *"Earn coins by winning community contests and admin rewards. More perks coming later."*
 - **Transaction History List:**
   - Title: *"Activity History"*.
-  - Empty state: *"No transactions yet. Win your first challenge to earn coins!"*
+  - Empty state: *"No transactions yet. Win a contest or receive a grant to earn coins."*
   - Item Row:
-    - Left: Icon badge (Trophy icon for `CHALLENGE_REWARD`, Star icon for `ADMIN_GRANT`).
+    - Left: Icon badge (Award for `CONTEST_REWARD`, Star for `ADMIN_GRANT`).
     - Center: Transaction description and relative date (`2 days ago`).
-    - Right: Bold green incoming pill: `+500 Coins`.
+    - Right: Incoming amount: `+500`.
 
 ---
 
 ## 8. Implementation Checklist
 
 ### Backend:
-- [ ] Update `prisma/schema.prisma` with `coinBalance` on `User` and `CoinTransaction` model.
-- [ ] Run migration: `npx prisma migrate dev --name add_coin_wallet_and_ledger`.
-- [ ] Run client generation: `npx prisma generate`.
-- [ ] Create `src/server/modules/wallet/wallet.validator.ts`.
-- [ ] Create `src/server/modules/wallet/wallet.service.ts`.
-- [ ] Implement user route: `src/app/api/me/wallet/route.ts` (GET).
-- [ ] Update `src/app/api/user/route.ts` to include `coinBalance` in payload.
-- [ ] Implement admin route: `src/app/api/admin/coins/grant/route.ts` (POST with `withAdminAuth`).
-- [ ] Register routes in OpenAPI under `src/server/openapi/paths/wallet.paths.ts`.
+- [x] Update `prisma/schema.prisma` with `coinBalance` on `User` and `CoinTransaction` model.
+- [x] Run migration: `add_coin_wallet_and_ledger`.
+- [x] Run client generation: `npx prisma generate`.
+- [x] Create `src/server/modules/wallet/wallet.validator.ts`.
+- [x] Create `src/server/modules/wallet/wallet.service.ts`.
+- [x] Implement user route: `src/app/api/me/wallet/route.ts` (GET).
+- [x] Update `GET /api/user` (`MeDto`) to include `coinBalance`.
+- [x] Implement admin routes: grant + transactions (`withAdminAuth`).
+- [x] Register routes in OpenAPI under `src/server/openapi/paths/wallet.paths.ts`.
 
 ### Mobile App:
-- [ ] Create `src/features/wallet/api/service.ts`, `hooks.ts`, and `types.ts`.
-- [ ] Build `WalletScreen` in `src/features/wallet/screens/wallet-screen.tsx`.
-- [ ] Add route `/wallet` in Expo Router (`src/app/wallet.tsx`).
-- [ ] Add wallet button with coin badge to `MyProfileScreen` in `src/features/profile/screens/my-profile-screen.tsx`.
-- [ ] Verify wallet icon is completely hidden on `PublicProfileScreen`.
+- [x] Create `src/features/wallet/api/service.ts`, `hooks.ts`, and `types.ts`.
+- [x] Build `WalletScreen` in `src/features/wallet/screens/wallet-screen.tsx`.
+- [x] Add route `/wallet` in Expo Router (`src/app/wallet.tsx`).
+- [x] Add wallet action with coin balance to `MyProfileScreen`.
+- [x] Wallet entry is my-profile only (not on public profile).

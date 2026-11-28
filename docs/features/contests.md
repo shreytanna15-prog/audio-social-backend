@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing Contests end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`) + Next.js admin portal (`/admin/contests*`).  
-**Status:** `Planned` — depends on **Admin foundation** + **Admin panel v1** + **Coins wallet** first. Replaces Home/Explore **Challenge** naming/UI with **Contest**.  
+**Status:** `Planned` — Admin foundation, Admin panel v1, and **Coins wallet** are **Done**; Contests implementation is unblocked. Replaces Home/Explore **Challenge** naming/UI with **Contest**.  
 **Do not** invent alternate reward systems; coin payouts use [`./coins-and-wallet.md`](./coins-and-wallet.md) `creditCoins` (via confirm or auto-resolve). Subscriptions/payments are **out of scope**.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./admin.md`](./admin.md), [`./admin-panel.md`](./admin-panel.md) (shell; Contests nav ships with this slice), [`./coins-and-wallet.md`](./coins-and-wallet.md), [`./publish.md`](./publish.md), [`./home.md`](./home.md), [`./explore.md`](./explore.md)
@@ -69,9 +69,9 @@ flowchart LR
 
 ### Dependencies (implement first)
 
-1. [`./admin.md`](./admin.md) — `withAdminAuth`, admin login  
-2. [`./admin-panel.md`](./admin-panel.md) — portal shell + session (add Contests nav in this slice)  
-3. [`./coins-and-wallet.md`](./coins-and-wallet.md) — `creditCoins` / admin grant primitives  
+1. [`./admin.md`](./admin.md) — `withAdminAuth`, admin login (**Done**)  
+2. [`./admin-panel.md`](./admin-panel.md) — portal shell + session (**Done**; add Contests nav in this slice)  
+3. [`./coins-and-wallet.md`](./coins-and-wallet.md) — `creditCoins` / admin grant primitives (**Done**)  
 
 ---
 
@@ -413,9 +413,9 @@ Home/Explore **ChallengeCard** → Contest cards fed by API (different designs p
 
 ### Dependencies
 
-- [ ] Admin foundation shipped ([`./admin.md`](./admin.md))  
-- [ ] Admin panel v1 shell shipped ([`./admin-panel.md`](./admin-panel.md))  
-- [ ] Coins + `creditCoins` shipped ([`./coins-and-wallet.md`](./coins-and-wallet.md))  
+- [x] Admin foundation shipped ([`./admin.md`](./admin.md))  
+- [x] Admin panel v1 shell shipped ([`./admin-panel.md`](./admin-panel.md))  
+- [x] Coins + `creditCoins` shipped ([`./coins-and-wallet.md`](./coins-and-wallet.md))  
 
 ### Backend
 
@@ -462,4 +462,4 @@ Home/Explore **ChallengeCard** → Contest cards fed by API (different designs p
 
 ## 14. Code review notes
 
-Baseline **2026-11-27:** Home/Explore still show **Challenge** fixtures. No Contest models/APIs. Admin panel v1 + Coins plans exist but Contests wait on those. Admin Contests UI is part of this feature doc, not Admin panel v1.
+Baseline **2026-11-28:** Home/Explore still show **Challenge** fixtures. No Contest models/APIs. Admin + Coins are shipped; Contests implementation is next. Admin Contests UI is part of this feature doc, not Admin panel v1.

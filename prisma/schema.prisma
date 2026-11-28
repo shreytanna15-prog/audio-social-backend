@@ -19,6 +19,7 @@ model User {
   usernameChangedAt  DateTime  @default(now())
   /// Onboarding / settings taste ids from TRACK_GENRES (0 or 1–6)
   preferredGenres    String[]  @default([])
+  coinBalance        Int       @default(0)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   tracks             Track[]
@@ -33,6 +34,7 @@ model User {
   trackCommentLikes  TrackCommentLike[]
   feedClips          FeedClip[]
   feedClipLikes      FeedClipLike[]
+  coinTransactions   CoinTransaction[]
 
   followers            Follow[]       @relation("UserFollowers")
   following            Follow[]       @relation("UserFollowing")
@@ -503,4 +505,23 @@ model FeedClipLike {
   @@index([userId, createdAt(sort: Desc)])
 }
 
+enum CoinTransactionType {
+  CONTEST_REWARD
+  ADMIN_GRANT
+}
+
+model CoinTransaction {
+  id           String              @id @default(uuid(7)) @db.Uuid
+  userId       String              @db.Uuid
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount       Int
+  balanceAfter Int
+  type         CoinTransactionType
+  description  String
+  referenceId  String?
+  createdAt    DateTime            @default(now())
+
+  @@unique([type, referenceId])
+  @@index([userId, createdAt(sort: Desc)])
+}
 

@@ -15,3 +15,4 @@ import "@/server/openapi/paths/feed.paths";
 import "@/server/openapi/paths/notifications.paths";
 import "@/server/openapi/paths/plays.paths";
 import "@/server/openapi/paths/admin.paths";
+import "@/server/openapi/paths/wallet.paths";
