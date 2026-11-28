@@ -57,7 +57,7 @@ flowchart TB
 
 ### Later: Contests (not v1)
 
-When Contests ship, add sidebar **Contests** and routes `/admin/contests`, `/admin/contests/new`, `/admin/contests/[id]`, `/admin/contests/[id]/edit`. Full screen specs, APIs, placement/payout modes, cancel, and confirm/auto resolve live in [`./contests.md`](./contests.md) - do not duplicate here.
+When Contests ship, add sidebar **Contests** and routes `/admin/contests`, `/admin/contests/new`, `/admin/contests/[id]`, `/admin/contests/[id]/edit`. Specs (placement/payout, `resultsVisibleDays` presets, cancel, confirm/auto, no cover upload) live in [`./contests.md`](./contests.md) - do not duplicate here.
 
 ---
 

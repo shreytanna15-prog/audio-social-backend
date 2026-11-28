@@ -2,7 +2,7 @@
 
 **Audience:** teammates and AI agents implementing this feature end-to-end.  
 **Repos:** backend (`audio-social-backend`) + mobile app (`audio-social-app`).  
-**Status:** `Done` — Explore body wired to discover APIs (`window=all`, rising, public playlists) with Home-like section skeletons/errors; Search remains a **separate** feature. Contest card still fixture.  
+**Status:** `Done` — Explore body wired to discover APIs (`window=all`, rising, public playlists) with Home-like section skeletons/errors; Search remains a **separate** feature. Contest card wired to contests API.  
 **Do not** invent Prisma models. Reuse Track / User / Follow / Playlist. Do **not** reuse Home’s personal playlists or Made for you here.
 
 **Related docs:** [`../project-context.md`](../project-context.md), [`./home.md`](./home.md), [`./publish.md`](./publish.md), [`./playlists-and-albums.md`](./playlists-and-albums.md), [`./search.md`](./search.md), [`./follow.md`](./follow.md), [`./taste-and-recommendations.md`](./taste-and-recommendations.md)
@@ -61,7 +61,7 @@ flowchart TB
 | 4 | Rising creator | New rising artists API; **hide** section if empty |
 | 5 | Trending Now (30d) | **Remove** from Explore (Home keeps it) |
 | 6 | Top Creators | Shared section + existing featured artists API |
-| 7 | Contest card | Keep **dummy fixture** until [`./contests.md`](./contests.md); rename Challenge → Contest |
+| 7 | Contest card | Live via contests API - [`./contests.md`](./contests.md) |
 | 8 | Top Songs | All-time list, limit **12**; same API family as hero |
 | 9 | Playlists | New public discover playlists API + shared section |
 | 10 | View all / Full Chart / See All | **Remove** |

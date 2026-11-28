@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users } from "lucide-react";
+import { LayoutDashboard, Trophy, Users } from "lucide-react";
 import { VibeOGramLogo } from "@/admin/components/brand/vibeogram-logo";
 import { cn } from "@/admin/lib/cn";
 
 const NAV = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
     { href: "/admin/users", label: "Users", icon: Users, exact: false },
+    { href: "/admin/contests", label: "Contests", icon: Trophy, exact: false },
 ] as const;
 
 export function AdminSidebar() {
@@ -16,14 +17,14 @@ export function AdminSidebar() {
 
     return (
         <aside className="fixed inset-y-0 left-0 z-30 flex w-60 flex-col border-r border-border bg-surface-lowest">
-            <div className="flex h-[4.25rem] flex-col justify-center gap-0.5 border-b border-border px-4">
+            <div className="flex h-17 flex-col justify-center gap-0.5 border-b border-border px-4">
                 <Link
                     href="/admin"
                     className="min-w-0 outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                     <VibeOGramLogo
                         idPrefix="sidebar"
-                        className="h-5 w-[136px]"
+                        className="h-5 w-34"
                     />
                 </Link>
                 <p className="pl-0.5 text-[11px] text-muted-foreground">

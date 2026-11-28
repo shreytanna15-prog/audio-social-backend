@@ -35,6 +35,8 @@ model User {
   feedClips          FeedClip[]
   feedClipLikes      FeedClipLike[]
   coinTransactions   CoinTransaction[]
+  contestEntries     ContestEntry[]
+  contestVotes       ContestVote[]
 
   followers            Follow[]       @relation("UserFollowers")
   following            Follow[]       @relation("UserFollowing")
@@ -142,6 +144,7 @@ model Track {
   comments       TrackComment[]
   notifications  Notification[]
   feedClip       FeedClip?
+  contestEntries ContestEntry[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([userId, status])
@@ -523,5 +526,73 @@ model CoinTransaction {
 
   @@unique([type, referenceId])
   @@index([userId, createdAt(sort: Desc)])
+}
+
+enum ContestPlacementMode {
+  FIRST
+  TOP_THREE
+}
+
+enum ContestPayoutMode {
+  MANUAL
+  AUTO
+}
+
+model Contest {
+  id                 String               @id @default(uuid(7)) @db.Uuid
+  title              String
+  description        String
+  rules              String
+  genreIds           String[]
+  prizeNote          String
+  placementMode      ContestPlacementMode
+  payoutMode         ContestPayoutMode
+  prizeCoinsFirst    Int
+  prizeCoinsSecond   Int?
+  prizeCoinsThird    Int?
+  announceAt         DateTime
+  submitStartAt      DateTime
+  submitEndAt        DateTime
+  voteEndAt          DateTime
+  resultsVisibleDays Int                  @default(15)
+  cancelledAt        DateTime?
+  winnersConfirmedAt DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  entries            ContestEntry[]
+  votes              ContestVote[]
+}
+
+model ContestEntry {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  contestId String   @db.Uuid
+  userId    String   @db.Uuid
+  trackId   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track   Track   @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  votes   ContestVote[]
+
+  @@unique([contestId, userId])
+  @@index([trackId])
+  @@index([contestId, createdAt(sort: Desc)])
+}
+
+model ContestVote {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  contestId String   @db.Uuid
+  userId    String   @db.Uuid
+  entryId   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  contest Contest      @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entry   ContestEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+  @@index([entryId])
+  @@index([contestId, createdAt(sort: Desc)])
 }
 

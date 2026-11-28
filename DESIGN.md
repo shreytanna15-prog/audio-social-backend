@@ -209,14 +209,36 @@ No glass mini-player docks. No ambient violet glow behind every card.
 
 ## Components (admin)
 
+### Shadcn pattern (required)
+
+Admin UI follows a **shadcn-style** split with Studio Noir tokens (not default shadcn colors):
+
+1. **Primitives** live in `src/admin/components/ui/` (`Button`, `Input`, `Label`, `Select`, `Popover`, `Calendar`, …).
+2. **Shared composites** live in `src/admin/components/shared/` (`AppSelect`, `AppDateTimePicker`, `AppDropdown`, `ConfirmDialog`, …).
+3. Feature screens import **shared + ui**. Do not paste raw Radix / native `<select>` / one-off menus into feature forms.
+4. **If a control does not exist:** install the needed dependency, add the `ui` primitive, wrap it in a shared composite when the API is multi-part or reused, then use that. Do not invent a parallel native control.
+5. Migrate older ad-hoc controls to shared composites when you touch that screen.
+
 ### Buttons
 - **Primary:** Brand / tonal gradient CTA, full or auto width as needed. Clear hover/disabled.
 - **Secondary:** Quiet border or muted fill.
 - **Destructive:** Error tokens; confirm via `ConfirmDialog`.
 
 ### Inputs
+- Use `Input`, `Textarea`, and `Label` from `ui/` (not raw HTML controls with one-off classes).
 - Dark inset field, visible label, helper/error under field.
 - Focus: primary border + thin ring (not a large glow blob).
+
+### Selects, menus & date/time
+- Use `AppSelect` (not native `<select>`) for enums and short option lists.
+- Use `AppDropdown` (built on `ui/dropdown-menu`) for action menus (account, row actions).
+- Use `AppDateTimePicker` (not native `datetime-local`) for schedule fields.
+- Chips / toggles that are clickable use `cursor-pointer` (and `disabled:cursor-not-allowed`).
+
+### Forms
+- Prefer readable max width (`max-w-5xl` / content-max), one card (or light section cards).
+- Long text and multi-select: full width. Short paired fields: 2-col grid. Coin tiers: 2-3 col.
+- Section headings inside the card (`Basics`, `Prizes`, `Schedule`) beat one flat field stack.
 
 ### Tables
 - Sticky header, muted uppercase labels.
@@ -227,7 +249,7 @@ No glass mini-player docks. No ambient violet glow behind every card.
 ### Sidebar nav
 - Quiet idle links; primary accent bar or text for active route.
 - Group labels muted uppercase micro type.
-- Disabled / coming-soon items visually muted (Coins, Contests, Subscriptions until wired).
+- Disabled / coming-soon items visually muted until wired.
 
 ### Dialogs
 - Use shared `ConfirmDialog`. Short title, one sentence body, Cancel + Confirm.

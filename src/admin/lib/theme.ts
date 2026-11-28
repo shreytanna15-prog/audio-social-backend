@@ -22,3 +22,10 @@ export function applyAdminTheme(theme: AdminTheme) {
     if (!(root instanceof HTMLElement)) return;
     root.dataset.theme = theme;
 }
+
+/** Radix portals default to document.body and lose `.admin-theme` CSS tokens. */
+export function getAdminPortalContainer(): HTMLElement | undefined {
+    if (typeof document === "undefined") return undefined;
+    const root = document.querySelector(".admin-theme");
+    return root instanceof HTMLElement ? root : undefined;
+}

@@ -87,14 +87,31 @@ Map contest / coin / user states to these four families. Do not invent one-off b
 
 ---
 
-## 4. Shared composites (not raw primitives in pages)
+## 4. Shadcn primitives + shared composites
 
-- Pages and feature views **must not** wire low-level menu/dialog bits (`DropdownMenuTrigger`, `DialogFooter`, …) ad hoc.
-- Put high-level composites under `src/admin/components/shared/` (or equivalent):
-  - `AppDropdown` (items config + trigger)
-  - `ConfirmDialog` (cancel / confirm / pending)
-  - Table wrappers / filter bars as shared components when reused twice
-- Primitives (shadcn-style) live under `src/admin/components/ui/`. Features import **shared** + **ui**, not assemble dialogs from scratch on every page.
+Admin UI uses a **shadcn-style** stack with Studio Noir tokens from `DESIGN.md`.
+
+### Rule
+1. Prefer an existing **shared composite** under `src/admin/components/shared/`.
+2. Shared composites sit on **ui primitives** under `src/admin/components/ui/`.
+3. Feature pages import **shared + ui**. Do not assemble Radix pieces or native `<select>` / `datetime-local` ad hoc in feature forms.
+4. **Missing control?** Install the dependency, add the `ui` primitive, add a shared wrapper when the API is multi-part or reused, then use it. Do not invent a parallel one-off control.
+5. When touching older screens that still use native/ad-hoc controls, migrate them to the shared composite.
+
+### Current / expected ui primitives
+- `Button`, `Input`, `Textarea`, `Label`, `Select`, `Popover`, `Calendar`, `DropdownMenu`
+
+### Current / expected shared composites
+- `AppSelect` - enum / option lists (Placement, Payout, filters)
+- `AppDateTimePicker` - schedule fields
+- `AppDropdown` - table row / account menus (items config + trigger)
+- `ConfirmDialog` - cancel / confirm / pending
+- Table wrappers / filter bars when reused twice
+
+### Forms
+- Readable max width (`max-w-5xl`), card surface, section headings.
+- Full width for long text / chips; 2-col for short paired fields.
+- Clickable chips: `cursor-pointer` + `disabled:cursor-not-allowed`.
 
 ---
 

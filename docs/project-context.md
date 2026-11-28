@@ -259,7 +259,7 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 | Feed (reels/shorts) | In Progress | Clip APIs + app create/consume wired; device E2E pending - [`feed.md`](./features/feed.md) |
 | Notifications | Done | Inbox + unread badge - [`notifications.md`](./features/notifications.md) |
 | Taste / Made for you | Done | [`taste-and-recommendations.md`](./features/taste-and-recommendations.md) |
-| Contests | Planned | Coins shipped; implement Contests next (includes `/admin/contests*`) - [`contests.md`](./features/contests.md) |
+| Contests | Done | Admin/user APIs + `/admin/contests*` + mobile + Home/Explore cards - [`contests.md`](./features/contests.md) |
 | Tanpura (studio) | Done | App studio module shipped (local engine/UI); polish as needed |
 | Coins / wallet | Done | Ledger + grant APIs + mobile `/wallet` - [`coins-and-wallet.md`](./features/coins-and-wallet.md) |
 | Subscriptions + payments | Deferred | Not started |
@@ -276,7 +276,7 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 5. Home discovery + taste / Made for you ([`home.md`](./features/home.md), [`taste-and-recommendations.md`](./features/taste-and-recommendations.md))
 6. Explore body ([`explore.md`](./features/explore.md)) then Search ([`search.md`](./features/search.md))
 7. Feed / global-player polish
-8. Contests (+ Contests admin UI) ([`contests.md`](./features/contests.md)); Admin + Coins already shipped
+8. Contests shipped ([`contests.md`](./features/contests.md)); next product slices per backlog
 9. Subscriptions / payments
 
 ---
@@ -305,7 +305,7 @@ Status is approximate (~app **60-70%** overall). Nothing is fully finalized; exp
 3. Prefer **small diffs**; match existing module patterns (`service` + Zod + `route().use(withAuth)` on backend; feature `api/hooks` on app).
 4. Comments in code: only non-obvious **why** (see `.cursor/rules/comments.mdc` / AGENTS guidance).
 5. Do **not** casually rewrite Superpowered, effect presets, or native audio patches.
-6. Do **not** start Payments or Contests unless explicitly requested (or their feature doc is the active task). Admin foundation, Admin panel v1, Coins/wallet, Tanpura, Notifications, Search, and Home already shipped - do not re-defer them.
+6. Do **not** start Payments unless explicitly requested (or their feature doc is the active task). Admin, Coins/wallet, Contests, Tanpura, Notifications, Search, and Home already shipped - do not re-defer them.
 7. Feature API tables belong in feature docs; keep this file as the map + status + decisions.
 8. When shipping a cross-cutting change, **update this doc?s status table** and the feature doc in the same PR/session when practical.
 9. Other developers? work may be incomplete or wrong ? verify against docs; fix rather than invent parallel systems.

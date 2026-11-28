@@ -711,6 +711,11 @@ class TrackService {
             );
         }
 
+        const { contestService } = await import(
+            "@/server/modules/contest/contest.service"
+        );
+        await contestService.assertTrackNotContestLocked(trackId);
+
         await prisma.track.update({
             where: { id: trackId },
             data: { status: TrackStatus.DRAFT },

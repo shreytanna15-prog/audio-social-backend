@@ -19,11 +19,22 @@ export const QUERY_REGISTRY = {
         feedClips: (id: string, params?: Record<string, unknown>) =>
             ["admin", "users", id, "feed-clips", params] as const,
     },
+    contests: {
+        list: (params?: Record<string, unknown>) =>
+            ["admin", "contests", "list", params] as const,
+        detail: (id: string) => ["admin", "contests", id] as const,
+    },
 } as const;
 
 export const MUTATION_REGISTRY = {
     auth: {
         login: ["admin", "auth", "login"] as const,
         logout: ["admin", "auth", "logout"] as const,
+    },
+    contests: {
+        create: ["admin", "contests", "create"] as const,
+        update: ["admin", "contests", "update"] as const,
+        cancel: ["admin", "contests", "cancel"] as const,
+        confirmWinners: ["admin", "contests", "confirm-winners"] as const,
     },
 } as const;
